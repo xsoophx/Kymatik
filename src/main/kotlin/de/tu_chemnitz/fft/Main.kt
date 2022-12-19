@@ -4,7 +4,9 @@ import kotlin.math.PI
 import org.kotlinmath.Complex
 import org.kotlinmath.I
 import org.kotlinmath.R
+import org.kotlinmath.complex
 import org.kotlinmath.exp
+import org.kotlinmath.times
 
 object Main {
     @JvmStatic
@@ -33,5 +35,22 @@ object Main {
         }
 
         return resultFirst + resultSecond
+    }
+
+    fun r2cDft(x: List<Double>): List<Complex> {
+        val length = x.size
+        return x.mapIndexed { k, _ ->
+            x.mapIndexed { n, xn ->
+                xn * exp((-2.0).I * PI / length * k * n)
+            }.sum { it }
+        }
+    }
+
+    private inline fun List<Complex>.sum(selector: (Complex) -> Complex): Complex {
+        var result = complex(0, 0)
+        for (element in this) {
+            result += selector(element)
+        }
+        return result
     }
 }
