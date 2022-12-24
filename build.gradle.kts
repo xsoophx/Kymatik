@@ -16,7 +16,7 @@ object Version {
 }
 
 dependencies {
-    implementation(kotlin("stdlib"))
+    implementation(kotlin("stdlib-jdk8"))
     testImplementation(kotlin("test-junit5"))
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Version.JUNIT}")

@@ -15,5 +15,5 @@ build/
 out/
 
 # WAVs Resources
-src/main/resources/sinus.wav
-src/main/resources/440.wav
+src/test/resources/sinus.wav
+src/test/resources/440.wav

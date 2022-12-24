@@ -4,8 +4,7 @@ import kotlin.math.roundToInt
 import org.kotlinmath.Complex
 import org.kotlinmath.sqrt
 
-@JvmInline
-value class Sample(val sample: Long)
+typealias Sample = Double
 
 @JvmInline
 value class Bins(private val bins: Int) {
@@ -27,8 +26,8 @@ data class FFTData(
 
     fun magnitude() = output.map { abs(it).re / sampleSize }
 
-    // Frequency = index * Sampling Frequency / Number of FFT Points
     // index = Frequency * Number of FFT Points / Sampling Frequency
+    //
     fun binIndexOf(frequency: Double): Int = (frequency * sampleSize / samplingRate).roundToInt()
 }
 
@@ -39,5 +38,5 @@ enum class Method {
 
 data class Window(
     val size: Int,
-    val elements: List<Sample>
+    val elements: Sequence<Sample>
 )

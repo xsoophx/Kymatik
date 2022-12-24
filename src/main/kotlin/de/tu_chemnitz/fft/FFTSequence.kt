@@ -4,6 +4,7 @@ import de.tu_chemnitz.fft.data.Bins
 import de.tu_chemnitz.fft.data.FFTData
 import de.tu_chemnitz.fft.data.Method
 import de.tu_chemnitz.fft.data.Sample
+import de.tu_chemnitz.fft.data.Window
 import kotlin.math.PI
 import org.kotlinmath.Complex
 import org.kotlinmath.I
@@ -12,26 +13,28 @@ import org.kotlinmath.complex
 import org.kotlinmath.exp
 import org.kotlinmath.times
 
-// r = 1 / T
-// 8Hz - T = 125ms
-// 16Hz - T = 62.5ms
-class FFTSequence(
-    private val inputSamples: Sequence<Sample>,
-    private val bins: Bins
-) {
-    fun process(sampleSize: Int, samplingRate: Double, method: Method = Method.FFT): FFTData {
-        val fftData = when (method) {
-            Method.FFT -> fft(inputSamples)
-            else -> r2cDft(inputSamples)
+
+class FFTSequence(private val inputSamples: Sequence<Window>) {
+
+    fun process(sampleSize: Int, samplingRate: Double, method: Method = Method.FFT): Sequence<FFTData> {
+        return when (method) {
+            Method.FFT -> inputSamples.map { fft(it.elements) }
+            else -> inputSamples.map { r2cDft(it.elements) }
+        }.map {
+            FFTData(
+                bins = Bins(sampleSize / 2),
+                sampleSize = sampleSize,
+                samplingRate = samplingRate,
+                output = it
+            )
         }
-        return FFTData(bins = bins, sampleSize = sampleSize, samplingRate = samplingRate, output = fftData)
     }
 
     private fun fft(x: Sequence<Sample>): List<Complex> {
         val length = x.count()
         require(length and (length - 1) == 0) { "Length of samples has to be power of two!" }
 
-        if (length <= 1) return listOf(x.first().sample.R)
+        if (length <= 1) return listOf(x.first().R)
 
         val pairs = x.chunked(2)
         val odd = fft(pairs.map { it[1] })
@@ -53,7 +56,7 @@ class FFTSequence(
         val length = x.count()
         return x.mapIndexed { k, _ ->
             x.mapIndexed { n, xn ->
-                xn.sample * exp((-2.0).I * PI / length * k * n)
+                xn * exp((-2.0).I * PI / length * k * n)
             }.sum { it }
         }.toList()
     }
