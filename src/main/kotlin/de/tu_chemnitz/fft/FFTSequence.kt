@@ -16,7 +16,7 @@ import org.kotlinmath.times
 
 class FFTSequence(private val inputSamples: Sequence<Window>) {
 
-    fun process(sampleSize: Int, samplingRate: Double, method: Method = Method.FFT): Sequence<FFTData> {
+    fun process(sampleSize: Int, samplingRate: Int, method: Method = Method.FFT): Sequence<FFTData> {
         return when (method) {
             Method.FFT -> inputSamples.map { fft(it.elements) }
             else -> inputSamples.map { r2cDft(it.elements) }

@@ -57,7 +57,7 @@ class FFTTest {
     private fun abs(n: Complex): Complex = sqrt(n.re * n.re + n.im * n.im)
 
     private fun signal(frequency: Double, amplitude: Double): Sequence<Sample> {
-        return (0 until samplingRate.toInt()).take(sampleSize).asSequence()
+        return (0 until samplingRate).take(sampleSize).asSequence()
             .map { index -> index.toDouble() / samplingRate }
             .map { t -> amplitude * sin(PI * 2.0 * frequency * t) }
     }
@@ -77,7 +77,7 @@ class FFTTest {
 
         val amplitudes = result.output.take(bins).map { abs(it).re / sampleSize }
         val maximumIndex = amplitudes.indexOf(amplitudes.max())
-        val binIndex = (frequency * sampleSize / samplingRate).roundToInt()
+        val binIndex = (frequency * sampleSize / samplingRate.toDouble()).roundToInt()
 
         // TODO: some refactoring, extract into separate tests
         assertEquals(expected = binIndex, actual = maximumIndex)
@@ -112,7 +112,7 @@ class FFTTest {
 
     companion object {
         private const val sampleSize = 1024
-        private const val samplingRate = 44100.0
+        private const val samplingRate = 44100
         private const val bins = sampleSize / 2
 
         @JvmStatic

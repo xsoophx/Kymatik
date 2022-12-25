@@ -1,30 +1,84 @@
 package de.tu_chemnitz.fft
 
+import de.tu_chemnitz.fft.WAVReader.readSamplesAt
+import de.tu_chemnitz.fft.data.AudioFormat
+import de.tu_chemnitz.fft.data.FmtChunk
+import de.tu_chemnitz.fft.data.Wav
+import de.tu_chemnitz.fft.data.Window
+import java.util.stream.Stream
 import kotlin.io.path.Path
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class WAVReaderTest {
 
-    @Test
-    fun `reads correct header`() {
-        val actual = WAVReader.read(Path("src/test/resources/sinus.wav"))
+    @ParameterizedTest
+    @MethodSource("getWavData")
+    fun `reads correct header and data`(path: String, fmtChunk: FmtChunk) {
+        val actual = WAVReader.read(Path(path))
 
         assertEquals(
             expected = Wav(
-                filePath = Path("src/test/resources/sinus.wav"),
-                chunkSize = 654006u,
-                subChunkOneSize = 16u,
-                audioFormat = AudioFormat.PCM,
-                numChannels = 2u,
-                sampleRate = 44100u,
-                byteRate = 176400u,
-                blockAlign = 4u,
-                bitsPerSample = 16u,
-                subChunkTwoSize = 653868u,
+                filePath = Path(path),
+                fmtChunk = fmtChunk,
+                dataChunk = actual.dataChunk
             ), actual = actual
+        )
+    }
+
+    @Test
+    fun `should throw parsing exception`() {
+        // TODO: not yet implemented
+    }
+
+    @Test
+    fun `reads correct Samples from wav file`() {
+        val wav = WAVReader.read(Path("src/test/resources/440.wav"))
+        val fft = FFTSequence(
+            sequenceOf(Window(size = 1024, elements = wav.readSamplesAt(0, 1024)))
+        ).process(sampleSize = 1024, samplingRate = wav.fmtChunk.sampleRate)
+
+        assertEquals(
+            expected = sequenceOf(0.0), actual = wav.readSamplesAt(0, 1024)
+        )
+    }
+
+    companion object {
+        @JvmStatic
+        private fun getWavData() = Stream.of(
+            Arguments.of(
+                "src/test/resources/sinus.wav",
+                FmtChunk(
+                    riffChunkSize = 654006,
+                    fmtChunkSize = 16,
+                    audioFormat = AudioFormat.PCM,
+                    numChannels = 2,
+                    sampleRate = 44100,
+                    byteRate = 176400,
+                    blockAlign = 4,
+                    bitsPerSample = 16,
+                    dataChunkSize = 653868
+                )
+            ),
+            Arguments.of(
+                "src/test/resources/440.wav",
+                FmtChunk(
+                    riffChunkSize = 880110,
+                    fmtChunkSize = 16,
+                    audioFormat = AudioFormat.PCM,
+                    numChannels = 1,
+                    sampleRate = 44000,
+                    byteRate = 88000,
+                    blockAlign = 2,
+                    bitsPerSample = 16,
+                    dataChunkSize = 880000
+                )
+            )
         )
     }
 }
