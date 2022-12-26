@@ -4,7 +4,6 @@ import de.tu_chemnitz.fft.WAVReader.readSamplesAt
 import de.tu_chemnitz.fft.data.AudioFormat
 import de.tu_chemnitz.fft.data.FmtChunk
 import de.tu_chemnitz.fft.data.Wav
-import de.tu_chemnitz.fft.data.Window
 import java.util.stream.Stream
 import kotlin.io.path.Path
 import kotlin.test.assertEquals
@@ -39,9 +38,10 @@ class WAVReaderTest {
     @Test
     fun `reads correct Samples from wav file`() {
         val wav = WAVReader.read(Path("src/test/resources/440.wav"))
-        val fft = FFTSequence(
-            sequenceOf(Window(size = 1024, elements = wav.readSamplesAt(0, 1024)))
-        ).process(sampleSize = 1024, samplingRate = wav.fmtChunk.sampleRate)
+        val fftData = FFTSequence(sequenceOf(wav.readSamplesAt(45675, 1024))).process(samplingRate = wav.fmtChunk.sampleRate)
+        val magnitudes = fftData.first().magnitudes
+        val bin = fftData.first().binIndexOf(440.0)
+        val maximumIndex = magnitudes.indexOf(magnitudes.max())
 
         assertEquals(
             expected = sequenceOf(0.0), actual = wav.readSamplesAt(0, 1024)

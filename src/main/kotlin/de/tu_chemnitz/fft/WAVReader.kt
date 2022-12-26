@@ -28,9 +28,14 @@ object WAVReader : FileReader<Wav> {
     private const val DATA_SIGNATURE = "data"
 
     fun Wav.readSamplesAt(index: Int, numSamples: Int): Sequence<Sample> {
-        val buffer = dataChunk.let(ByteBuffer::wrap).apply { order(ByteOrder.LITTLE_ENDIAN) }
+        val offset = index * fmtChunk.blockAlign
+        val length = numSamples * fmtChunk.bitsPerSample / 8
+
+        val buffer = ByteBuffer.wrap(dataChunk).apply { order(ByteOrder.LITTLE_ENDIAN) }
         val destination = ByteArray(numSamples * fmtChunk.bitsPerSample / 8)
-        buffer.get(destination, index * fmtChunk.blockAlign, numSamples * fmtChunk.bitsPerSample / 8)
+
+        buffer.position(offset)
+        buffer.get(destination, 0, length)
 
         return destination.readSamples(fmtChunk.bitsPerSample.toInt(), fmtChunk.numChannels.toInt()).asSequence()
     }

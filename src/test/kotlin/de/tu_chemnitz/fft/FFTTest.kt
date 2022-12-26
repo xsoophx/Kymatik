@@ -2,7 +2,6 @@ package de.tu_chemnitz.fft
 
 import de.tu_chemnitz.fft.data.Method
 import de.tu_chemnitz.fft.data.Sample
-import de.tu_chemnitz.fft.data.Window
 import java.util.stream.Stream
 import kotlin.math.PI
 import kotlin.math.abs
@@ -19,7 +18,6 @@ import org.junit.jupiter.params.provider.ValueSource
 import org.kotlinmath.Complex
 import org.kotlinmath.I
 import org.kotlinmath.R
-import org.kotlinmath.sqrt
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FFTTest {
@@ -27,8 +25,8 @@ class FFTTest {
     @ParameterizedTest
     @MethodSource("getFFTValues")
     fun `fft should yield correct results`(input: Sequence<Double>, expected: List<Complex>) {
-        val sequence = FFTSequence(inputSamples = sequenceOf(Window(size = sampleSize, elements = input)))
-        val actual = sequence.process(sampleSize = sampleSize, samplingRate = samplingRate).first()
+        val sequence = FFTSequence(inputSamples = sequenceOf(input))
+        val actual = sequence.process(samplingRate = samplingRate).first()
 
         actual.output.forEachIndexed { index, complex ->
             assertTrue(
@@ -41,10 +39,10 @@ class FFTTest {
     @ParameterizedTest
     @MethodSource("getFFTValues")
     fun `fft and dft should return same results`(input: Sequence<Double>, expected: List<Complex>) {
-        val sequence = FFTSequence(inputSamples = sequenceOf(Window(size = sampleSize, elements = input)))
+        val sequence = FFTSequence(inputSamples = sequenceOf(input))
 
-        val fftResults = sequence.process(sampleSize = sampleSize, samplingRate = samplingRate).first()
-        val dftResults = sequence.process(sampleSize = sampleSize, samplingRate = samplingRate, Method.R2C_DFT).first()
+        val fftResults = sequence.process(samplingRate = samplingRate).first()
+        val dftResults = sequence.process(samplingRate = samplingRate, Method.R2C_DFT).first()
 
         fftResults.output.forEachIndexed { index, fft ->
             assertTrue(
@@ -53,8 +51,6 @@ class FFTTest {
             )
         }
     }
-
-    private fun abs(n: Complex): Complex = sqrt(n.re * n.re + n.im * n.im)
 
     private fun signal(frequency: Double, amplitude: Double): Sequence<Sample> {
         return (0 until samplingRate).take(sampleSize).asSequence()
@@ -69,14 +65,14 @@ class FFTTest {
     @ParameterizedTest
     @ValueSource(ints = [20, 200, 2000])
     fun `should yield correct values for sine signal`(frequency: Int) {
-        val magnitude = 2.0.pow(15)
-        val signal = signal(frequency.toDouble(), magnitude)
+        val amplitude = 2.0.pow(15)
+        val signal = signal(frequency.toDouble(), amplitude)
 
-        val sequence = FFTSequence(inputSamples = sequenceOf(Window(size = sampleSize, elements = signal)))
-        val result = sequence.process(sampleSize = sampleSize, samplingRate = samplingRate).first()
+        val sequence = FFTSequence(inputSamples = sequenceOf(signal))
+        val result = sequence.process(samplingRate = samplingRate).first()
 
-        val amplitudes = result.output.take(bins).map { abs(it).re / sampleSize }
-        val maximumIndex = amplitudes.indexOf(amplitudes.max())
+        val magnitudes = result.magnitudes
+        val maximumIndex = magnitudes.indexOf(magnitudes.max())
         val binIndex = (frequency * sampleSize / samplingRate.toDouble()).roundToInt()
 
         // TODO: some refactoring, extract into separate tests
@@ -88,18 +84,18 @@ class FFTTest {
     @ParameterizedTest
     @ValueSource(ints = [43, 430, 4306])
     fun `should yield correct magnitudes for sine signal`(frequency: Int) {
-        val magnitude = 2.0.pow(15)
-        val signal = signal(frequency.toDouble(), magnitude)
+        val amplitude = 2.0.pow(15)
+        val signal = signal(frequency.toDouble(), amplitude)
 
-        val sequence = FFTSequence(inputSamples = sequenceOf(Window(size = sampleSize, elements = signal)))
-        val result = sequence.process(sampleSize = sampleSize, samplingRate = samplingRate).first()
-        val amplitudes = result.output.take(bins).map { abs(it).re / sampleSize }
+        val sequence = FFTSequence(inputSamples = sequenceOf(signal))
+        val result = sequence.process(samplingRate = samplingRate).first()
+        val magnitudes = result.magnitudes
 
         result.binIndexOf(frequency.toDouble()).let {
             assertTrue(
                 //not mathematically correct, but enough for testing purposes
-                amplitudes[it].closeTo(magnitude / 2, e = 20.0),
-                "Expected index $it with magnitude ${amplitudes[it]} to be close to ${magnitude / 2}."
+                magnitudes[it].closeTo(amplitude / 2, e = 20.0),
+                "Expected index $it with magnitude ${magnitudes[it]} to be close to ${amplitude / 2}."
             )
         }
     }
@@ -113,7 +109,6 @@ class FFTTest {
     companion object {
         private const val sampleSize = 1024
         private const val samplingRate = 44100
-        private const val bins = sampleSize / 2
 
         @JvmStatic
         fun getFFTValues(): Stream<Arguments> = Stream.of(

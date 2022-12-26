@@ -13,14 +13,14 @@ import org.kotlinmath.complex
 import org.kotlinmath.exp
 import org.kotlinmath.times
 
-
 class FFTSequence(private val inputSamples: Sequence<Window>) {
 
-    fun process(sampleSize: Int, samplingRate: Int, method: Method = Method.FFT): Sequence<FFTData> {
+    fun process(samplingRate: Int, method: Method = Method.FFT): Sequence<FFTData> {
         return when (method) {
-            Method.FFT -> inputSamples.map { fft(it.elements) }
-            else -> inputSamples.map { r2cDft(it.elements) }
+            Method.FFT -> inputSamples.map(::fft)
+            else -> inputSamples.map(::r2cDft)
         }.map {
+            val sampleSize = it.count()
             FFTData(
                 bins = Bins(sampleSize / 2),
                 sampleSize = sampleSize,
@@ -50,7 +50,6 @@ class FFTSequence(private val inputSamples: Sequence<Window>) {
 
         return resultFirst + resultSecond
     }
-
 
     private fun r2cDft(x: Sequence<Sample>): List<Complex> {
         val length = x.count()
