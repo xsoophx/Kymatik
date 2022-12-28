@@ -13,7 +13,3 @@
 # Build
 build/
 out/
-
-# WAVs Resources
-src/test/resources/sinus.wav
-src/test/resources/440.wav

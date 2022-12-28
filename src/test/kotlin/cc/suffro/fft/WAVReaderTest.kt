@@ -1,12 +1,12 @@
-package de.tu_chemnitz.fft
+package cc.suffro.fft
 
-import de.tu_chemnitz.fft.WAVReader.readSamplesAt
-import de.tu_chemnitz.fft.data.AudioFormat
-import de.tu_chemnitz.fft.data.FmtChunk
-import de.tu_chemnitz.fft.data.Wav
+import cc.suffro.fft.data.AudioFormat
+import cc.suffro.fft.data.FmtChunk
+import cc.suffro.fft.data.Wav
 import java.util.stream.Stream
 import kotlin.io.path.Path
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
@@ -14,10 +14,11 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Tag(FFT)
 class WAVReaderTest {
 
     @ParameterizedTest
-    @MethodSource("getWavData")
+    @MethodSource("getWavDataWithFmt")
     fun `reads correct header and data`(path: String, fmtChunk: FmtChunk) {
         val actual = WAVReader.read(Path(path))
 
@@ -35,24 +36,24 @@ class WAVReaderTest {
         // TODO: not yet implemented
     }
 
-    @Test
-    fun `reads correct Samples from wav file`() {
-        val wav = WAVReader.read(Path("src/test/resources/440.wav"))
-        val fftData = FFTSequence(sequenceOf(wav.readSamplesAt(45675, 1024))).process(samplingRate = wav.fmtChunk.sampleRate)
+    @ParameterizedTest
+    @MethodSource("getWavDataWithFrequency")
+    fun `reads correct Samples from wav file`(path: String, frequency: Double) {
+        val wav = WAVReader.read(Path(path))
+        val samples = wav.getSamples(channel = 0, begin = 0, length = 1024)
+        val fftData = FFTSequence(sequenceOf(samples)).process(samplingRate = wav.fmtChunk.sampleRate)
         val magnitudes = fftData.first().magnitudes
-        val bin = fftData.first().binIndexOf(440.0)
-        val maximumIndex = magnitudes.indexOf(magnitudes.max())
 
         assertEquals(
-            expected = sequenceOf(0.0), actual = wav.readSamplesAt(0, 1024)
+            expected = fftData.first().binIndexOf(frequency), actual = magnitudes.indexOf(magnitudes.max())
         )
     }
 
     companion object {
         @JvmStatic
-        private fun getWavData() = Stream.of(
+        private fun getWavDataWithFmt() = Stream.of(
             Arguments.of(
-                "src/test/resources/sinus.wav",
+                "src/test/resources/220.wav",
                 FmtChunk(
                     riffChunkSize = 654006,
                     fmtChunkSize = 16,
@@ -78,6 +79,16 @@ class WAVReaderTest {
                     bitsPerSample = 16,
                     dataChunkSize = 880000
                 )
+            )
+        )
+
+        @JvmStatic
+        private fun getWavDataWithFrequency() = Stream.of(
+            Arguments.of(
+                "src/test/resources/440.wav", 440.0
+            ),
+            Arguments.of(
+                "src/test/resources/220.wav", 220.0
             )
         )
     }

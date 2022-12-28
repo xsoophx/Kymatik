@@ -1,10 +1,10 @@
-package de.tu_chemnitz.fft
+package cc.suffro.fft
 
-import de.tu_chemnitz.fft.data.Bins
-import de.tu_chemnitz.fft.data.FFTData
-import de.tu_chemnitz.fft.data.Method
-import de.tu_chemnitz.fft.data.Sample
-import de.tu_chemnitz.fft.data.Window
+import cc.suffro.fft.data.Bins
+import cc.suffro.fft.data.FFTData
+import cc.suffro.fft.data.Method
+import cc.suffro.fft.data.Sample
+import cc.suffro.fft.data.Window
 import kotlin.math.PI
 import org.kotlinmath.Complex
 import org.kotlinmath.I

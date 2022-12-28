@@ -1,7 +1,7 @@
-package de.tu_chemnitz.fft
+package cc.suffro.fft
 
-import de.tu_chemnitz.fft.data.Method
-import de.tu_chemnitz.fft.data.Sample
+import cc.suffro.fft.data.Method
+import cc.suffro.fft.data.Sample
 import java.util.stream.Stream
 import kotlin.math.PI
 import kotlin.math.abs
@@ -10,7 +10,9 @@ import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.TestTemplate
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -20,7 +22,8 @@ import org.kotlinmath.I
 import org.kotlinmath.R
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class FFTTest {
+@Tag(FFT)
+private class FFTTest {
 
     @ParameterizedTest
     @MethodSource("getFFTValues")

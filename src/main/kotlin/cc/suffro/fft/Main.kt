@@ -1,4 +1,4 @@
-package de.tu_chemnitz.fft
+package cc.suffro.fft
 
 object Main {
     @JvmStatic
