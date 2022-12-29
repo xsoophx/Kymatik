@@ -1,6 +1,7 @@
 package cc.suffro.fft.data
 
 import java.nio.file.Path
+import kotlin.math.roundToInt
 
 typealias DataChunk = Array<DoubleArray>
 
@@ -24,6 +25,12 @@ data class Wav(
 ) {
     override fun toString(): String = "Filepath:$filePath, fmtChunk:$fmtChunk."
 
+    val trackLength: Double
+        get() = fmtChunk.dataChunkSize.toDouble() / (sampleRate * fmtChunk.blockAlign)
+
+    val sampleRate: Int
+        get() = fmtChunk.sampleRate
+
     private fun DoubleArray.get(begin: Int, length: Int): Sequence<Double> {
         if (begin < 0 || begin > begin + length || begin + length > this.size) {
             throw IndexOutOfBoundsException("begin $begin, end ${begin + length}, length ${this.size}")
@@ -31,12 +38,41 @@ data class Wav(
         return this.asSequence().drop(begin).take(length)
     }
 
-    fun getSamples(channel: Int, begin: Int, length: Int): Sequence<Double> {
+    private fun checkRequirements(channel: Int, numSamples: Int) {
         require(channel >= 0) { "Selected Channel has to be greater than or equal to zero." }
         require(channel < dataChunk.size) { "Selected Channel has to be smaller than available channels (${dataChunk.size})." }
-        require((length != 0) && length and (length - 1) == 0) { "Length has to be power of tow, but is $length." }
+        require((numSamples != 0) && numSamples and (numSamples - 1) == 0) { "Length has to be power of tow, but is $numSamples." }
+    }
 
-        return dataChunk[channel].get(begin, length)
+    fun getWindow(channel: Int, begin: Int, numSamples: Int = DEFAULT_SAMPLE_NUMBER): Window {
+        checkRequirements(channel, numSamples)
+        return dataChunk[channel].get(begin, numSamples)
+    }
+
+    fun getWindows(
+        start: Double = 0.0,
+        end: Double = trackLength,
+        interval: Double,
+        channel: Int = 0,
+        numSamples: Int = DEFAULT_SAMPLE_NUMBER
+    ): Sequence<Window> {
+        checkRequirements(channel, numSamples)
+        require(end <= trackLength) { "Selected end time of $end seconds exceeds actual end of track ($trackLength seconds)." }
+
+        val sampleInterval = (interval * sampleRate).roundToInt()
+        val startSample = (sampleRate * start).roundToInt()
+        val endSample =
+            minOf((sampleRate * end).roundToInt(), (fmtChunk.dataChunkSize / fmtChunk.blockAlign) - numSamples)
+
+        return (startSample until endSample)
+            .step(sampleInterval)
+            .asSequence()
+            .takeWhile { it < endSample }
+            .map { index -> dataChunk[channel].get(index, numSamples) }
+    }
+
+    companion object {
+        private const val DEFAULT_SAMPLE_NUMBER = 1024
     }
 }
 

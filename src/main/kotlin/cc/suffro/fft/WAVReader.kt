@@ -26,6 +26,8 @@ object WAVReader : FileReader<Wav> {
     private const val FMT_SIGNATURE = "fmt "
     private const val DATA_SIGNATURE = "data"
 
+    private const val MAX_VALUE_24BIT = 0x7FFFFF
+
     override fun read(path: Path): Wav {
         return path.inputStream().buffered().use { input ->
             val riffChunkSize = getRiffChunkSize(input)
@@ -77,11 +79,12 @@ object WAVReader : FileReader<Wav> {
         val samples = Array(fmtChunk.numChannels.toInt()) { DoubleArray(sampleCount) }
 
         return when (fmtChunk.bitsPerSample.toInt()) {
+            // PCM 8-bit is unsigned with 1 at negative full scale, 255 at positive full scale and 128 at midpoint
             8 -> {
                 for (sampleIndex in 0 until sampleCount) {
                     for (channel in 0 until fmtChunk.numChannels) {
-                        samples[channel][sampleIndex] =
-                            byteBuffer[sampleIndex * fmtChunk.blockAlign + channel].toDouble()
+                        val value = maxOf(1.0, byteBuffer[sampleIndex * fmtChunk.blockAlign + channel].toDouble())
+                        samples[channel][sampleIndex] = ((value - 1.0) / 127.0) - 1
                     }
                 }
                 samples
@@ -92,7 +95,7 @@ object WAVReader : FileReader<Wav> {
                     for (channel in 0 until fmtChunk.numChannels) {
                         samples[channel][sampleIndex] =
                             byteBuffer.getShort(sampleIndex * fmtChunk.blockAlign + channel * bytesPerChannel)
-                                .toDouble()
+                                .toDouble() / Short.MAX_VALUE
                     }
                 }
                 samples
@@ -107,9 +110,9 @@ object WAVReader : FileReader<Wav> {
                         val sample = b1.toUInt() or (b2.toUInt() shl 8) or (b3.toUInt() shl 16)
 
                         samples[channel][sampleIndex] = if (sample and 0x00800000U == 0x00800000U) {
-                            (sample or 0xFF000000U).toDouble()
+                            (sample or 0xFF000000U).toDouble() / MAX_VALUE_24BIT
                         } else {
-                            sample.toDouble()
+                            sample.toDouble() / MAX_VALUE_24BIT
                         }
                     }
                 }
@@ -121,7 +124,7 @@ object WAVReader : FileReader<Wav> {
                     for (channel in 0 until fmtChunk.numChannels) {
                         samples[channel][sampleIndex] =
                             byteBuffer.getInt(sampleIndex * fmtChunk.blockAlign + channel * bytesPerChannel)
-                                .toDouble()
+                                .toDouble() / Int.MAX_VALUE
                     }
                 }
                 samples

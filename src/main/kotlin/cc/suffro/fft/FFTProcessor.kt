@@ -13,7 +13,7 @@ import org.kotlinmath.complex
 import org.kotlinmath.exp
 import org.kotlinmath.times
 
-class FFTSequence(private val inputSamples: Sequence<Window>) {
+class FFTProcessor(private val inputSamples: Sequence<Window>) {
 
     fun process(samplingRate: Int, method: Method = Method.FFT): Sequence<FFTData> {
         return when (method) {

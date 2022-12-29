@@ -12,7 +12,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.TestTemplate
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -28,8 +27,8 @@ private class FFTTest {
     @ParameterizedTest
     @MethodSource("getFFTValues")
     fun `fft should yield correct results`(input: Sequence<Double>, expected: List<Complex>) {
-        val sequence = FFTSequence(inputSamples = sequenceOf(input))
-        val actual = sequence.process(samplingRate = samplingRate).first()
+        val fftProcessor = FFTProcessor(inputSamples = sequenceOf(input))
+        val actual = fftProcessor.process(samplingRate = DEFAULT_SAMPLING_RATE).first()
 
         actual.output.forEachIndexed { index, complex ->
             assertTrue(
@@ -42,10 +41,10 @@ private class FFTTest {
     @ParameterizedTest
     @MethodSource("getFFTValues")
     fun `fft and dft should return same results`(input: Sequence<Double>, expected: List<Complex>) {
-        val sequence = FFTSequence(inputSamples = sequenceOf(input))
+        val fftProcessor = FFTProcessor(inputSamples = sequenceOf(input))
 
-        val fftResults = sequence.process(samplingRate = samplingRate).first()
-        val dftResults = sequence.process(samplingRate = samplingRate, Method.R2C_DFT).first()
+        val fftResults = fftProcessor.process(samplingRate = DEFAULT_SAMPLING_RATE).first()
+        val dftResults = fftProcessor.process(samplingRate = DEFAULT_SAMPLING_RATE, Method.R2C_DFT).first()
 
         fftResults.output.forEachIndexed { index, fft ->
             assertTrue(
@@ -56,8 +55,8 @@ private class FFTTest {
     }
 
     private fun signal(frequency: Double, amplitude: Double): Sequence<Sample> {
-        return (0 until samplingRate).take(sampleSize).asSequence()
-            .map { index -> index.toDouble() / samplingRate }
+        return (0 until DEFAULT_SAMPLING_RATE).take(DEFAULT_SAMPLE_SIZE).asSequence()
+            .map { index -> index.toDouble() / DEFAULT_SAMPLING_RATE }
             .map { t -> amplitude * sin(PI * 2.0 * frequency * t) }
     }
 
@@ -71,12 +70,12 @@ private class FFTTest {
         val amplitude = 2.0.pow(15)
         val signal = signal(frequency.toDouble(), amplitude)
 
-        val sequence = FFTSequence(inputSamples = sequenceOf(signal))
-        val result = sequence.process(samplingRate = samplingRate).first()
+        val fftProcessor = FFTProcessor(inputSamples = sequenceOf(signal))
+        val result = fftProcessor.process(samplingRate = DEFAULT_SAMPLING_RATE).first()
 
         val magnitudes = result.magnitudes
         val maximumIndex = magnitudes.indexOf(magnitudes.max())
-        val binIndex = (frequency * sampleSize / samplingRate.toDouble()).roundToInt()
+        val binIndex = (frequency * DEFAULT_SAMPLE_SIZE / DEFAULT_SAMPLING_RATE.toDouble()).roundToInt()
 
         // TODO: some refactoring, extract into separate tests
         assertEquals(expected = binIndex, actual = maximumIndex)
@@ -90,8 +89,8 @@ private class FFTTest {
         val amplitude = 2.0.pow(15)
         val signal = signal(frequency.toDouble(), amplitude)
 
-        val sequence = FFTSequence(inputSamples = sequenceOf(signal))
-        val result = sequence.process(samplingRate = samplingRate).first()
+        val fftProcessor = FFTProcessor(inputSamples = sequenceOf(signal))
+        val result = fftProcessor.process(samplingRate = DEFAULT_SAMPLING_RATE).first()
         val magnitudes = result.magnitudes
 
         result.binIndexOf(frequency.toDouble()).let {
@@ -110,8 +109,8 @@ private class FFTTest {
         abs(this - number) < e
 
     companion object {
-        private const val sampleSize = 1024
-        private const val samplingRate = 44100
+        private const val DEFAULT_SAMPLE_SIZE = 1024
+        private const val DEFAULT_SAMPLING_RATE = 44100
 
         @JvmStatic
         fun getFFTValues(): Stream<Arguments> = Stream.of(

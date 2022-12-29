@@ -16,6 +16,18 @@ value class Bins(private val bins: Int) {
         get() = bins
 }
 
+/*data class FFTCollection(
+    val elements: Sequence<FFTData>,
+    val sampleSize: Int,
+    val samplingRate: Int
+) : Sequence<FFTData> by elements {
+
+    val bins: Int
+        get() = sampleSize / 2
+
+    fun binIndexOf(frequency: Double): Int = (frequency * sampleSize / samplingRate).roundToInt()
+}*/
+
 data class FFTData(
     val bins: Bins,
     val sampleSize: Int,

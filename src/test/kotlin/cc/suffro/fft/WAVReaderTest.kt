@@ -9,8 +9,10 @@ import kotlin.test.assertEquals
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.MethodSource
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -19,7 +21,7 @@ class WAVReaderTest {
 
     @ParameterizedTest
     @MethodSource("getWavDataWithFmt")
-    fun `reads correct header and data`(path: String, fmtChunk: FmtChunk) {
+    fun `should read correct header and data`(path: String, fmtChunk: FmtChunk) {
         val actual = WAVReader.read(Path(path))
 
         assertEquals(
@@ -36,12 +38,17 @@ class WAVReaderTest {
         // TODO: not yet implemented
     }
 
+    @Test
+    fun `should read correct Samples if 8-bit PCM`() {
+        // TODO: not yet implemented
+    }
+
     @ParameterizedTest
     @MethodSource("getWavDataWithFrequency")
-    fun `reads correct Samples from wav file`(path: String, frequency: Double) {
+    fun `should read correct Samples from wav file`(path: String, frequency: Double) {
         val wav = WAVReader.read(Path(path))
-        val samples = wav.getSamples(channel = 0, begin = 0, length = 1024)
-        val fftData = FFTSequence(sequenceOf(samples)).process(samplingRate = wav.fmtChunk.sampleRate)
+        val samples = wav.getWindow(channel = 0, begin = 0)
+        val fftData = FFTProcessor(sequenceOf(samples)).process(samplingRate = wav.sampleRate)
         val magnitudes = fftData.first().magnitudes
 
         assertEquals(
@@ -49,7 +56,43 @@ class WAVReaderTest {
         )
     }
 
+    @ParameterizedTest
+    @CsvSource(
+        "0.0, 1.0, 0.01, 100",
+        "0.0, 4.0, 0.01, 400",
+        "1.2, 3.9, 0.15, 18"
+    )
+    fun `should return correct amount of windows of samples`(
+        start: Double,
+        end: Double,
+        interval: Double,
+        expectedWindows: Int
+    ) {
+        val wav = WAVReader.read(Path("src/test/resources/440.wav"))
+        val actual = wav.getWindows(start = start, end = end, interval, 0, DEFAULT_SAMPLE_NUMBER)
+
+        assertEquals(expected = expectedWindows, actual = actual.count())
+    }
+
+    // 44000 Samples per second, 1024(S)/44000(S/s) = 0.023272727272727s
+    @Test
+    fun `should return nothing if end is too close to track end`() {
+        val wav = WAVReader.read(Path("src/test/resources/440.wav"))
+        val windowTime = DEFAULT_SAMPLE_NUMBER.toDouble() / wav.sampleRate
+        val actual = wav.getWindows(start = wav.trackLength - windowTime, end = wav.trackLength, interval = windowTime)
+
+        assertEquals(expected = 0, actual = actual.count())
+    }
+
+    @Test
+    fun `should throw error if selected end time is exceeds time of actual track`() {
+        val wav = WAVReader.read(Path("src/test/resources/440.wav"))
+        assertThrows<IllegalArgumentException> { wav.getWindows(start = 7.0, end = 10.001, interval = 0.01) }
+    }
+
     companion object {
+        private const val DEFAULT_SAMPLE_NUMBER = 1024
+
         @JvmStatic
         private fun getWavDataWithFmt() = Stream.of(
             Arguments.of(
