@@ -6,6 +6,7 @@ import kotlin.io.path.Path
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.kotlinmath.complex
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class BpmAnalyzerTest {
@@ -13,10 +14,10 @@ class BpmAnalyzerTest {
     // TODO: add mocking
     @Test
     fun `should get correct deviations`() {
-        val bpmAnalyzer = BpmAnalyzer.analyze(Path(path))
+        //val bpmAnalyzer = BpmAnalyzer.analyze(Path(path))
 
         val wav = WAVReader.read(Path(path))
-        val windows = wav.getWindows(end = 1.0, interval = 0.01)
+        val windows = wav.getWindows(end = 1.0, interval = 0.01).map { window -> window.map { complex(it, 0) } }
 
         val bassFrequencyBins = FFTProcessor(windows).process(wav.sampleRate).getBassFrequencyBins()
         val deviations = bassFrequencyBins.toList().getDeviations()

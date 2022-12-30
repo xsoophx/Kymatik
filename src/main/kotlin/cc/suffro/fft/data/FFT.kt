@@ -4,7 +4,7 @@ import kotlin.math.roundToInt
 import org.kotlinmath.Complex
 import org.kotlinmath.sqrt
 
-typealias Sample = Double
+typealias Sample = Complex
 
 @JvmInline
 value class Bins(private val bins: Int) {
@@ -32,11 +32,11 @@ data class FFTData(
     val bins: Bins,
     val sampleSize: Int,
     val samplingRate: Int,
-    val output: List<Complex>
+    val output: Sequence<Complex>
 ) {
     private fun abs(n: Complex): Complex = sqrt(n.re * n.re + n.im * n.im)
 
-    val magnitudes: List<Double>
+    val magnitudes: Sequence<Double>
         get() = output.take(bins.count).map { abs(it).re / sampleSize }
 
     // index = Frequency * Number of FFT Points / Sampling Frequency
@@ -45,7 +45,8 @@ data class FFTData(
 
 enum class Method {
     FFT,
+    FFT_IN_PLACE,
     R2C_DFT
 }
 
-typealias Window = Sequence<Sample>
+typealias Window<T> = Sequence<T>

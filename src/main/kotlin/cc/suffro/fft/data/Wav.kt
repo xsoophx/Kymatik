@@ -44,7 +44,7 @@ data class Wav(
         require((numSamples != 0) && numSamples and (numSamples - 1) == 0) { "Length has to be power of tow, but is $numSamples." }
     }
 
-    fun getWindow(channel: Int, begin: Int, numSamples: Int = DEFAULT_SAMPLE_NUMBER): Window {
+    fun getWindow(channel: Int, begin: Int, numSamples: Int = DEFAULT_SAMPLE_NUMBER): Window<Double> {
         checkRequirements(channel, numSamples)
         return dataChunk[channel].get(begin, numSamples)
     }
@@ -55,7 +55,7 @@ data class Wav(
         interval: Double,
         channel: Int = 0,
         numSamples: Int = DEFAULT_SAMPLE_NUMBER
-    ): Sequence<Window> {
+    ): Sequence<Window<Double>> {
         checkRequirements(channel, numSamples)
         require(end <= trackLength) { "Selected end time of $end seconds exceeds actual end of track ($trackLength seconds)." }
 

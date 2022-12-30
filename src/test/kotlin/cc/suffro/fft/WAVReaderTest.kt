@@ -14,6 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.MethodSource
+import org.kotlinmath.complex
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Tag(FFT)
@@ -47,7 +48,7 @@ class WAVReaderTest {
     @MethodSource("getWavDataWithFrequency")
     fun `should read correct Samples from wav file`(path: String, frequency: Double) {
         val wav = WAVReader.read(Path(path))
-        val samples = wav.getWindow(channel = 0, begin = 0)
+        val samples = wav.getWindow(channel = 0, begin = 0).map { complex(it, 0) }
         val fftData = FFTProcessor(sequenceOf(samples)).process(samplingRate = wav.sampleRate)
         val magnitudes = fftData.first().magnitudes
 
