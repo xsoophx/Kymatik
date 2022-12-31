@@ -22,13 +22,14 @@ import org.kotlinmath.R
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Tag(FFT)
-private class FFTTest {
+private class FFTProcessorTest {
 
     @ParameterizedTest
     @MethodSource("getFFTValues")
     fun `fft should yield correct results`(input: Sequence<Sample>, expected: List<Complex>) {
-        val fftProcessor = FFTProcessor(inputSamples = sequenceOf(input))
-        val actual = fftProcessor.process(samplingRate = DEFAULT_SAMPLING_RATE).first()
+        val fftProcessor = FFTProcessor()
+        val actual =
+            fftProcessor.process(inputSamples = sequenceOf(input), samplingRate = DEFAULT_SAMPLING_RATE).first()
 
         actual.output.forEachIndexed { index, complex ->
             assertTrue(
@@ -41,10 +42,13 @@ private class FFTTest {
     @ParameterizedTest
     @MethodSource("getFFTValues")
     fun `fft and dft should return same results`(input: Sequence<Sample>, expected: List<Complex>) {
-        val fftProcessor = FFTProcessor(inputSamples = sequenceOf(input))
+        val fftProcessor = FFTProcessor()
 
-        val fftResults = fftProcessor.process(samplingRate = DEFAULT_SAMPLING_RATE).first()
-        val dftResults = fftProcessor.process(samplingRate = DEFAULT_SAMPLING_RATE, Method.R2C_DFT).first()
+        val fftResults =
+            fftProcessor.process(inputSamples = sequenceOf(input), samplingRate = DEFAULT_SAMPLING_RATE).first()
+        val dftResults =
+            fftProcessor.process(inputSamples = sequenceOf(input), samplingRate = DEFAULT_SAMPLING_RATE, Method.R2C_DFT)
+                .first()
 
         fftResults.output.forEachIndexed { index, fft ->
             assertTrue(
@@ -70,8 +74,9 @@ private class FFTTest {
         val amplitude = 2.0.pow(15)
         val signal = signal(frequency.toDouble(), amplitude)
 
-        val fftProcessor = FFTProcessor(inputSamples = sequenceOf(signal))
-        val result = fftProcessor.process(samplingRate = DEFAULT_SAMPLING_RATE).first()
+        val fftProcessor = FFTProcessor()
+        val result =
+            fftProcessor.process(inputSamples = sequenceOf(signal), samplingRate = DEFAULT_SAMPLING_RATE).first()
 
         val magnitudes = result.magnitudes
         val maximumIndex = magnitudes.indexOf(magnitudes.max())
@@ -89,8 +94,9 @@ private class FFTTest {
         val amplitude = 2.0.pow(15)
         val signal = signal(frequency.toDouble(), amplitude)
 
-        val fftProcessor = FFTProcessor(inputSamples = sequenceOf(signal))
-        val result = fftProcessor.process(samplingRate = DEFAULT_SAMPLING_RATE).first()
+        val fftProcessor = FFTProcessor()
+        val result =
+            fftProcessor.process(inputSamples = sequenceOf(signal), samplingRate = DEFAULT_SAMPLING_RATE).first()
         val magnitudes = result.magnitudes.toList()
 
         result.binIndexOf(frequency.toDouble()).let {
@@ -98,6 +104,25 @@ private class FFTTest {
                 //not mathematically correct, but enough for testing purposes
                 magnitudes[it].closeTo(amplitude / 2, e = 20.0),
                 "Expected index $it with magnitude ${magnitudes[it]} to be close to ${amplitude / 2}."
+            )
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = [43, 430, 4306])
+    fun `should yield correct values for inverse FFT`(frequency: Int) {
+        val amplitude = 2.0.pow(15)
+        val signal = signal(frequency.toDouble(), amplitude)
+
+        val fftProcessor = FFTProcessor()
+        val fftResults = fftProcessor.process(inputSamples = sequenceOf(signal), samplingRate = DEFAULT_SAMPLING_RATE)
+        val inverseFftResults = fftProcessor.processInverse(inputSamples = fftResults.map { it.output })
+        val firstResult = inverseFftResults.first().toList()
+
+        signal.forEachIndexed { index, value ->
+            assertTrue(
+                value.closeTo(firstResult[index]),
+                "Expected index $value to be close to ${firstResult[index]}."
             )
         }
     }

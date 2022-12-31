@@ -11,9 +11,13 @@ import org.kotlinmath.R
 import org.kotlinmath.complex
 import org.kotlinmath.exp
 
-class FFTProcessor(private val inputSamples: Sequence<Window>) {
+class FFTProcessor {
 
-    fun process(samplingRate: Int, method: Method = Method.FFT_IN_PLACE): Sequence<FFTData> {
+    fun process(
+        inputSamples: Sequence<Window>,
+        samplingRate: Int,
+        method: Method = Method.FFT_IN_PLACE
+    ): Sequence<FFTData> {
         val complexSamples = inputSamples.toComplexSequence()
 
         return when (method) {
@@ -31,6 +35,10 @@ class FFTProcessor(private val inputSamples: Sequence<Window>) {
         }
     }
 
+    fun processInverse(inputSamples: Sequence<Sequence<Complex>>): Sequence<Window> {
+        return inputSamples.map(::inverseFftInPlace).map { sequence -> sequence.map { it.re } }
+    }
+
     private fun Sequence<Window>.toComplexSequence() = map { window -> window.map { complex(it, 0) } }
 
     private fun Sequence<Complex>.toArray(size: Int): Array<Complex> {
@@ -41,7 +49,7 @@ class FFTProcessor(private val inputSamples: Sequence<Window>) {
     private fun log2(number: Int) = if (number == 0) 0 else 31 - Integer.numberOfLeadingZeros(number)
 
     // https://en.wikipedia.org/w/index.php?title=Cooley%E2%80%93Tukey_FFT_algorithm#Data_reordering,_bit_reversal,_and_in-place_algorithms
-    private fun fftInPlace(x: Sequence<Complex>): Sequence<Complex> {
+    private fun fftInPlace(x: Sequence<Complex>, inverse: Boolean = false): Sequence<Complex> {
         val length = x.count()
         require(length and (length - 1) == 0) { "Length of samples has to be power of two, but was $length!" }
 
@@ -51,7 +59,7 @@ class FFTProcessor(private val inputSamples: Sequence<Window>) {
 
         for (s in 1 until log2(length) + 1) {
             val m = 1 shl s
-            val wm = exp((-2.0).I * PI / m)
+            val wm = exp((if (inverse) 2.0 else -2.0).R * 1.I * PI / m)
 
             for (k in 0 until length step m) {
                 var omega = 1.R
@@ -65,8 +73,13 @@ class FFTProcessor(private val inputSamples: Sequence<Window>) {
                 }
             }
         }
-        return result.asSequence()
+        return if (inverse)
+            result.asSequence().map { it / length }
+        else
+            result.asSequence()
     }
+
+    private fun inverseFftInPlace(x: Sequence<Complex>) = fftInPlace(x, true)
 
     // http://www.librow.com/articles/article-10
     private inline fun bitReverseCopy(

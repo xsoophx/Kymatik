@@ -31,7 +31,7 @@ object BpmAnalyzer {
 
 
         val bassFrequencyBins =
-            FFTProcessor(windows).process(samplingRate = wav.sampleRate).getBassFrequencyBins(interval)
+            FFTProcessor().process(windows, samplingRate = wav.sampleRate).getBassFrequencyBins(interval)
         val intervals = bassFrequencyBins.getIntervalsOverTime()
         val averagePeakTimes = intervals.getAveragePeakTimes()
 

@@ -48,7 +48,7 @@ class WAVReaderTest {
     fun `should read correct Samples from wav file`(path: String, frequency: Double) {
         val wav = WAVReader.read(Path(path))
         val samples = wav.getWindow(channel = 0, begin = 0)
-        val fftData = FFTProcessor(sequenceOf(samples)).process(samplingRate = wav.sampleRate)
+        val fftData = FFTProcessor().process(sequenceOf(samples), samplingRate = wav.sampleRate)
         val magnitudes = fftData.first().magnitudes
 
         assertEquals(

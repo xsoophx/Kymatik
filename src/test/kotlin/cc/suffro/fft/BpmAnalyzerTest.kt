@@ -14,7 +14,7 @@ class BpmAnalyzerTest {
     private val firstElement: FFTData by lazy {
         val wav = WAVReader.read(Path(path))
         val windows = wav.getWindows(start = 0.9, end = 1.0, interval = 0.01)
-        val fftData = FFTProcessor(windows).process(wav.sampleRate)
+        val fftData = FFTProcessor().process(windows, wav.sampleRate)
         fftData.first()
     }
 
