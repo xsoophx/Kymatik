@@ -17,7 +17,6 @@ data class FmtChunk(
     val dataChunkSize: Int
 )
 
-
 data class Wav(
     val filePath: Path,
     val fmtChunk: FmtChunk,
@@ -44,7 +43,7 @@ data class Wav(
         require((numSamples != 0) && numSamples and (numSamples - 1) == 0) { "Length has to be power of tow, but is $numSamples." }
     }
 
-    fun getWindow(channel: Int, begin: Int, numSamples: Int = DEFAULT_SAMPLE_NUMBER): Window<Double> {
+    fun getWindow(channel: Int, begin: Int, numSamples: Int = DEFAULT_SAMPLE_NUMBER): Window {
         checkRequirements(channel, numSamples)
         return dataChunk[channel].get(begin, numSamples)
     }
@@ -55,7 +54,7 @@ data class Wav(
         interval: Double,
         channel: Int = 0,
         numSamples: Int = DEFAULT_SAMPLE_NUMBER
-    ): Sequence<Window<Double>> {
+    ): Sequence<Window> {
         checkRequirements(channel, numSamples)
         require(end <= trackLength) { "Selected end time of $end seconds exceeds actual end of track ($trackLength seconds)." }
 

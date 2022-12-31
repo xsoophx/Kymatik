@@ -19,7 +19,6 @@ import org.junit.jupiter.params.provider.ValueSource
 import org.kotlinmath.Complex
 import org.kotlinmath.I
 import org.kotlinmath.R
-import org.kotlinmath.complex
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Tag(FFT)
@@ -27,7 +26,7 @@ private class FFTTest {
 
     @ParameterizedTest
     @MethodSource("getFFTValues")
-    fun `fft should yield correct results`(input: Sequence<Sample>, expected: List<Sample>) {
+    fun `fft should yield correct results`(input: Sequence<Sample>, expected: List<Complex>) {
         val fftProcessor = FFTProcessor(inputSamples = sequenceOf(input))
         val actual = fftProcessor.process(samplingRate = DEFAULT_SAMPLING_RATE).first()
 
@@ -41,7 +40,7 @@ private class FFTTest {
 
     @ParameterizedTest
     @MethodSource("getFFTValues")
-    fun `fft and dft should return same results`(input: Sequence<Sample>, expected: List<Sample>) {
+    fun `fft and dft should return same results`(input: Sequence<Sample>, expected: List<Complex>) {
         val fftProcessor = FFTProcessor(inputSamples = sequenceOf(input))
 
         val fftResults = fftProcessor.process(samplingRate = DEFAULT_SAMPLING_RATE).first()
@@ -59,7 +58,6 @@ private class FFTTest {
         return (0 until DEFAULT_SAMPLING_RATE).take(DEFAULT_SAMPLE_SIZE).asSequence()
             .map { index -> index.toDouble() / DEFAULT_SAMPLING_RATE }
             .map { t -> amplitude * sin(PI * 2.0 * frequency * t) }
-            .map { d -> complex(d, 0) }
     }
 
     // 44100Hz sampling rate, 22050Hz Band, 1024 FFT Size, 512 Bins, df = 44100Hz/1024 = 43.06Hz
@@ -116,16 +114,16 @@ private class FFTTest {
 
         @JvmStatic
         fun getFFTValues(): Stream<Arguments> = Stream.of(
-            Arguments.of(sequenceOf(1.0.R, 2.0.R, 3.0.R, 4.0.R), listOf(10.R, (-2).R + 2.I, (-2).R, (-2).R + (-2).I)),
+            Arguments.of(sequenceOf(1.0, 2.0, 3.0, 4.0), listOf(10.R, (-2).R + 2.I, (-2).R, (-2).R + (-2).I)),
             Arguments.of(
-                sequenceOf(0.0.R, (-12539.770711739264).R, 23170.47500592079.R, (-30273.684521329826).R),
+                sequenceOf(0.0, -12539.770711739264, 23170.47500592079, -30273.684521329826),
                 listOf(
                     (-19642.980227).R, (-23170.475006).R - 17733.913810.I,
                     65983.930239.R, (-23170.475006).R + 17733.913810.I
                 )
             ),
             Arguments.of(
-                sequenceOf(2.0.R, 1.0.R, (-1.0).R, 5.0.R, 0.0.R, 3.0.R, 0.0.R, (-4.0).R),
+                sequenceOf(2.0, 1.0, -1.0, 5.0, 0.0, 3.0, 0.0, -4.0),
                 listOf(
                     6.R, (-5.778175).R - 3.949747.I, 3.R - 3.I, 9.778175.R - 5.949747.I,
                     (-4).R, 9.778175.R + 5.949747.I, 3.R + 3.I, (-5.778175).R + 3.949747.I

@@ -4,7 +4,7 @@ import kotlin.math.roundToInt
 import org.kotlinmath.Complex
 import org.kotlinmath.sqrt
 
-typealias Sample = Complex
+typealias Sample = Double
 
 @JvmInline
 value class Bins(private val bins: Int) {
@@ -15,18 +15,6 @@ value class Bins(private val bins: Int) {
     val count: Int
         get() = bins
 }
-
-/*data class FFTCollection(
-    val elements: Sequence<FFTData>,
-    val sampleSize: Int,
-    val samplingRate: Int
-) : Sequence<FFTData> by elements {
-
-    val bins: Int
-        get() = sampleSize / 2
-
-    fun binIndexOf(frequency: Double): Int = (frequency * sampleSize / samplingRate).roundToInt()
-}*/
 
 data class FFTData(
     val bins: Bins,
@@ -49,4 +37,4 @@ enum class Method {
     R2C_DFT
 }
 
-typealias Window<T> = Sequence<T>
+typealias Window = Sequence<Sample>

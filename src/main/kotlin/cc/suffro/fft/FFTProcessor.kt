@@ -3,7 +3,6 @@ package cc.suffro.fft
 import cc.suffro.fft.data.Bins
 import cc.suffro.fft.data.FFTData
 import cc.suffro.fft.data.Method
-import cc.suffro.fft.data.Sample
 import cc.suffro.fft.data.Window
 import kotlin.math.PI
 import org.kotlinmath.Complex
@@ -12,13 +11,15 @@ import org.kotlinmath.R
 import org.kotlinmath.complex
 import org.kotlinmath.exp
 
-class FFTProcessor(private val inputSamples: Sequence<Window<Sample>>) {
+class FFTProcessor(private val inputSamples: Sequence<Window>) {
 
     fun process(samplingRate: Int, method: Method = Method.FFT_IN_PLACE): Sequence<FFTData> {
+        val complexSamples = inputSamples.toComplexSequence()
+
         return when (method) {
-            Method.FFT -> inputSamples.map(::fft)
-            Method.FFT_IN_PLACE -> inputSamples.map(::fftInPlace)
-            Method.R2C_DFT -> inputSamples.map(::r2cDft)
+            Method.FFT -> complexSamples.map(::fft)
+            Method.FFT_IN_PLACE -> complexSamples.map(::fftInPlace)
+            Method.R2C_DFT -> complexSamples.map(::r2cDft)
         }.map {
             val sampleSize = it.count()
             FFTData(
@@ -30,26 +31,23 @@ class FFTProcessor(private val inputSamples: Sequence<Window<Sample>>) {
         }
     }
 
+    private fun Sequence<Window>.toComplexSequence() = map { window -> window.map { complex(it, 0) } }
+
     private fun Sequence<Complex>.toArray(size: Int): Array<Complex> {
         val iterator = iterator()
         return Array(size) { iterator.next() }
     }
 
-    private fun log2(number: Int): Int {
-        return if (number == 0)
-            0
-        else
-            31 - Integer.numberOfLeadingZeros(number)
-    }
+    private fun log2(number: Int) = if (number == 0) 0 else 31 - Integer.numberOfLeadingZeros(number)
 
     // https://en.wikipedia.org/w/index.php?title=Cooley%E2%80%93Tukey_FFT_algorithm#Data_reordering,_bit_reversal,_and_in-place_algorithms
     private fun fftInPlace(x: Sequence<Complex>): Sequence<Complex> {
         val length = x.count()
         require(length and (length - 1) == 0) { "Length of samples has to be power of two, but was $length!" }
 
-        val xA = x.toArray(length)
-        val result = Array(length) { xA[it] }
-        bitReverseCopy(xA, result)
+        val input = x.toArray(length)
+        val result = Array(length) { input[it] }
+        bitReverseCopy(input, result, ::swap)
 
         for (s in 1 until log2(length) + 1) {
             val m = 1 shl s
@@ -71,27 +69,31 @@ class FFTProcessor(private val inputSamples: Sequence<Window<Sample>>) {
     }
 
     // http://www.librow.com/articles/article-10
-    private fun bitReverseCopy(input: Array<Complex>, result: Array<Complex>) {
-        var target: UInt = 0u
-        val length: UInt = input.size.toUInt()
+    private inline fun bitReverseCopy(
+        input: Array<Complex>,
+        result: Array<Complex>,
+        swapFn: (Array<Complex>, Array<Complex>, Int, Int) -> Unit
+    ) {
+        var target = 0
+        val length = input.size
 
-        for (index in 0 until length.toInt()) {
-            if (target > index.toUInt()) {
-                swap(input, result, target, index)
+        for (index in 0 until length) {
+            if (target > index) {
+                swapFn(input, result, target, index)
             }
-            var mask: UInt = length
+            var mask = length
             mask = mask shr 1
-            while (target and mask != 0u) {
-                target = target and mask.inv()
+            while (target and mask != 0) {
+                target = target and ((mask.toUInt()).inv()).toInt()
                 mask = mask shr 1
             }
             target = target or mask
         }
     }
 
-    private fun swap(a: Array<Complex>, result: Array<Complex>, rev: UInt, i: Int) {
-        val temp = result[rev.toInt()]
-        result[rev.toInt()] = a[i]
+    private fun swap(a: Array<Complex>, result: Array<Complex>, rev: Int, i: Int) {
+        val temp = result[rev]
+        result[rev] = a[i]
         result[i] = temp
     }
 
