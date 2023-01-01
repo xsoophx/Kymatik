@@ -2,44 +2,37 @@ package cc.suffro.fft
 
 import cc.suffro.fft.data.FFTData
 import java.lang.StrictMath.abs
+import java.lang.StrictMath.min
+import java.math.RoundingMode
 import java.nio.file.Path
-
-data class Peak(
-    val midPoint: Double,
-    val interval: Double,
-    val values: List<Double>
-)
-
-data class Interval(
-    val midPoint: Double,
-    val magnitude: Double
-)
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
+import java.util.*
+import kotlin.NoSuchElementException
 
 object BpmAnalyzer {
     private const val LOWER_FREQUENCY_BOUND = 40.0
     private const val HIGHER_FREQUENCY_BOUND = 120.0
-
     private const val MAX_PEAK_DISTANCE = 60.0 / 220.0
 
-    fun analyze(path: Path): Double {
+    private val fftProcessor = FFTProcessor()
+
+    fun analyze(path: Path, start: Double = 0.0, end: Double = 10.0, interval: Double = 0.01): Double {
         val wav = WAVReader.read(path)
-        val start = 0.0
-        val end = 1.0
-        val interval = 0.01
+        // TODO: add nicer handling for maximum track length
+        val windows = wav.getWindows(start = start, end = min(wav.trackLength - 0.1, end), interval = 0.01)
 
-        val windows = wav.getWindows(start = start, end = end, interval = 0.01)
-
-
-        val bassFrequencyBins =
-            FFTProcessor().process(windows, samplingRate = wav.sampleRate).getBassFrequencyBins(interval)
-        val intervals = bassFrequencyBins.getIntervalsOverTime()
-        val averagePeakTimes = intervals.getAveragePeakTimes()
+        val averagePeakTimes = fftProcessor
+            .process(windows, samplingRate = wav.sampleRate)
+            .getBassFrequencyBins(interval)
+            .getIntervalsOverTime()
+            .getAveragePeakTimes()
 
         val averagePeakDistance = averagePeakTimes.map { it.sorted().getAveragePeakDistance() }.average()
-        return 60 / averagePeakDistance
+        return (60 / averagePeakDistance).round()
     }
 
-    fun Sequence<FFTData>.getBassFrequencyBins(interval: Double): Sequence<Peak> {
+    private fun Sequence<FFTData>.getBassFrequencyBins(interval: Double): Sequence<Peak> {
         val lowerFrequencyBin = maxOf(0, first().binIndexOf(LOWER_FREQUENCY_BOUND))
         val higherFrequencyBin = minOf(first().binIndexOf(HIGHER_FREQUENCY_BOUND), first().bins.count - 1)
 
@@ -101,4 +94,23 @@ object BpmAnalyzer {
 
         return deviations.average()
     }
+
+    private fun Double.round(): Double =
+        DecimalFormat("#.##", DecimalFormatSymbols(Locale.US))
+            .apply {
+                roundingMode = RoundingMode.CEILING
+            }
+            .format(this)
+            .toDouble()
+
+    private data class Peak(
+        val midPoint: Double,
+        val interval: Double,
+        val values: List<Double>
+    )
+
+    private data class Interval(
+        val midPoint: Double,
+        val magnitude: Double
+    )
 }

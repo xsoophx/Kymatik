@@ -36,7 +36,7 @@ class FFTProcessor {
     }
 
     fun processInverse(inputSamples: Sequence<Sequence<Complex>>): Sequence<Window> {
-        return inputSamples.map(::inverseFftInPlace).map { sequence -> sequence.map { it.re } }
+        return inputSamples.map { samples -> inverseFftInPlace(samples).map { it.re } }
     }
 
     private fun Sequence<Window>.toComplexSequence() = map { window -> window.map { complex(it, 0) } }

@@ -4,12 +4,10 @@ import cc.suffro.fft.data.Method
 import cc.suffro.fft.data.Sample
 import java.util.stream.Stream
 import kotlin.math.PI
-import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
@@ -32,9 +30,9 @@ private class FFTProcessorTest {
             fftProcessor.process(inputSamples = sequenceOf(input), samplingRate = DEFAULT_SAMPLING_RATE).first()
 
         actual.output.forEachIndexed { index, complex ->
-            assertTrue(
-                complex.closeTo(expected[index]),
-                "Expected ${expected[index]} at index $index, but was $complex."
+            assertNearlyEquals(
+                expected = complex, actual = expected[index],
+                message = "Expected ${expected[index]} at index $index, but was $complex."
             )
         }
     }
@@ -51,9 +49,9 @@ private class FFTProcessorTest {
                 .first()
 
         fftResults.output.forEachIndexed { index, fft ->
-            assertTrue(
-                fft.closeTo(dftResults.output.toList()[index]),
-                "Value $fft at index $index is not the same as ${dftResults.output.toList()[index]}."
+            assertNearlyEquals(
+                expected = fft, actual = dftResults.output.toList()[index],
+                message = "Value $fft at index $index is not the same as ${dftResults.output.toList()[index]}."
             )
         }
     }
@@ -100,10 +98,10 @@ private class FFTProcessorTest {
         val magnitudes = result.magnitudes.toList()
 
         result.binIndexOf(frequency.toDouble()).let {
-            assertTrue(
+            assertNearlyEquals(
                 //not mathematically correct, but enough for testing purposes
-                magnitudes[it].closeTo(amplitude / 2, e = 20.0),
-                "Expected index $it with magnitude ${magnitudes[it]} to be close to ${amplitude / 2}."
+                expected = magnitudes[it], actual = amplitude / 2, e = 20.0,
+                message = "Expected index $it with magnitude ${magnitudes[it]} to be close to ${amplitude / 2}."
             )
         }
     }
@@ -120,18 +118,12 @@ private class FFTProcessorTest {
         val firstResult = inverseFftResults.first().toList()
 
         signal.forEachIndexed { index, value ->
-            assertTrue(
-                value.closeTo(firstResult[index]),
-                "Expected index $value to be close to ${firstResult[index]}."
+            assertNearlyEquals(
+                expected = value, actual = firstResult[index],
+                message = "Expected index $value to be close to ${firstResult[index]}."
             )
         }
     }
-
-    private fun Complex.closeTo(number: Complex, e: Double = 2.0): Boolean =
-        abs(re - number.re) < e && abs(im - number.im) < e
-
-    private fun Double.closeTo(number: Double, e: Double = 2.0): Boolean =
-        abs(this - number) < e
 
     companion object {
         private const val DEFAULT_SAMPLE_SIZE = 1024
