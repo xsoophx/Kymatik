@@ -15,5 +15,4 @@ build/
 out/
 
 # resources
-src/test/resources/120bpmkick_60-140Hz.wav
-src/test/resources/testTrack.wav
+src/test/resources/*
