@@ -3,7 +3,6 @@ package cc.suffro.fft
 import java.util.stream.Stream
 import kotlin.io.path.Path
 import kotlin.test.assertEquals
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest

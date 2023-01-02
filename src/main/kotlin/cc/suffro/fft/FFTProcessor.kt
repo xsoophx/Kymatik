@@ -4,6 +4,9 @@ import cc.suffro.fft.data.Bins
 import cc.suffro.fft.data.FFTData
 import cc.suffro.fft.data.Method
 import cc.suffro.fft.data.Window
+import cc.suffro.fft.data.WindowFunction
+import cc.suffro.fft.data.blackmanFunction
+import cc.suffro.fft.data.hammingFunction
 import kotlin.math.PI
 import org.kotlinmath.Complex
 import org.kotlinmath.I
@@ -16,9 +19,12 @@ class FFTProcessor {
     fun process(
         inputSamples: Sequence<Window>,
         samplingRate: Int,
-        method: Method = Method.FFT_IN_PLACE
+        method: Method = Method.FFT_IN_PLACE,
+        windowFunction: WindowFunction = WindowFunction.NONE
     ): Sequence<FFTData> {
-        val complexSamples = inputSamples.toComplexSequence()
+        val complexSamples = inputSamples
+            .applyWindowFunction(windowFunction)
+            .toComplexSequence()
 
         return when (method) {
             Method.FFT -> complexSamples.map(::fft)
@@ -37,6 +43,19 @@ class FFTProcessor {
 
     fun processInverse(inputSamples: Sequence<Sequence<Complex>>): Sequence<Window> {
         return inputSamples.map { samples -> inverseFftInPlace(samples).map { it.re } }
+    }
+
+    private fun Sequence<Window>.applyWindowFunction(function: WindowFunction): Sequence<Window> {
+        return when (function) {
+            WindowFunction.HAMMING -> this.map { window -> window.applyWindowFunction(::hammingFunction) }
+            WindowFunction.BLACKMAN -> this.map { window -> window.applyWindowFunction(::blackmanFunction) }
+            WindowFunction.NONE -> this
+        }
+    }
+
+    private fun Window.applyWindowFunction(function: (Int, Int) -> Double): Window {
+        val length = this.count()
+        return mapIndexed { index, sample -> function(index, length) * sample }
     }
 
     private fun Sequence<Window>.toComplexSequence() = map { window -> window.map { complex(it, 0) } }

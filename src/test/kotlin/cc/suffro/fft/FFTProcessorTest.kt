@@ -2,6 +2,7 @@ package cc.suffro.fft
 
 import cc.suffro.fft.data.Method
 import cc.suffro.fft.data.Sample
+import cc.suffro.fft.data.WindowFunction
 import java.util.stream.Stream
 import kotlin.math.PI
 import kotlin.math.pow
@@ -27,7 +28,11 @@ private class FFTProcessorTest {
     fun `fft should yield correct results`(input: Sequence<Sample>, expected: List<Complex>) {
         val fftProcessor = FFTProcessor()
         val actual =
-            fftProcessor.process(inputSamples = sequenceOf(input), samplingRate = DEFAULT_SAMPLING_RATE).first()
+            fftProcessor.process(
+                inputSamples = sequenceOf(input),
+                samplingRate = DEFAULT_SAMPLING_RATE,
+                windowFunction = WindowFunction.NONE
+            ).first()
 
         actual.output.forEachIndexed { index, complex ->
             assertNearlyEquals(
@@ -56,12 +61,6 @@ private class FFTProcessorTest {
         }
     }
 
-    private fun signal(frequency: Double, amplitude: Double): Sequence<Sample> {
-        return (0 until DEFAULT_SAMPLING_RATE).take(DEFAULT_SAMPLE_SIZE).asSequence()
-            .map { index -> index.toDouble() / DEFAULT_SAMPLING_RATE }
-            .map { t -> amplitude * sin(PI * 2.0 * frequency * t) }
-    }
-
     // 44100Hz sampling rate, 22050Hz Band, 1024 FFT Size, 512 Bins, df = 44100Hz/1024 = 43.06Hz
     // samples = windowSize
     // Frequency = index * Sampling Frequency / Number of FFT Points
@@ -69,12 +68,15 @@ private class FFTProcessorTest {
     @ParameterizedTest
     @ValueSource(ints = [20, 200, 2000])
     fun `should yield correct values for sine signal`(frequency: Int) {
-        val amplitude = 2.0.pow(15)
-        val signal = signal(frequency.toDouble(), amplitude)
+        val signal = getSignalByFrequency(frequency)
 
         val fftProcessor = FFTProcessor()
         val result =
-            fftProcessor.process(inputSamples = sequenceOf(signal), samplingRate = DEFAULT_SAMPLING_RATE).first()
+            fftProcessor.process(
+                inputSamples = sequenceOf(signal),
+                samplingRate = DEFAULT_SAMPLING_RATE,
+                windowFunction = WindowFunction.HAMMING
+            ).first()
 
         val magnitudes = result.magnitudes
         val maximumIndex = magnitudes.indexOf(magnitudes.max())
@@ -90,7 +92,7 @@ private class FFTProcessorTest {
     @ValueSource(ints = [43, 430, 4306])
     fun `should yield correct magnitudes for sine signal`(frequency: Int) {
         val amplitude = 2.0.pow(15)
-        val signal = signal(frequency.toDouble(), amplitude)
+        val signal = getSignalByFrequency(frequency)
 
         val fftProcessor = FFTProcessor()
         val result =
@@ -109,8 +111,7 @@ private class FFTProcessorTest {
     @ParameterizedTest
     @ValueSource(ints = [43, 430, 4306])
     fun `should yield correct values for inverse FFT`(frequency: Int) {
-        val amplitude = 2.0.pow(15)
-        val signal = signal(frequency.toDouble(), amplitude)
+        val signal = getSignalByFrequency(frequency)
 
         val fftProcessor = FFTProcessor()
         val fftResults = fftProcessor.process(inputSamples = sequenceOf(signal), samplingRate = DEFAULT_SAMPLING_RATE)
@@ -147,5 +148,16 @@ private class FFTProcessorTest {
                 )
             )
         )
+
+        private val cache = mutableMapOf<Int, Sequence<Sample>>()
+
+        fun getSignalByFrequency(frequency: Int, amplitude: Double = 2.0.pow(15)) =
+            cache.getOrPut(frequency) { signal(frequency.toDouble(), amplitude) }
+
+        private fun signal(frequency: Double, amplitude: Double): Sequence<Sample> {
+            return (0 until DEFAULT_SAMPLING_RATE).take(DEFAULT_SAMPLE_SIZE).asSequence()
+                .map { index -> index.toDouble() / DEFAULT_SAMPLING_RATE }
+                .map { t -> amplitude * sin(PI * 2.0 * frequency * t) }
+        }
     }
 }

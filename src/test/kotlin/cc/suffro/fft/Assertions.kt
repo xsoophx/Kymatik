@@ -5,11 +5,11 @@ import kotlin.test.assertTrue
 import org.kotlinmath.Complex
 
 fun assertNearlyEquals(expected: Double, actual: Double, e: Double = 0.2, message: String? = null) {
-    assertTrue(actual.closeTo(expected, e), messagePrefix(message) + "Expected <$expected>, actual <$actual>.")
+    assertTrue(actual.closeTo(expected, e), message ?: "Expected <$expected>, actual <$actual>.")
 }
 
 fun assertNearlyEquals(expected: Complex, actual: Complex, e: Double = 2.0, message: String? = null) {
-    assertTrue(actual.closeTo(expected, e), messagePrefix(message) + "Expected <$expected>, actual <$actual>.")
+    assertTrue(actual.closeTo(expected, e), message ?: "Expected <$expected>, actual <$actual>.")
 }
 
 private fun Complex.closeTo(number: Complex, e: Double): Boolean =
@@ -17,5 +17,3 @@ private fun Complex.closeTo(number: Complex, e: Double): Boolean =
 
 private fun Double.closeTo(number: Double, e: Double): Boolean =
     abs(this - number) < e
-
-private fun messagePrefix(message: String?) = if (message == null) "" else "$message. "

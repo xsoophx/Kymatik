@@ -2,6 +2,7 @@ package cc.suffro.fft
 
 import cc.suffro.fft.data.FFTData
 import cc.suffro.fft.data.Wav
+import cc.suffro.fft.data.WindowFunction
 import java.lang.StrictMath.abs
 import java.lang.StrictMath.min
 import java.math.RoundingMode
@@ -13,12 +14,17 @@ import kotlin.NoSuchElementException
 class BpmAnalyzer(private val wav: Wav) {
     private val fftProcessor = FFTProcessor()
 
-    fun analyze(start: Double = 0.0, end: Double = 10.0, interval: Double = 0.01): Double {
+    fun analyze(
+        start: Double = 0.0,
+        end: Double = 10.0,
+        interval: Double = 0.01,
+        windowFunction: WindowFunction = WindowFunction.NONE
+    ): Double {
         // TODO: add nicer handling for maximum track length
         val windows = wav.getWindows(start = start, end = min(wav.trackLength - 0.1, end), interval = 0.01)
 
         val averagePeakTimes = fftProcessor
-            .process(windows, samplingRate = wav.sampleRate)
+            .process(windows, samplingRate = wav.sampleRate, windowFunction = windowFunction)
             .getBassFrequencyBins(interval)
             .getIntervalsOverTime()
             .getAveragePeakTimes()
