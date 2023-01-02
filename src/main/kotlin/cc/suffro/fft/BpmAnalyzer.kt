@@ -5,23 +5,15 @@ import cc.suffro.fft.data.Wav
 import java.lang.StrictMath.abs
 import java.lang.StrictMath.min
 import java.math.RoundingMode
-import java.nio.file.Path
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
-import java.util.*
+import java.util.Locale
 import kotlin.NoSuchElementException
 
-object BpmAnalyzer {
-    private const val LOWER_FREQUENCY_BOUND = 40.0
-    private const val HIGHER_FREQUENCY_BOUND = 120.0
-    private const val MAX_PEAK_DISTANCE = 60.0 / 220.0
-
+class BpmAnalyzer(private val wav: Wav) {
     private val fftProcessor = FFTProcessor()
-    private val cache = mutableMapOf<Path, Wav>()
 
-    fun analyze(path: Path, start: Double = 0.0, end: Double = 10.0, interval: Double = 0.01): Double {
-        val wav = WAVReader.read(path)
-        //cache[path] = wav
+    fun analyze(start: Double = 0.0, end: Double = 10.0, interval: Double = 0.01): Double {
         // TODO: add nicer handling for maximum track length
         val windows = wav.getWindows(start = start, end = min(wav.trackLength - 0.1, end), interval = 0.01)
 
@@ -116,4 +108,10 @@ object BpmAnalyzer {
         val midPoint: Double,
         val magnitude: Double
     )
+
+    companion object {
+        private const val LOWER_FREQUENCY_BOUND = 40.0
+        private const val HIGHER_FREQUENCY_BOUND = 120.0
+        private const val MAX_PEAK_DISTANCE = 60.0 / 220.0
+    }
 }

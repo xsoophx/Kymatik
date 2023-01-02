@@ -19,10 +19,12 @@ import org.junit.jupiter.params.provider.MethodSource
 @Tag(FFT)
 class WAVReaderTest {
 
+    private val wavReader = WAVReader
+
     @ParameterizedTest
     @MethodSource("getWavDataWithFmt")
     fun `should read correct header and data`(path: String, fmtChunk: FmtChunk) {
-        val actual = WAVReader.read(Path(path))
+        val actual = wavReader.read(Path(path))
 
         assertEquals(
             expected = Wav(
@@ -46,7 +48,7 @@ class WAVReaderTest {
     @ParameterizedTest
     @MethodSource("getWavDataWithFrequency")
     fun `should read correct Samples from wav file`(path: String, frequency: Double) {
-        val wav = WAVReader.read(Path(path))
+        val wav = wavReader.read(Path(path))
         val samples = wav.getWindow(channel = 0, begin = 0)
         val fftData = FFTProcessor().process(sequenceOf(samples), samplingRate = wav.sampleRate)
         val magnitudes = fftData.first().magnitudes
@@ -68,16 +70,15 @@ class WAVReaderTest {
         interval: Double,
         expectedWindows: Int
     ) {
-        val wav = WAVReader.read(Path("src/test/resources/440.wav"))
+        val wav = wavReader.read(Path("src/test/resources/440.wav"))
         val actual = wav.getWindows(start = start, end = end, interval, 0, DEFAULT_SAMPLE_NUMBER)
 
         assertEquals(expected = expectedWindows, actual = actual.count())
     }
 
-    // 44000 Samples per second, 1024(S)/44000(S/s) = 0.023272727272727s
     @Test
     fun `should return nothing if end is too close to track end`() {
-        val wav = WAVReader.read(Path("src/test/resources/440.wav"))
+        val wav = wavReader.read(Path("src/test/resources/440.wav"))
         val windowTime = DEFAULT_SAMPLE_NUMBER.toDouble() / wav.sampleRate
         val actual = wav.getWindows(start = wav.trackLength - windowTime, end = wav.trackLength, interval = windowTime)
 
@@ -86,7 +87,7 @@ class WAVReaderTest {
 
     @Test
     fun `should throw error if selected end time is exceeds time of actual track`() {
-        val wav = WAVReader.read(Path("src/test/resources/440.wav"))
+        val wav = wavReader.read(Path("src/test/resources/440.wav"))
         assertThrows<IllegalArgumentException> { wav.getWindows(start = 7.0, end = 10.001, interval = 0.01) }
     }
 
