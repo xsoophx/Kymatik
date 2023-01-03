@@ -17,31 +17,31 @@ class BpmAnalyzerTest {
     @Test
     fun `should detect correct BPM for plain kicks`() {
         val wav = wavReader.read(Path("src/test/resources/120bpmkick_60-140Hz.wav"))
-        val result = BpmAnalyzer(wav).analyze()
+        val result = BpmAnalyzer().analyze(wav)
         assertEquals(expected = 120.0, actual = result)
     }
 
     @ParameterizedTest
     @MethodSource("getTracks")
     fun `should detect correct BPM for test tracks in 20 seconds`(trackName: String, bpm: Double) {
-        val wav = wavReader.read(Path("src/test/resources/$trackName"))
-        val result = BpmAnalyzer(wav).analyze(end = 20.0)
+        val wav = wavReader.read(Path("src/test/resources/tracks/$trackName"))
+        val result = BpmAnalyzer().analyze(wav, end = 20.0)
         assertNearlyEquals(expected = bpm, actual = result)
     }
 
     @ParameterizedTest
     @MethodSource("getTracks")
     fun `should detect correct BPM for test tracks in 10 seconds`(trackName: String, bpm: Double) {
-        val wav = wavReader.read(Path("src/test/resources/$trackName"))
-        val result = BpmAnalyzer(wav).analyze(end = 10.0)
+        val wav = wavReader.read(Path("src/test/resources/tracks/$trackName"))
+        val result = BpmAnalyzer().analyze(wav, end = 10.0)
         assertNearlyEquals(expected = bpm, actual = result)
     }
 
     @ParameterizedTest
     @MethodSource("getTracks")
     fun `should detect correct BPM for test tracks in 5 seconds`(trackName: String, bpm: Double) {
-        val wav = wavReader.read(Path("src/test/resources/$trackName"))
-        val result = BpmAnalyzer(wav).analyze(end = 5.0)
+        val wav = wavReader.read(Path("src/test/resources/tracks/$trackName"))
+        val result = BpmAnalyzer().analyze(wav, end = 5.0)
         assertNearlyEquals(expected = bpm, actual = result)
     }
 

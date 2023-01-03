@@ -28,47 +28,45 @@ object WAVReader : FileReader<Wav> {
 
     private const val MAX_VALUE_24BIT = 0x7FFFFF
 
-    override fun read(path: Path): Wav {
-        return path.inputStream().buffered().use { input ->
-            val riffChunkSize = getRiffChunkSize(input)
+    override fun read(path: Path): Wav = path.inputStream().buffered().use { input ->
+        val riffChunkSize = getRiffChunkSize(input)
 
-            val fmtSignature = String(input.readNBytes(4), Charsets.US_ASCII)
-            check(fmtSignature == FMT_SIGNATURE, ErrorType.UNEXPECTED_FMT_SIGNATURE)
+        val fmtSignature = String(input.readNBytes(4), Charsets.US_ASCII)
+        check(fmtSignature == FMT_SIGNATURE, ErrorType.UNEXPECTED_FMT_SIGNATURE)
 
-            // fmt
-            val fmtChunkSize = input.readAsInt()
-            val audioFormat = AudioFormat.fromShort(input.readAsShort().toUShort())
-            val numChannels = input.readAsShort()
-            val sampleRate = input.readAsInt()
-            val byteRate = input.readAsInt()
-            val blockAlign = input.readAsShort()
-            val bitsPerSample = input.readAsShort()
+        // fmt
+        val fmtChunkSize = input.readAsInt()
+        val audioFormat = AudioFormat.fromShort(input.readAsShort().toUShort())
+        val numChannels = input.readAsShort()
+        val sampleRate = input.readAsInt()
+        val byteRate = input.readAsInt()
+        val blockAlign = input.readAsShort()
+        val bitsPerSample = input.readAsShort()
 
-            // data
-            val dataSignature = String(input.readNBytes(4), Charsets.US_ASCII)
-            check(dataSignature == DATA_SIGNATURE, ErrorType.UNEXPECTED_DATA_SIGNATURE)
-            val dataChunkSize = input.readAsInt()
-            val data = input.readNBytes(dataChunkSize)
-            check(data.size == dataChunkSize, ErrorType.WRONG_DATA_SIZE)
+        // data
+        val dataSignature = String(input.readNBytes(4), Charsets.US_ASCII)
+        check(dataSignature == DATA_SIGNATURE, ErrorType.UNEXPECTED_DATA_SIGNATURE)
+        val dataChunkSize = input.readAsInt()
+        val data = input.readNBytes(dataChunkSize)
+        check(data.size == dataChunkSize, ErrorType.WRONG_DATA_SIZE)
 
-            val fmtChunk = FmtChunk(
-                riffChunkSize = riffChunkSize,
-                fmtChunkSize = fmtChunkSize,
-                audioFormat = audioFormat,
-                numChannels = numChannels,
-                sampleRate = sampleRate,
-                byteRate = byteRate,
-                blockAlign = blockAlign,
-                bitsPerSample = bitsPerSample,
-                dataChunkSize = dataChunkSize
-            )
+        val fmtChunk = FmtChunk(
+            riffChunkSize = riffChunkSize,
+            fmtChunkSize = fmtChunkSize,
+            audioFormat = audioFormat,
+            numChannels = numChannels,
+            sampleRate = sampleRate,
+            byteRate = byteRate,
+            blockAlign = blockAlign,
+            bitsPerSample = bitsPerSample,
+            dataChunkSize = dataChunkSize
+        )
 
-            Wav(
-                filePath = path,
-                fmtChunk = fmtChunk,
-                dataChunk = data.readSamples(fmtChunk)
-            )
-        }
+        Wav(
+            filePath = path,
+            fmtChunk = fmtChunk,
+            dataChunk = data.readSamples(fmtChunk)
+        )
     }
 
     private fun ByteArray.readSamples(fmtChunk: FmtChunk): Array<DoubleArray> {
@@ -123,8 +121,7 @@ object WAVReader : FileReader<Wav> {
                 for (sampleIndex in 0 until sampleCount) {
                     for (channel in 0 until fmtChunk.numChannels) {
                         samples[channel][sampleIndex] =
-                            byteBuffer.getInt(sampleIndex * fmtChunk.blockAlign + channel * bytesPerChannel)
-                                .toDouble() / Int.MAX_VALUE
+                            (byteBuffer.getInt(sampleIndex * fmtChunk.blockAlign + channel * bytesPerChannel) / Int.MAX_VALUE).toDouble()
                     }
                 }
                 samples

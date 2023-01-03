@@ -15,4 +15,4 @@ build/
 out/
 
 # resources
-src/test/resources/*
+src/test/resources/tracks/*

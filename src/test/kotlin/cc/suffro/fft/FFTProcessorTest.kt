@@ -1,8 +1,13 @@
 package cc.suffro.fft
 
+import cc.suffro.fft.data.FFTData
 import cc.suffro.fft.data.Method
 import cc.suffro.fft.data.Sample
+import cc.suffro.fft.data.Window
 import cc.suffro.fft.data.WindowFunction
+import cc.suffro.fft.data.blackmanFunction
+import cc.suffro.fft.data.hammingFunction
+import cc.suffro.fft.data.hanningFunction
 import java.util.stream.Stream
 import kotlin.math.PI
 import kotlin.math.pow
@@ -26,13 +31,7 @@ private class FFTProcessorTest {
     @ParameterizedTest
     @MethodSource("getFFTValues")
     fun `fft should yield correct results`(input: Sequence<Sample>, expected: List<Complex>) {
-        val fftProcessor = FFTProcessor()
-        val actual =
-            fftProcessor.process(
-                inputSamples = sequenceOf(input),
-                samplingRate = DEFAULT_SAMPLING_RATE,
-                windowFunction = WindowFunction.NONE
-            ).first()
+        val actual = processWindow(input, DEFAULT_SAMPLING_RATE)
 
         actual.output.forEachIndexed { index, complex ->
             assertNearlyEquals(
@@ -45,13 +44,8 @@ private class FFTProcessorTest {
     @ParameterizedTest
     @MethodSource("getFFTValues")
     fun `fft and dft should return same results`(input: Sequence<Sample>, expected: List<Complex>) {
-        val fftProcessor = FFTProcessor()
-
-        val fftResults =
-            fftProcessor.process(inputSamples = sequenceOf(input), samplingRate = DEFAULT_SAMPLING_RATE).first()
-        val dftResults =
-            fftProcessor.process(inputSamples = sequenceOf(input), samplingRate = DEFAULT_SAMPLING_RATE, Method.R2C_DFT)
-                .first()
+        val fftResults = processWindow(input, samplingRate = DEFAULT_SAMPLING_RATE)
+        val dftResults = processWindow(input, DEFAULT_SAMPLING_RATE, Method.R2C_DFT)
 
         fftResults.output.forEachIndexed { index, fft ->
             assertNearlyEquals(
@@ -70,13 +64,7 @@ private class FFTProcessorTest {
     fun `should yield correct values for sine signal`(frequency: Int) {
         val signal = getSignalByFrequency(frequency)
 
-        val fftProcessor = FFTProcessor()
-        val result =
-            fftProcessor.process(
-                inputSamples = sequenceOf(signal),
-                samplingRate = DEFAULT_SAMPLING_RATE,
-                windowFunction = WindowFunction.HAMMING
-            ).first()
+        val result = processWindow(signal, samplingRate = DEFAULT_SAMPLING_RATE)
 
         val magnitudes = result.magnitudes
         val maximumIndex = magnitudes.indexOf(magnitudes.max())
@@ -85,7 +73,6 @@ private class FFTProcessorTest {
         // TODO: some refactoring, extract into separate tests
         assertEquals(expected = binIndex, actual = maximumIndex)
         assertEquals(expected = binIndex, actual = result.binIndexOf(frequency.toDouble()))
-
     }
 
     @ParameterizedTest
@@ -94,9 +81,7 @@ private class FFTProcessorTest {
         val amplitude = 2.0.pow(15)
         val signal = getSignalByFrequency(frequency)
 
-        val fftProcessor = FFTProcessor()
-        val result =
-            fftProcessor.process(inputSamples = sequenceOf(signal), samplingRate = DEFAULT_SAMPLING_RATE).first()
+        val result = processWindow(signal, samplingRate = DEFAULT_SAMPLING_RATE)
         val magnitudes = result.magnitudes.toList()
 
         result.binIndexOf(frequency.toDouble()).let {
@@ -107,6 +92,29 @@ private class FFTProcessorTest {
             )
         }
     }
+
+    @ParameterizedTest
+    @MethodSource("getFFTValues")
+    fun `should yield correct results for different window functions`(
+        input: Sequence<Sample>,
+        expected: List<Complex>
+    ) {
+        val frequency = 430
+        val signal = getSignalByFrequency(frequency)
+        val functions = listOf(::hammingFunction, ::blackmanFunction, ::hanningFunction)
+
+        functions.forEach { function ->
+            val actual = processWindow(input = signal, samplingRate = DEFAULT_SAMPLING_RATE, windowFunction = function)
+            val magnitudes = actual.magnitudes
+
+            val maximumIndex = magnitudes.indexOf(magnitudes.max())
+            val binIndex = (frequency * DEFAULT_SAMPLE_SIZE / DEFAULT_SAMPLING_RATE.toDouble()).roundToInt()
+
+            assertEquals(expected = binIndex, actual = maximumIndex)
+            assertEquals(expected = binIndex, actual = actual.binIndexOf(frequency.toDouble()))
+        }
+    }
+
 
     @ParameterizedTest
     @ValueSource(ints = [43, 430, 4306])
@@ -124,6 +132,21 @@ private class FFTProcessorTest {
                 message = "Expected index $value to be close to ${firstResult[index]}."
             )
         }
+    }
+
+    private fun processWindow(
+        input: Window,
+        samplingRate: Int,
+        method: Method = Method.FFT_IN_PLACE,
+        windowFunction: WindowFunction? = null
+    ): FFTData {
+        val fftProcessor = FFTProcessor()
+        return fftProcessor.process(
+            inputSamples = sequenceOf(input),
+            samplingRate = samplingRate,
+            method = method,
+            windowFunction = windowFunction
+        ).first()
     }
 
     companion object {

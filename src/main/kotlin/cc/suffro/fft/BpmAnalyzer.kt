@@ -11,14 +11,13 @@ import java.text.DecimalFormatSymbols
 import java.util.Locale
 import kotlin.NoSuchElementException
 
-class BpmAnalyzer(private val wav: Wav) {
-    private val fftProcessor = FFTProcessor()
-
+class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
     fun analyze(
+        wav: Wav,
         start: Double = 0.0,
         end: Double = 10.0,
         interval: Double = 0.01,
-        windowFunction: WindowFunction = WindowFunction.NONE
+        windowFunction: WindowFunction? = null
     ): Double {
         // TODO: add nicer handling for maximum track length
         val windows = wav.getWindows(start = start, end = min(wav.trackLength - 0.1, end), interval = 0.01)

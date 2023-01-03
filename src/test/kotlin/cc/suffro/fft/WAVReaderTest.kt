@@ -37,12 +37,12 @@ class WAVReaderTest {
 
     @Test
     fun `should throw parsing exception`() {
-        // TODO: not yet implemented
+        // TODO: not implemented yet
     }
 
     @Test
     fun `should read correct Samples if 8-bit PCM`() {
-        // TODO: not yet implemented
+        // TODO: not implemented yet
     }
 
     @ParameterizedTest
@@ -90,6 +90,7 @@ class WAVReaderTest {
         val wav = wavReader.read(Path("src/test/resources/440.wav"))
         assertThrows<IllegalArgumentException> { wav.getWindows(start = 7.0, end = 10.001, interval = 0.01) }
     }
+
 
     companion object {
         private const val DEFAULT_SAMPLE_NUMBER = 1024
