@@ -7,7 +7,7 @@ object Main {
     private fun analyzeWav(file: Path) {
         val wav = WAVReader.read(file)
         val bpmAnalyzer = BpmAnalyzer()
-        val bpm = bpmAnalyzer.analyze(wav)
+        val bpm = bpmAnalyzer.analyzeByPeakDistance(wav)
         println("$file has a BPM of bpm")
     }
 

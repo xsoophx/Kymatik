@@ -11,16 +11,20 @@ import java.text.DecimalFormatSymbols
 import java.util.Locale
 import kotlin.NoSuchElementException
 
-class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
-    fun analyze(
-        wav: Wav,
+class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor(), private val wav: Wav) {
+
+    fun analyzeByPeakDistance(
         start: Double = 0.0,
         end: Double = 10.0,
         interval: Double = 0.01,
         windowFunction: WindowFunction? = null
     ): Double {
         // TODO: add nicer handling for maximum track length
-        val windows = wav.getWindows(start = start, end = min(wav.trackLength - 0.1, end), interval = 0.01)
+        val windows = wav.getWindows(
+            start = start,
+            end = min(wav.trackLength - 0.1, end),
+            interval = interval,
+        )
 
         val averagePeakTimes = fftProcessor
             .process(windows, samplingRate = wav.sampleRate, windowFunction = windowFunction)
@@ -46,13 +50,32 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
         }
     }
 
+    //TODO: maybe better naming
+    fun analyzeByEnergyLevels(
+        start: Double = 0.0,
+        end: Double = 10.0,
+        interval: Double = 0.01,
+        windowFunction: WindowFunction? = null,
+    ) {
+        val windows = wav.getWindows(
+            start = start,
+            end = min(wav.trackLength - 0.1, end),
+            interval = interval
+        )
+        val fftResult = fftProcessor
+            .process(windows, samplingRate = wav.sampleRate, windowFunction = windowFunction)
+
+        val separatedSignals =
+            Filterbank.process(fftResult, wav.fmtChunk)
+                .map { signals -> fftProcessor.processInverse(signals.values.asSequence()) }
+    }
+
     private fun Sequence<Peak>.getIntervalsOverTime(): List<List<Interval>> =
         (0 until first().values.size).map { bin ->
             map { peak ->
                 Interval(midPoint = peak.midPoint, magnitude = peak.values[bin])
             }.toList()
         }.toList()
-
 
     private fun List<List<Interval>>.getAveragePeakTimes(): List<List<Double>> {
         val bassFrequencyBins = size

@@ -91,7 +91,6 @@ class WAVReaderTest {
         assertThrows<IllegalArgumentException> { wav.getWindows(start = 7.0, end = 10.001, interval = 0.01) }
     }
 
-
     companion object {
         private const val DEFAULT_SAMPLE_NUMBER = 1024
 

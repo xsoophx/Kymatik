@@ -15,7 +15,10 @@ data class FmtChunk(
     val blockAlign: Short,
     val bitsPerSample: Short,
     val dataChunkSize: Int
-)
+) {
+    val trackLength: Double
+        get() = dataChunkSize.toDouble() / (sampleRate * blockAlign)
+}
 
 data class Wav(
     val filePath: Path,
@@ -25,7 +28,7 @@ data class Wav(
     override fun toString(): String = "Filepath:$filePath, fmtChunk:$fmtChunk."
 
     val trackLength: Double
-        get() = fmtChunk.dataChunkSize.toDouble() / (sampleRate * fmtChunk.blockAlign)
+        get() = fmtChunk.trackLength
 
     val sampleRate: Int
         get() = fmtChunk.sampleRate
