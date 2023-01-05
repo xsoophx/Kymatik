@@ -123,7 +123,7 @@ private class FFTProcessorTest {
 
         val fftProcessor = FFTProcessor()
         val fftResults = fftProcessor.process(inputSamples = sequenceOf(signal), samplingRate = DEFAULT_SAMPLING_RATE)
-        val inverseFftResults = fftProcessor.processInverse(inputSamples = fftResults.map { it.output })
+        val inverseFftResults = fftProcessor.processInverse(inputSamples = fftResults.map { it.output.asSequence() })
         val firstResult = inverseFftResults.first().toList()
 
         signal.forEachIndexed { index, value ->

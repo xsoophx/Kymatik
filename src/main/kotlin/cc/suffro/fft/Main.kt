@@ -8,7 +8,7 @@ object Main {
         val wav = WAVReader.read(file)
         val bpmAnalyzer = BpmAnalyzer()
         val bpm = bpmAnalyzer.analyzeByPeakDistance(wav)
-        println("$file has a BPM of bpm")
+        println("$file has a BPM of $bpm.")
     }
 
     @JvmStatic

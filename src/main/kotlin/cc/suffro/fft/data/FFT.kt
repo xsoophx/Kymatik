@@ -20,11 +20,11 @@ data class FFTData(
     val bins: Bins,
     val sampleSize: Int,
     val samplingRate: Int,
-    val output: Sequence<Complex>
+    val output: List<Complex>
 ) {
     private fun abs(n: Complex): Complex = sqrt(n.re * n.re + n.im * n.im)
 
-    val magnitudes: Sequence<Double>
+    val magnitudes: List<Double>
         get() = output.take(bins.count).map { abs(it).re / sampleSize }
 
     // index = Frequency * Number of FFT Points / Sampling Frequency

@@ -8,12 +8,12 @@ import java.lang.StrictMath.min
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
-import java.util.Locale
-import kotlin.NoSuchElementException
+import java.util.*
 
-class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor(), private val wav: Wav) {
+class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
 
     fun analyzeByPeakDistance(
+        wav: Wav,
         start: Double = 0.0,
         end: Double = 10.0,
         interval: Double = 0.01,
@@ -37,21 +37,22 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor(), priva
     }
 
     private fun Sequence<FFTData>.getBassFrequencyBins(interval: Double): Sequence<Peak> {
-        val lowerFrequencyBin = maxOf(0, first().binIndexOf(LOWER_FREQUENCY_BOUND))
-        val higherFrequencyBin = minOf(first().binIndexOf(HIGHER_FREQUENCY_BOUND), first().bins.count - 1)
+        val firstElement = first()
+        val lowerFrequencyBin = maxOf(0, firstElement.binIndexOf(LOWER_FREQUENCY_BOUND))
+        val higherFrequencyBin = minOf(firstElement.binIndexOf(HIGHER_FREQUENCY_BOUND), firstElement.bins.count - 1)
 
         return mapIndexed { index, fftData ->
             Peak(
                 midPoint = index * interval,
                 interval = interval,
-                values = fftData.magnitudes.drop(lowerFrequencyBin).take(higherFrequencyBin - lowerFrequencyBin + 1)
-                    .toList()
+                values = fftData.magnitudes.subList(lowerFrequencyBin, higherFrequencyBin + 1)
             )
         }
     }
 
     //TODO: maybe better naming
     fun analyzeByEnergyLevels(
+        wav: Wav,
         start: Double = 0.0,
         end: Double = 10.0,
         interval: Double = 0.01,
@@ -67,23 +68,22 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor(), priva
 
         val separatedSignals =
             Filterbank.process(fftResult, wav.fmtChunk)
-                .map { signals -> fftProcessor.processInverse(signals.values.asSequence()) }
+                .map { signals -> fftProcessor.processInverse(signals.values.asSequence().map { it.asSequence() }) }
     }
 
     private fun Sequence<Peak>.getIntervalsOverTime(): List<List<Interval>> =
-        (0 until first().values.size).map { bin ->
+        first().values.indices.map { bin ->
             map { peak ->
                 Interval(midPoint = peak.midPoint, magnitude = peak.values[bin])
             }.toList()
-        }.toList()
+        }
 
     private fun List<List<Interval>>.getAveragePeakTimes(): List<List<Double>> {
-        val bassFrequencyBins = size
-        val averagePeaks = MutableList(bassFrequencyBins) { mutableListOf<Double>() }
+        val averagePeaks = List(size) { mutableListOf<Double>() }
 
-        for (i in 0 until bassFrequencyBins) {
-            val maxMagnitude = this[i].maxOf { it.magnitude }
-            this[i]
+        forEachIndexed { i, intervals ->
+            val maxMagnitude = intervals.maxOf { it.magnitude }
+            intervals
                 .filter { it.magnitude > maxMagnitude / 2 }
                 .sortedByDescending { it.magnitude }
                 .forEach { interval ->
@@ -100,23 +100,11 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor(), priva
         if (index != -1)
             peakTimes[index] = (peakTimes[index] + time) / 2
         else if (peakTimes.all { abs(it - time) > MAX_PEAK_DISTANCE })
-            peakTimes.add(time)
+            peakTimes += time
     }
 
-    private fun List<Double>.getAveragePeakDistance(): Double {
-        val iterator = iterator()
-        if (!iterator.hasNext()) throw NoSuchElementException()
-        val deviations = mutableListOf<Double>()
-
-        var current = iterator.next()
-        while (iterator.hasNext()) {
-            val next = iterator.next()
-            deviations += next - current
-            current = next
-        }
-
-        return deviations.average()
-    }
+    private fun List<Double>.getAveragePeakDistance(): Double =
+        asSequence().zipWithNext().map { (current, next) -> next - current }.average()
 
     private fun Double.round(): Double =
         DecimalFormat("#.#", DecimalFormatSymbols(Locale.US))

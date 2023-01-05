@@ -4,7 +4,7 @@ import cc.suffro.fft.data.FFTData
 import cc.suffro.fft.data.FmtChunk
 import org.kotlinmath.Complex
 
-typealias SeparatedSignals = Map<Interval, Sequence<Complex>>
+typealias SeparatedSignals = Map<Interval, List<Complex>>
 
 object Filterbank {
     fun process(fftData: Sequence<FFTData>, fmtChunk: FmtChunk): Sequence<SeparatedSignals> {

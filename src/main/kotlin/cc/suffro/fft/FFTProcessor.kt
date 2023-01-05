@@ -35,7 +35,7 @@ class FFTProcessor {
                 bins = Bins(sampleSize / 2),
                 sampleSize = sampleSize,
                 samplingRate = samplingRate,
-                output = it
+                output = it.toList()
             )
         }
     }
