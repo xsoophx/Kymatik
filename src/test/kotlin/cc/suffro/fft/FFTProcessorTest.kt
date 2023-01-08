@@ -3,7 +3,6 @@ package cc.suffro.fft
 import cc.suffro.fft.data.FFTData
 import cc.suffro.fft.data.Method
 import cc.suffro.fft.data.Sample
-import cc.suffro.fft.data.Window
 import cc.suffro.fft.data.WindowFunction
 import cc.suffro.fft.data.blackmanFunction
 import cc.suffro.fft.data.hammingFunction
@@ -135,7 +134,7 @@ private class FFTProcessorTest {
     }
 
     private fun processWindow(
-        input: Window,
+        input: Sequence<Double>,
         samplingRate: Int,
         method: Method = Method.FFT_IN_PLACE,
         windowFunction: WindowFunction? = null

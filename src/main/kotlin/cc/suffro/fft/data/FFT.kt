@@ -37,4 +37,7 @@ enum class Method {
     R2C_DFT
 }
 
-typealias Window = Sequence<Sample>
+data class Window(
+    val samples: Sequence<Sample>,
+    val intervalTime: Double
+) : Sequence<Sample> by samples

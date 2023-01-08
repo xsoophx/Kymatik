@@ -3,7 +3,6 @@ package cc.suffro.fft
 import cc.suffro.fft.data.Bins
 import cc.suffro.fft.data.FFTData
 import cc.suffro.fft.data.Method
-import cc.suffro.fft.data.Window
 import cc.suffro.fft.data.WindowFunction
 import kotlin.math.PI
 import org.kotlinmath.Complex
@@ -13,9 +12,8 @@ import org.kotlinmath.complex
 import org.kotlinmath.exp
 
 class FFTProcessor {
-
     fun process(
-        inputSamples: Sequence<Window>,
+        inputSamples: Sequence<Sequence<Double>>,
         samplingRate: Int,
         method: Method = Method.FFT_IN_PLACE,
         windowFunction: WindowFunction? = null,
@@ -40,16 +38,16 @@ class FFTProcessor {
         }
     }
 
-    fun processInverse(inputSamples: Sequence<Sequence<Complex>>): Sequence<Window> {
+    fun processInverse(inputSamples: Sequence<Sequence<Complex>>): Sequence<Sequence<Double>> {
         return inputSamples.map { samples -> inverseFftInPlace(samples).map { it.re } }
     }
 
-    private fun Window.applyWindowFunction(function: (Int, Int) -> Double): Window {
+    private fun Sequence<Double>.applyWindowFunction(function: (Int, Int) -> Double): Sequence<Double> {
         val length = this.count()
         return mapIndexed { index, sample -> function(index, length) * sample }
     }
 
-    private fun Sequence<Window>.toComplexSequence() = map { window -> window.map { complex(it, 0) } }
+    private fun Sequence<Sequence<Double>>.toComplexSequence() = map { window -> window.map { complex(it, 0) } }
 
     private fun Sequence<Complex>.toArray(size: Int): Array<Complex> {
         val iterator = iterator()

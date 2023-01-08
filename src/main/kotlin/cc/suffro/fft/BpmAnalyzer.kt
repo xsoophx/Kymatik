@@ -2,6 +2,7 @@ package cc.suffro.fft
 
 import cc.suffro.fft.data.FFTData
 import cc.suffro.fft.data.Wav
+import cc.suffro.fft.data.Window
 import cc.suffro.fft.data.WindowFunction
 import java.lang.StrictMath.abs
 import java.lang.StrictMath.min
@@ -63,12 +64,22 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
             end = min(wav.trackLength - 0.1, end),
             interval = interval
         )
-        val fftResult = fftProcessor
-            .process(windows, samplingRate = wav.sampleRate, windowFunction = windowFunction)
+        val fftResult = fftProcessor.process(windows, samplingRate = wav.sampleRate, windowFunction = windowFunction)
 
+        val filterBank = Filterbank(fftProcessor)
+        // transforms the signal into multiple signals, split by frequency intervals
         val separatedSignals =
-            Filterbank.process(fftResult, wav.fmtChunk)
-                .map { signals -> fftProcessor.processInverse(signals.values.asSequence().map { it.asSequence() }) }
+            filterBank.separateSignals(fftResult, wav.fmtChunk).map { it.transformToTimeDomain(interval) }
+
+        val lowPassFilteredSignals = separatedSignals.map { signal -> filterBank.lowPassFilter(signal, wav.fmtChunk) }
+
+    }
+
+    private fun SeparatedSignals.transformToTimeDomain(interval: Double): Sequence<Window> {
+        val signalInTimeDomain =
+            fftProcessor.processInverse(this.values.asSequence().map { it.asSequence() })
+
+        return signalInTimeDomain.map { Window(it, interval) }
     }
 
     private fun Sequence<Peak>.getIntervalsOverTime(): List<List<Interval>> =

@@ -46,7 +46,7 @@ data class Wav(
         require((numSamples != 0) && numSamples and (numSamples - 1) == 0) { "Length has to be power of tow, but is $numSamples." }
     }
 
-    fun getWindow(channel: Int, begin: Int, numSamples: Int = DEFAULT_SAMPLE_NUMBER): Window {
+    fun getWindow(channel: Int, begin: Int, numSamples: Int = DEFAULT_SAMPLE_NUMBER): Sequence<Double> {
         checkRequirements(channel, numSamples)
         return dataChunk[channel].get(begin, numSamples)
     }
@@ -66,11 +66,13 @@ data class Wav(
         val endSample =
             minOf((sampleRate * end).roundToInt(), (fmtChunk.dataChunkSize / fmtChunk.blockAlign) - numSamples)
 
-        return (startSample until endSample)
+        val samples = (startSample until endSample)
             .step(sampleInterval)
             .asSequence()
             .takeWhile { it < endSample }
             .map { index -> dataChunk[channel].get(index, numSamples) }
+
+        return samples.map { Window(it, interval) }
     }
 
     companion object {
