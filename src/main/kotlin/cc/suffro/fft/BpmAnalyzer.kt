@@ -5,6 +5,12 @@ import cc.suffro.fft.data.FmtChunk
 import cc.suffro.fft.data.Wav
 import cc.suffro.fft.data.Window
 import cc.suffro.fft.data.WindowFunction
+import cc.suffro.fft.filters.CombFilter
+import cc.suffro.fft.filters.DifferentialRectifier
+import cc.suffro.fft.filters.Filterbank
+import cc.suffro.fft.filters.Interval
+import cc.suffro.fft.filters.LowPassFilter
+import cc.suffro.fft.filters.SeparatedSignals
 import java.lang.StrictMath.abs
 import java.lang.StrictMath.min
 import java.math.RoundingMode
@@ -60,26 +66,50 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
         interval: Double = 0.01,
         windowFunction: WindowFunction? = null,
     ) {
+        val timeFrame = end - start
+        require(timeFrame >= 2.2) { "Timeframe needs to be at least 2.2 seconds long for analyzing BPM." }
+
         val windows = wav.getWindows(
             start = start,
             end = min(wav.trackLength - 0.1, end),
             interval = interval
         )
         val fftResult = fftProcessor.process(windows, samplingRate = wav.sampleRate, windowFunction = windowFunction)
-        val filterBank = Filterbank(fftProcessor)
-        val result = fftResult.map { data -> data.analyzeSingleWindow(filterBank, wav.fmtChunk, interval) }
+        val filterParams =
+            FilterParams(LowPassFilter(fftProcessor), CombFilter(fftProcessor), wav.fmtChunk, interval, timeFrame)
+
+        val result =
+            fftResult.map { data ->
+                data.analyzeSingleWindow(filterParams)
+            }
     }
 
-    private fun FFTData.analyzeSingleWindow(filterBank: Filterbank, fmtChunk: FmtChunk, interval: Double) {
+    private fun FFTData.analyzeSingleWindow(filterParams: FilterParams) {
         // transforms the signal into multiple signals, split by frequency intervals
-        val separatedSignals = filterBank
-            .separateSignals(this, fmtChunk)
-            .transformToTimeDomain(interval)
+        val separatedSignals = Filterbank.separateSignals(this, MAXIMUM_FREQUENCY)
+        val filteredSignals = separatedSignals
+            .transformToTimeDomain(filterParams.interval)
+            .applyFilters(filterParams, separatedSignals.keys)
 
-        val rectifiedSignals = separatedSignals
-            .map { signal -> filterBank.lowPassFilter(signal, fmtChunk) }
-            .map { signal -> filterBank.differentialRectify(signal) }
+    }
 
+    private fun Sequence<Window>.applyFilters(
+        filterParams: FilterParams,
+        bandLimits: Set<Interval>
+    ): Double {
+        val estimatedBpms = map { signal -> filterParams.lowPassFilter.process(signal, filterParams.fmtChunk) }
+            .map { signal -> DifferentialRectifier.process(signal) }
+            .map { signal ->
+                filterParams.combFilter.process(
+                    signal,
+                    bandLimits,
+                    MAXIMUM_FREQUENCY,
+                    filterParams.fmtChunk.sampleRate,
+                    filterParams.timeFrame
+                )
+            }
+
+        return estimatedBpms.average()
     }
 
     private fun SeparatedSignals.transformToTimeDomain(interval: Double): Sequence<Window> {
@@ -89,14 +119,14 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
         return signalInTimeDomain.map { Window(it, interval) }
     }
 
-    private fun Sequence<Peak>.getIntervalsOverTime(): List<List<Interval>> =
+    private fun Sequence<Peak>.getIntervalsOverTime(): List<List<PeakInterval>> =
         first().values.indices.map { bin ->
             map { peak ->
-                Interval(midPoint = peak.midPoint, magnitude = peak.values[bin])
+                PeakInterval(midPoint = peak.midPoint, magnitude = peak.values[bin])
             }.toList()
         }
 
-    private fun List<List<Interval>>.getAveragePeakTimes(): List<List<Double>> {
+    private fun List<List<PeakInterval>>.getAveragePeakTimes(): List<List<Double>> {
         val averagePeaks = List(size) { mutableListOf<Double>() }
 
         forEachIndexed { i, intervals ->
@@ -138,14 +168,23 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
         val values: List<Double>
     )
 
-    private data class Interval(
+    private data class PeakInterval(
         val midPoint: Double,
         val magnitude: Double
+    )
+
+    data class FilterParams(
+        val lowPassFilter: LowPassFilter,
+        val combFilter: CombFilter,
+        val fmtChunk: FmtChunk,
+        val interval: Double,
+        val timeFrame: Double
     )
 
     companion object {
         private const val LOWER_FREQUENCY_BOUND = 40.0
         private const val HIGHER_FREQUENCY_BOUND = 120.0
         private const val MAX_PEAK_DISTANCE = 60.0 / 220.0
+        private const val MAXIMUM_FREQUENCY = 4096
     }
 }
