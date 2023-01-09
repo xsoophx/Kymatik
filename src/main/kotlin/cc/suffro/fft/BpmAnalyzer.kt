@@ -1,6 +1,7 @@
 package cc.suffro.fft
 
 import cc.suffro.fft.data.FFTData
+import cc.suffro.fft.data.FmtChunk
 import cc.suffro.fft.data.Wav
 import cc.suffro.fft.data.Window
 import cc.suffro.fft.data.WindowFunction
@@ -65,13 +66,19 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
             interval = interval
         )
         val fftResult = fftProcessor.process(windows, samplingRate = wav.sampleRate, windowFunction = windowFunction)
-
         val filterBank = Filterbank(fftProcessor)
-        // transforms the signal into multiple signals, split by frequency intervals
-        val separatedSignals =
-            filterBank.separateSignals(fftResult, wav.fmtChunk).map { it.transformToTimeDomain(interval) }
+        val result = fftResult.map { data -> data.analyzeSingleWindow(filterBank, wav.fmtChunk, interval) }
+    }
 
-        val lowPassFilteredSignals = separatedSignals.map { signal -> filterBank.lowPassFilter(signal, wav.fmtChunk) }
+    private fun FFTData.analyzeSingleWindow(filterBank: Filterbank, fmtChunk: FmtChunk, interval: Double) {
+        // transforms the signal into multiple signals, split by frequency intervals
+        val separatedSignals = filterBank
+            .separateSignals(this, fmtChunk)
+            .transformToTimeDomain(interval)
+
+        val rectifiedSignals = separatedSignals
+            .map { signal -> filterBank.lowPassFilter(signal, fmtChunk) }
+            .map { signal -> filterBank.differentialRectify(signal) }
 
     }
 

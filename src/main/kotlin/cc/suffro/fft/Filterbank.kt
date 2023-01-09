@@ -5,32 +5,30 @@ import cc.suffro.fft.data.FmtChunk
 import cc.suffro.fft.data.Window
 import cc.suffro.fft.data.hanningFunction
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.roundToInt
 import org.kotlinmath.Complex
 
 typealias SeparatedSignals = Map<Interval, List<Complex>>
+typealias Signal = Sequence<Double>
 
 class Filterbank(private val fftProcessor: FFTProcessor) {
-    fun separateSignals(fftData: Sequence<FFTData>, fmtChunk: FmtChunk): Sequence<SeparatedSignals> {
-        val firstElement = fftData.first()
+    fun separateSignals(fftData: FFTData, fmtChunk: FmtChunk): SeparatedSignals {
         val bins = getFrequencyBands(fmtChunk.sampleRate.toDouble()).map {
-            Interval(firstElement.binIndexOf(it.first), firstElement.binIndexOf(it.second))
+            Interval(fftData.binIndexOf(it.first), fftData.binIndexOf(it.second))
         }
 
-        return fftData.map { data ->
-            bins.associateWith { interval ->
-                data.output.drop(interval.lowerBound).take(interval.upperBound - interval.lowerBound)
-            }
+        return bins.associateWith { interval ->
+            fftData.output.drop(interval.lowerBound).take(interval.upperBound - interval.lowerBound)
         }
     }
 
-    fun lowPassFilter(windows: Sequence<Window>, fmtChunk: FmtChunk) {
-        windows.map(::fullWaveRectify).map { convolve(it, fmtChunk) }
+    fun lowPassFilter(window: Window, fmtChunk: FmtChunk): Sequence<Signal> {
+        val fullWaveRectified = Window(window.map(::abs), window.intervalTime)
+        return convolve(fullWaveRectified, fmtChunk)
     }
 
-    private fun fullWaveRectify(window: Window) = Window(window.map(::abs), window.intervalTime)
-
-    private fun convolve(window: Window, fmtChunk: FmtChunk): Sequence<Sequence<Double>> {
+    private fun convolve(window: Window, fmtChunk: FmtChunk): Sequence<Signal> {
         val samples = (window.intervalTime * 2 * fmtChunk.sampleRate).roundToInt()
 
         val halfHanningWindow = (0 until samples)
@@ -56,7 +54,13 @@ class Filterbank(private val fftProcessor: FFTProcessor) {
             .toMutableList()
             .also { it += it.last().second to sampleRate }
 
-
+    fun differentialRectify(signals: Sequence<Signal>): Sequence<Signal> {
+        return signals.map { signal ->
+            signal.zipWithNext()
+                .map { (current, next) -> next - current }
+                .map { d -> max(0.0, abs(d)) }
+        }
+    }
 }
 
 data class Interval(
