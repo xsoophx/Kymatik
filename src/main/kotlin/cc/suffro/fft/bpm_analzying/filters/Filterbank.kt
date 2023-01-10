@@ -1,6 +1,6 @@
-package cc.suffro.fft.filters
+package cc.suffro.fft.bpm_analzying.filters
 
-import cc.suffro.fft.data.FFTData
+import cc.suffro.fft.fft.data.FFTData
 import org.kotlinmath.Complex
 
 typealias SeparatedSignals = Map<Interval, List<Complex>>

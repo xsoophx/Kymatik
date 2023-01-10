@@ -1,5 +1,7 @@
 package cc.suffro.fft
 
+import cc.suffro.fft.bpm_analzying.BpmAnalyzer
+import cc.suffro.fft.wav.WAVReader
 import java.nio.file.Path
 import java.nio.file.Paths
 

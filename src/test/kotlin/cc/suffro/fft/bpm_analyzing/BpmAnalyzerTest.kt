@@ -1,5 +1,8 @@
-package cc.suffro.fft
+package cc.suffro.fft.bpm_analyzing
 
+import cc.suffro.fft.assertNearlyEquals
+import cc.suffro.fft.bpm_analzying.BpmAnalyzer
+import cc.suffro.fft.wav.WAVReader
 import java.util.stream.Stream
 import kotlin.io.path.Path
 import kotlin.test.assertEquals

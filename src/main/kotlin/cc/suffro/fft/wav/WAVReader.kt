@@ -1,10 +1,10 @@
-package cc.suffro.fft
+package cc.suffro.fft.wav
 
-import cc.suffro.fft.data.AudioFormat
-import cc.suffro.fft.data.Error
-import cc.suffro.fft.data.ErrorType
-import cc.suffro.fft.data.FmtChunk
-import cc.suffro.fft.data.Wav
+import cc.suffro.fft.fft.data.Error
+import cc.suffro.fft.fft.data.ErrorType
+import cc.suffro.fft.wav.data.AudioFormat
+import cc.suffro.fft.wav.data.FmtChunk
+import cc.suffro.fft.wav.data.Wav
 import java.io.BufferedInputStream
 import java.io.InputStream
 import java.nio.ByteBuffer

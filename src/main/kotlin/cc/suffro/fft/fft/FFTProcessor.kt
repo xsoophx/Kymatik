@@ -1,9 +1,9 @@
-package cc.suffro.fft
+package cc.suffro.fft.fft
 
-import cc.suffro.fft.data.Bins
-import cc.suffro.fft.data.FFTData
-import cc.suffro.fft.data.Method
-import cc.suffro.fft.data.WindowFunction
+import cc.suffro.fft.fft.data.Bins
+import cc.suffro.fft.fft.data.FFTData
+import cc.suffro.fft.fft.data.Method
+import cc.suffro.fft.fft.data.WindowFunction
 import kotlin.math.PI
 import org.kotlinmath.Complex
 import org.kotlinmath.I

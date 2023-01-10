@@ -1,16 +1,17 @@
-package cc.suffro.fft
+package cc.suffro.fft.bpm_analzying
 
-import cc.suffro.fft.data.FFTData
-import cc.suffro.fft.data.FmtChunk
-import cc.suffro.fft.data.Wav
-import cc.suffro.fft.data.Window
-import cc.suffro.fft.data.WindowFunction
-import cc.suffro.fft.filters.CombFilter
-import cc.suffro.fft.filters.DifferentialRectifier
-import cc.suffro.fft.filters.Filterbank
-import cc.suffro.fft.filters.Interval
-import cc.suffro.fft.filters.LowPassFilter
-import cc.suffro.fft.filters.SeparatedSignals
+import cc.suffro.fft.fft.FFTProcessor
+import cc.suffro.fft.fft.data.FFTData
+import cc.suffro.fft.fft.data.Window
+import cc.suffro.fft.fft.data.WindowFunction
+import cc.suffro.fft.bpm_analzying.filters.CombFilter
+import cc.suffro.fft.bpm_analzying.filters.DifferentialRectifier
+import cc.suffro.fft.bpm_analzying.filters.Filterbank
+import cc.suffro.fft.bpm_analzying.filters.Interval
+import cc.suffro.fft.bpm_analzying.filters.LowPassFilter
+import cc.suffro.fft.bpm_analzying.filters.SeparatedSignals
+import cc.suffro.fft.wav.data.FmtChunk
+import cc.suffro.fft.wav.data.Wav
 import java.lang.StrictMath.abs
 import java.lang.StrictMath.min
 import java.math.RoundingMode
@@ -74,33 +75,39 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
             end = min(wav.trackLength - 0.1, end),
             interval = interval
         )
-        val fftResult = fftProcessor.process(windows, samplingRate = wav.sampleRate, windowFunction = windowFunction)
+        val fftResult = fftProcessor.process(windows, wav.sampleRate, windowFunction = windowFunction)
         val filterParams =
-            FilterParams(LowPassFilter(fftProcessor), CombFilter(fftProcessor), wav.fmtChunk, interval, timeFrame)
+            FilterParams(wav.fmtChunk, interval, timeFrame)
 
         val result =
             fftResult.map { data ->
-                data.analyzeSingleWindow(filterParams)
+                data.analyzeSingleWindow(LowPassFilter(fftProcessor), CombFilter(fftProcessor), filterParams)
             }
     }
 
-    private fun FFTData.analyzeSingleWindow(filterParams: FilterParams) {
+    private fun FFTData.analyzeSingleWindow(
+        lowPassFilter: LowPassFilter,
+        combFilter: CombFilter,
+        filterParams: FilterParams
+    ) {
         // transforms the signal into multiple signals, split by frequency intervals
         val separatedSignals = Filterbank.separateSignals(this, MAXIMUM_FREQUENCY)
         val filteredSignals = separatedSignals
             .transformToTimeDomain(filterParams.interval)
-            .applyFilters(filterParams, separatedSignals.keys)
+            .applyFilters(lowPassFilter, combFilter, filterParams, separatedSignals.keys)
 
     }
 
     private fun Sequence<Window>.applyFilters(
+        lowPassFilter: LowPassFilter,
+        combFilter: CombFilter,
         filterParams: FilterParams,
         bandLimits: Set<Interval>
     ): Double {
-        val estimatedBpms = map { signal -> filterParams.lowPassFilter.process(signal, filterParams.fmtChunk) }
-            .map { signal -> DifferentialRectifier.process(signal) }
+        val estimatedBpms = map { signal -> lowPassFilter.process(signal, filterParams.fmtChunk) }
+            .map(DifferentialRectifier::process)
             .map { signal ->
-                filterParams.combFilter.process(
+                combFilter.process(
                     signal,
                     bandLimits,
                     MAXIMUM_FREQUENCY,
@@ -114,7 +121,7 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
 
     private fun SeparatedSignals.transformToTimeDomain(interval: Double): Sequence<Window> {
         val signalInTimeDomain =
-            fftProcessor.processInverse(this.values.asSequence().map { it.asSequence() })
+            fftProcessor.processInverse(values.asSequence().map { it.asSequence() })
 
         return signalInTimeDomain.map { Window(it, interval) }
     }
@@ -174,8 +181,6 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
     )
 
     data class FilterParams(
-        val lowPassFilter: LowPassFilter,
-        val combFilter: CombFilter,
         val fmtChunk: FmtChunk,
         val interval: Double,
         val timeFrame: Double

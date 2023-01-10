@@ -1,12 +1,14 @@
-package cc.suffro.fft
+package cc.suffro.fft.fft
 
-import cc.suffro.fft.data.FFTData
-import cc.suffro.fft.data.Method
-import cc.suffro.fft.data.Sample
-import cc.suffro.fft.data.WindowFunction
-import cc.suffro.fft.data.blackmanFunction
-import cc.suffro.fft.data.hammingFunction
-import cc.suffro.fft.data.hanningFunction
+import cc.suffro.fft.FFT
+import cc.suffro.fft.assertNearlyEquals
+import cc.suffro.fft.fft.data.FFTData
+import cc.suffro.fft.fft.data.Method
+import cc.suffro.fft.fft.data.Sample
+import cc.suffro.fft.fft.data.WindowFunction
+import cc.suffro.fft.fft.data.blackmanFunction
+import cc.suffro.fft.fft.data.hammingFunction
+import cc.suffro.fft.fft.data.hanningFunction
 import java.util.stream.Stream
 import kotlin.math.PI
 import kotlin.math.pow

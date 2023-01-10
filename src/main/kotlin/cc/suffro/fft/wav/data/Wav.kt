@@ -1,5 +1,6 @@
-package cc.suffro.fft.data
+package cc.suffro.fft.wav.data
 
+import cc.suffro.fft.fft.data.Window
 import java.nio.file.Path
 import kotlin.math.roundToInt
 

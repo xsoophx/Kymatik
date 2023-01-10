@@ -1,6 +1,5 @@
-package cc.suffro.fft.filters
+package cc.suffro.fft.bpm_analzying.filters
 
-import kotlin.math.abs
 import kotlin.math.max
 
 object DifferentialRectifier {
@@ -8,7 +7,7 @@ object DifferentialRectifier {
         return signals.map { signal ->
             signal.zipWithNext()
                 .map { (current, next) -> next - current }
-                .map { d -> max(0.0, abs(d)) }
+                .map { d -> max(0.0, d) }
         }
     }
 }

@@ -1,8 +1,10 @@
-package cc.suffro.fft
+package cc.suffro.fft.wav
 
-import cc.suffro.fft.data.AudioFormat
-import cc.suffro.fft.data.FmtChunk
-import cc.suffro.fft.data.Wav
+import cc.suffro.fft.FFT
+import cc.suffro.fft.fft.FFTProcessor
+import cc.suffro.fft.wav.data.AudioFormat
+import cc.suffro.fft.wav.data.FmtChunk
+import cc.suffro.fft.wav.data.Wav
 import java.util.stream.Stream
 import kotlin.io.path.Path
 import kotlin.test.assertEquals

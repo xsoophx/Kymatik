@@ -1,4 +1,4 @@
-package cc.suffro.fft.data
+package cc.suffro.fft.fft.data
 
 enum class ErrorType {
     NOT_A_RIFF,

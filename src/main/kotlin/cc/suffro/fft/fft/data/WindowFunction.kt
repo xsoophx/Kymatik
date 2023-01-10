@@ -1,4 +1,4 @@
-package cc.suffro.fft.data
+package cc.suffro.fft.fft.data
 
 import kotlin.math.PI
 import kotlin.math.cos

@@ -1,10 +1,10 @@
-package cc.suffro.fft.filters
+package cc.suffro.fft.bpm_analzying.filters
 
-import cc.suffro.fft.FFTProcessor
-import cc.suffro.fft.data.FFTData
-import cc.suffro.fft.data.FmtChunk
-import cc.suffro.fft.data.Window
-import cc.suffro.fft.data.hanningFunction
+import cc.suffro.fft.fft.FFTProcessor
+import cc.suffro.fft.fft.data.FFTData
+import cc.suffro.fft.fft.data.Window
+import cc.suffro.fft.fft.data.hanningFunction
+import cc.suffro.fft.wav.data.FmtChunk
 import kotlin.math.abs
 import kotlin.math.roundToInt
 

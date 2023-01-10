@@ -1,7 +1,7 @@
-package cc.suffro.fft.filters
+package cc.suffro.fft.bpm_analzying.filters
 
 import cc.suffro.fft.abs
-import cc.suffro.fft.FFTProcessor
+import cc.suffro.fft.fft.FFTProcessor
 import kotlin.math.floor
 import kotlin.math.roundToInt
 import org.kotlinmath.Complex
