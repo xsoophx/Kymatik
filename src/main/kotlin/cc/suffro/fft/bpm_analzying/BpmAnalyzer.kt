@@ -1,15 +1,15 @@
 package cc.suffro.fft.bpm_analzying
 
+import cc.suffro.fft.bpm_analzying.data.Interval
+import cc.suffro.fft.bpm_analzying.data.SeparatedSignals
+import cc.suffro.fft.bpm_analzying.filters.CombFilter
+import cc.suffro.fft.bpm_analzying.filters.DifferentialRectifier
+import cc.suffro.fft.bpm_analzying.filters.Filterbank
+import cc.suffro.fft.bpm_analzying.filters.LowPassFilter
 import cc.suffro.fft.fft.FFTProcessor
 import cc.suffro.fft.fft.data.FFTData
 import cc.suffro.fft.fft.data.Window
 import cc.suffro.fft.fft.data.WindowFunction
-import cc.suffro.fft.bpm_analzying.filters.CombFilter
-import cc.suffro.fft.bpm_analzying.filters.DifferentialRectifier
-import cc.suffro.fft.bpm_analzying.filters.Filterbank
-import cc.suffro.fft.bpm_analzying.filters.Interval
-import cc.suffro.fft.bpm_analzying.filters.LowPassFilter
-import cc.suffro.fft.bpm_analzying.filters.SeparatedSignals
 import cc.suffro.fft.wav.data.FmtChunk
 import cc.suffro.fft.wav.data.Wav
 import java.lang.StrictMath.abs
@@ -63,39 +63,36 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
     fun analyzeByEnergyLevels(
         wav: Wav,
         start: Double = 0.0,
-        end: Double = 10.0,
-        interval: Double = 0.01,
+        end: Double = 3.0,
         windowFunction: WindowFunction? = null,
-    ) {
+    ): Double {
         val timeFrame = end - start
         require(timeFrame >= 2.2) { "Timeframe needs to be at least 2.2 seconds long for analyzing BPM." }
 
-        val windows = wav.getWindows(
-            start = start,
-            end = min(wav.trackLength - 0.1, end),
-            interval = interval
-        )
-        val fftResult = fftProcessor.process(windows, wav.sampleRate, windowFunction = windowFunction)
-        val filterParams =
-            FilterParams(wav.fmtChunk, interval, timeFrame)
+        val window = wav.getWindow(start = start, end = min(wav.trackLength - 0.1, end))
+        val fftResult =
+            fftProcessor.processSingle(window, wav.sampleRate, windowFunction = windowFunction)
+        val filterParams = FilterParams(wav.fmtChunk, timeFrame, timeFrame)
 
-        val result =
-            fftResult.map { data ->
-                data.analyzeSingleWindow(LowPassFilter(fftProcessor), CombFilter(fftProcessor), filterParams)
-            }
+        return fftResult.analyzeSingleWindow(LowPassFilter(fftProcessor), CombFilter(fftProcessor), filterParams)
+    }
+
+    private fun Wav.getWindow(start: Double, end: Double): Window {
+        val interval = end - start
+        return getWindowWithHighestSampleNumber(start, end, interval)
     }
 
     private fun FFTData.analyzeSingleWindow(
         lowPassFilter: LowPassFilter,
         combFilter: CombFilter,
         filterParams: FilterParams
-    ) {
+    ): Double {
         // transforms the signal into multiple signals, split by frequency intervals
         val separatedSignals = Filterbank.separateSignals(this, MAXIMUM_FREQUENCY)
-        val filteredSignals = separatedSignals
+
+        return separatedSignals
             .transformToTimeDomain(filterParams.interval)
             .applyFilters(lowPassFilter, combFilter, filterParams, separatedSignals.keys)
-
     }
 
     private fun Sequence<Window>.applyFilters(

@@ -42,9 +42,17 @@ data class Wav(
     }
 
     private fun checkRequirements(channel: Int, numSamples: Int) {
+        checkChannelRequirements(channel)
+        require((numSamples != 0) && numSamples and (numSamples - 1) == 0) { "Length has to be power of tow, but is $numSamples." }
+    }
+
+    private fun checkRequirements(channel: Int) {
+        checkChannelRequirements(channel)
+    }
+
+    private fun checkChannelRequirements(channel: Int) {
         require(channel >= 0) { "Selected Channel has to be greater than or equal to zero." }
         require(channel < dataChunk.size) { "Selected Channel has to be smaller than available channels (${dataChunk.size})." }
-        require((numSamples != 0) && numSamples and (numSamples - 1) == 0) { "Length has to be power of tow, but is $numSamples." }
     }
 
     fun getWindow(channel: Int, begin: Int, numSamples: Int = DEFAULT_SAMPLE_NUMBER): Sequence<Double> {
@@ -67,6 +75,36 @@ data class Wav(
         val endSample =
             minOf((sampleRate * end).roundToInt(), (fmtChunk.dataChunkSize / fmtChunk.blockAlign) - numSamples)
 
+        return getSamples(startSample, endSample, sampleInterval, channel, numSamples, interval)
+    }
+
+    fun getWindowWithHighestSampleNumber(
+        start: Double = 0.0,
+        end: Double = trackLength,
+        interval: Double,
+        channel: Int = 0
+    ): Window {
+        checkRequirements(channel)
+        require(end <= trackLength) { "Selected end time of $end seconds exceeds actual end of track ($trackLength seconds)." }
+
+        val sampleInterval = (interval * sampleRate).roundToInt()
+        val startSample = (sampleRate * start).roundToInt()
+        val maxSamples =
+            minOf((sampleRate * end).roundToInt(), (fmtChunk.dataChunkSize / fmtChunk.blockAlign)) - startSample
+        val numSamples = getHighestPowerOfTwo(maxSamples)
+        val endSample = startSample + numSamples
+
+        return getSamples(startSample, endSample, sampleInterval, channel, numSamples, interval).first()
+    }
+
+    private fun getSamples(
+        startSample: Int,
+        endSample: Int,
+        sampleInterval: Int,
+        channel: Int,
+        numSamples: Int,
+        interval: Double
+    ): Sequence<Window> {
         val samples = (startSample until endSample)
             .step(sampleInterval)
             .asSequence()
@@ -74,6 +112,15 @@ data class Wav(
             .map { index -> dataChunk[channel].get(index, numSamples) }
 
         return samples.map { Window(it, interval) }
+    }
+
+    private fun getHighestPowerOfTwo(number: Int): Int {
+        var result = number
+        generateSequence(1) { (it * 2) }
+            .take(5)
+            .forEach { position -> result = result or (result shr position) }
+
+        return result xor (result shr 1)
     }
 
     companion object {

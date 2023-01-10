@@ -27,7 +27,7 @@ import org.kotlinmath.R
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Tag(FFT)
-private class FFTProcessorTest {
+class FFTProcessorTest {
 
     @ParameterizedTest
     @MethodSource("getFFTValues")

@@ -1,6 +1,8 @@
 package cc.suffro.fft.bpm_analzying.filters
 
 import cc.suffro.fft.abs
+import cc.suffro.fft.bpm_analzying.data.Interval
+import cc.suffro.fft.bpm_analzying.data.Signal
 import cc.suffro.fft.fft.FFTProcessor
 import kotlin.math.floor
 import kotlin.math.roundToInt

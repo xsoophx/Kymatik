@@ -48,6 +48,14 @@ class BpmAnalyzerTest {
         assertNearlyEquals(expected = bpm, actual = result)
     }
 
+    @ParameterizedTest
+    @MethodSource("getTracks")
+    fun `should detect correct bpm with Filterbank algorithm`(trackName: String, bpm: Double){
+        val wav = wavReader.read(Path("src/test/resources/tracks/$trackName"))
+        val result = BpmAnalyzer().analyzeByEnergyLevels(wav, end = 5.0)
+        assertNearlyEquals(expected = bpm, actual = result)
+    }
+
     companion object {
         @JvmStatic
         private fun getTracks() = Stream.of(

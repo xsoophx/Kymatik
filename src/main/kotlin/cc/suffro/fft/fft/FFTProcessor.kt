@@ -38,6 +38,14 @@ class FFTProcessor {
         }
     }
 
+    // cannot overload "process", because of platform declaration clash (Sequence)
+    fun processSingle(
+        inputSample: Sequence<Double>,
+        samplingRate: Int,
+        method: Method = Method.FFT_IN_PLACE,
+        windowFunction: WindowFunction? = null
+    ): FFTData = process(sequenceOf(inputSample), samplingRate, method, windowFunction).first()
+
     fun processInverse(inputSamples: Sequence<Sequence<Complex>>): Sequence<Sequence<Double>> {
         return inputSamples.map { samples -> inverseFftInPlace(samples).map { it.re } }
     }

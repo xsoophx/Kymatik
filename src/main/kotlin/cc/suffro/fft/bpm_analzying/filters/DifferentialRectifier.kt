@@ -1,5 +1,6 @@
 package cc.suffro.fft.bpm_analzying.filters
 
+import cc.suffro.fft.bpm_analzying.data.Signal
 import kotlin.math.max
 
 object DifferentialRectifier {

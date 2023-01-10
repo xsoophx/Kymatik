@@ -1,15 +1,8 @@
 package cc.suffro.fft.bpm_analzying.filters
 
+import cc.suffro.fft.bpm_analzying.data.Interval
+import cc.suffro.fft.bpm_analzying.data.SeparatedSignals
 import cc.suffro.fft.fft.data.FFTData
-import org.kotlinmath.Complex
-
-typealias SeparatedSignals = Map<Interval, List<Complex>>
-typealias Signal = Sequence<Double>
-
-data class Interval(
-    val lowerBound: Int,
-    val upperBound: Int
-)
 
 object Filterbank {
     fun separateSignals(fftData: FFTData, maximumFrequency: Int): SeparatedSignals {
