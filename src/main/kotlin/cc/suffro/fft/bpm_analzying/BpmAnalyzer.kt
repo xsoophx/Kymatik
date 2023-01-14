@@ -10,6 +10,7 @@ import cc.suffro.fft.fft.FFTProcessor
 import cc.suffro.fft.fft.data.FFTData
 import cc.suffro.fft.fft.data.Window
 import cc.suffro.fft.fft.data.WindowFunction
+import cc.suffro.fft.getHighestPowerOfTwo
 import cc.suffro.fft.wav.data.FmtChunk
 import cc.suffro.fft.wav.data.Wav
 import java.lang.StrictMath.abs
@@ -28,12 +29,7 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
         interval: Double = 0.01,
         windowFunction: WindowFunction? = null
     ): Double {
-        // TODO: add nicer handling for maximum track length
-        val windows = wav.getWindows(
-            start = start,
-            end = min(wav.trackLength - 0.1, end),
-            interval = interval,
-        )
+        val windows = wav.getWindows(start = start, end = min(wav.timestampLastSample, end), interval = interval)
 
         val averagePeakTimes = fftProcessor
             .process(windows, samplingRate = wav.sampleRate, windowFunction = windowFunction)
@@ -69,7 +65,7 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
         val timeFrame = end - start
         require(timeFrame >= 2.2) { "Timeframe needs to be at least 2.2 seconds long for analyzing BPM." }
 
-        val window = wav.getWindow(start = start, end = min(wav.trackLength - 0.1, end))
+        val window = wav.getWindow(start = start, end = min(wav.timestampLastSample, end))
         val fftResult =
             fftProcessor.processSingle(window, wav.sampleRate, windowFunction = windowFunction)
         val filterParams = FilterParams(wav.fmtChunk, timeFrame, timeFrame)
@@ -79,7 +75,7 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
 
     private fun Wav.getWindow(start: Double, end: Double): Window {
         val interval = end - start
-        return getWindowWithHighestSampleNumber(start, end, interval)
+        return getWindow(start, end, interval)
     }
 
     private fun FFTData.analyzeSingleWindow(
@@ -88,7 +84,7 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
         filterParams: FilterParams
     ): Double {
         // transforms the signal into multiple signals, split by frequency intervals
-        val separatedSignals = Filterbank.separateSignals(this, MAXIMUM_FREQUENCY)
+        val separatedSignals = Filterbank.separateSignals(this)
 
         return separatedSignals
             .transformToTimeDomain(filterParams.interval)
@@ -101,7 +97,7 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
         filterParams: FilterParams,
         bandLimits: Set<Interval>
     ): Double {
-        val estimatedBpms = map { signal -> lowPassFilter.process(signal, filterParams.fmtChunk) }
+        val estimatedBpm = map { signal -> lowPassFilter.process(signal, filterParams.fmtChunk) }
             .map(DifferentialRectifier::process)
             .map { signal ->
                 combFilter.process(
@@ -113,12 +109,16 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
                 )
             }
 
-        return estimatedBpms.average()
+        return estimatedBpm.average()
     }
 
     private fun SeparatedSignals.transformToTimeDomain(interval: Double): Sequence<Window> {
+        //TODO: add better handling for low frequencies, don't cut information
         val signalInTimeDomain =
-            fftProcessor.processInverse(values.asSequence().map { it.asSequence() })
+            fftProcessor.processInverse(values.asSequence().map {
+                val powerOfTwo = getHighestPowerOfTwo(it.size)
+                it.asSequence().take(powerOfTwo)
+            })
 
         return signalInTimeDomain.map { Window(it, interval) }
     }

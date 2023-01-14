@@ -5,20 +5,28 @@ import cc.suffro.fft.bpm_analzying.data.SeparatedSignals
 import cc.suffro.fft.fft.data.FFTData
 
 object Filterbank {
-    fun separateSignals(fftData: FFTData, maximumFrequency: Int): SeparatedSignals {
-        val bins = getFrequencyBands(fftData.samplingRate.toDouble(), maximumFrequency).map {
-            Interval(fftData.binIndexOf(it.first), fftData.binIndexOf(it.second))
-        }
+    private val bandLimits = listOf(0, 200, 400, 800, 1600, 3200)
 
-        return bins.associateWith { interval ->
-            fftData.output.drop(interval.lowerBound).take(interval.upperBound - interval.lowerBound)
+    fun separateSignals(fftData: FFTData): SeparatedSignals {
+        val frequencies = fftData.getFrequencyBands()
+
+        return frequencies.associate { interval ->
+            val firstHalf = fftData.output.subList(interval.lowerBound, interval.upperBound)
+            val secondHalf = fftData.output.subList(
+                fftData.sampleSize - interval.upperBound,
+                fftData.sampleSize - interval.lowerBound
+            )
+            Interval(interval.lowerBound, interval.upperBound) to firstHalf + secondHalf
         }
     }
 
-    private fun getFrequencyBands(sampleRate: Double, maximumFrequency: Int) =
-        generateSequence(0.0 to 200.0) { it.second to it.second * 2 }
-            .takeWhile { it.second <= maximumFrequency }
-            .toMutableList()
-            .also { it += it.last().second to sampleRate }
+    private fun FFTData.getFrequencyBands(): List<Interval> {
+        val limits = bandLimits.zipWithNext { current, next ->
+            Interval(binIndexOf(current), binIndexOf(next) - 1)
+        }
 
+        return limits.toMutableList().apply {
+            this += Interval(binIndexOf(bandLimits.last()), bins.count - 1)
+        }
+    }
 }

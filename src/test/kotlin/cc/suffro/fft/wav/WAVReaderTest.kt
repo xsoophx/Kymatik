@@ -51,7 +51,7 @@ class WAVReaderTest {
     @MethodSource("getWavDataWithFrequency")
     fun `should read correct Samples from wav file`(path: String, frequency: Double) {
         val wav = wavReader.read(Path(path))
-        val samples = wav.getWindow(channel = 0, begin = 0)
+        val samples = wav.getWindowContent(channel = 0, begin = 0)
         val fftData = FFTProcessor().process(sequenceOf(samples), samplingRate = wav.sampleRate)
         val magnitudes = fftData.first().magnitudes
 
@@ -79,7 +79,7 @@ class WAVReaderTest {
     }
 
     @Test
-    fun `should return nothing if end is too close to track end`() {
+    fun `should handle track length as end correctly`() {
         val wav = wavReader.read(Path("src/test/resources/440.wav"))
         val windowTime = DEFAULT_SAMPLE_NUMBER.toDouble() / wav.sampleRate
         val actual = wav.getWindows(start = wav.trackLength - windowTime, end = wav.trackLength, interval = windowTime)

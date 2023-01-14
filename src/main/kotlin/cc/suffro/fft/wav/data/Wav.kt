@@ -1,6 +1,7 @@
 package cc.suffro.fft.wav.data
 
 import cc.suffro.fft.fft.data.Window
+import cc.suffro.fft.getHighestPowerOfTwo
 import java.nio.file.Path
 import kotlin.math.roundToInt
 
@@ -19,6 +20,9 @@ data class FmtChunk(
 ) {
     val trackLength: Double
         get() = dataChunkSize.toDouble() / (sampleRate * blockAlign)
+
+    val indexLastSample: Int
+        get() = ((dataChunkSize - blockAlign) / blockAlign)
 }
 
 data class Wav(
@@ -30,6 +34,12 @@ data class Wav(
 
     val trackLength: Double
         get() = fmtChunk.trackLength
+
+    private val indexLastSample: Int
+        get() = fmtChunk.indexLastSample
+
+    val timestampLastSample: Double
+        get() = indexLastSample.toDouble() / sampleRate
 
     val sampleRate: Int
         get() = fmtChunk.sampleRate
@@ -55,46 +65,61 @@ data class Wav(
         require(channel < dataChunk.size) { "Selected Channel has to be smaller than available channels (${dataChunk.size})." }
     }
 
-    fun getWindow(channel: Int, begin: Int, numSamples: Int = DEFAULT_SAMPLE_NUMBER): Sequence<Double> {
+    fun getWindowContent(channel: Int, begin: Int, numSamples: Int = DEFAULT_SAMPLE_NUMBER): Sequence<Double> {
         checkRequirements(channel, numSamples)
         return dataChunk[channel].get(begin, numSamples)
     }
 
+    private fun samplesOf(number: Double): Int = (number * sampleRate).roundToInt()
+
+    private fun checkOrCorrectEnd(end: Double): Double = if (end == trackLength) timestampLastSample else end
+
     fun getWindows(
         start: Double = 0.0,
-        end: Double = trackLength,
+        end: Double = timestampLastSample,
         interval: Double,
         channel: Int = 0,
         numSamples: Int = DEFAULT_SAMPLE_NUMBER
     ): Sequence<Window> {
         checkRequirements(channel, numSamples)
-        require(end <= trackLength) { "Selected end time of $end seconds exceeds actual end of track ($trackLength seconds)." }
-
-        val sampleInterval = (interval * sampleRate).roundToInt()
-        val startSample = (sampleRate * start).roundToInt()
-        val endSample =
-            minOf((sampleRate * end).roundToInt(), (fmtChunk.dataChunkSize / fmtChunk.blockAlign) - numSamples)
-
-        return getSamples(startSample, endSample, sampleInterval, channel, numSamples, interval)
+        val correctedEnd = checkOrCorrectEnd(end)
+        require(correctedEnd < trackLength) {
+            "Selected end time of $correctedEnd seconds exceeds actual end of track ($trackLength seconds)."
+        }
+        return getWindows(samplesOf(start), samplesOf(correctedEnd), interval, channel, numSamples)
     }
 
-    fun getWindowWithHighestSampleNumber(
+    private fun getWindows(start: Int, end: Int, interval: Double, channel: Int, numSamples: Int): Sequence<Window> {
+        return getSamples(
+            start,
+            minOf(end, indexLastSample - numSamples),
+            samplesOf(interval),
+            channel,
+            numSamples,
+            interval
+        )
+    }
+
+    fun getWindow(
         start: Double = 0.0,
-        end: Double = trackLength,
+        end: Double = timestampLastSample,
         interval: Double,
         channel: Int = 0
     ): Window {
+        val correctedEnd = checkOrCorrectEnd(end)
         checkRequirements(channel)
-        require(end <= trackLength) { "Selected end time of $end seconds exceeds actual end of track ($trackLength seconds)." }
+        require(correctedEnd < trackLength) {
+            "Selected end time of $correctedEnd seconds exceeds actual end of track ($trackLength seconds)."
+        }
 
-        val sampleInterval = (interval * sampleRate).roundToInt()
-        val startSample = (sampleRate * start).roundToInt()
-        val maxSamples =
-            minOf((sampleRate * end).roundToInt(), (fmtChunk.dataChunkSize / fmtChunk.blockAlign)) - startSample
-        val numSamples = getHighestPowerOfTwo(maxSamples)
-        val endSample = startSample + numSamples
+        return getWindow(samplesOf(start), samplesOf(correctedEnd), interval, channel)
+    }
 
-        return getSamples(startSample, endSample, sampleInterval, channel, numSamples, interval).first()
+    private fun getWindow(start: Int, end: Int, interval: Double, channel: Int): Window {
+        val numSamples = getHighestPowerOfTwo(end - start)
+        val endSample = start + numSamples
+
+        return getSamples(start, endSample, samplesOf(interval), channel, numSamples, interval).first()
     }
 
     private fun getSamples(
@@ -112,15 +137,6 @@ data class Wav(
             .map { index -> dataChunk[channel].get(index, numSamples) }
 
         return samples.map { Window(it, interval) }
-    }
-
-    private fun getHighestPowerOfTwo(number: Int): Int {
-        var result = number
-        generateSequence(1) { (it * 2) }
-            .take(5)
-            .forEach { position -> result = result or (result shr position) }
-
-        return result xor (result shr 1)
     }
 
     companion object {

@@ -5,6 +5,7 @@ import cc.suffro.fft.fft.FFTProcessor
 import cc.suffro.fft.fft.data.FFTData
 import cc.suffro.fft.fft.data.Window
 import cc.suffro.fft.fft.data.hanningFunction
+import cc.suffro.fft.getHighestPowerOfTwo
 import cc.suffro.fft.wav.data.FmtChunk
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -21,10 +22,15 @@ class LowPassFilter(private val fftProcessor: FFTProcessor) {
         val halfHanningWindow = (0 until samples)
             .map { hanningFunction(it, samples) }
             .subList(samples / 2, samples)
-            .asSequence()
 
-        val transformedHanningWindow = fftProcessor.process(halfHanningWindow, fmtChunk.sampleRate).output
-        val transformedSignal = fftProcessor.process(window, fmtChunk.sampleRate).output
+        val size = minOf(
+            getHighestPowerOfTwo(halfHanningWindow.size),
+            getHighestPowerOfTwo(window.count())
+        )
+
+        val transformedHanningWindow =
+            fftProcessor.process(halfHanningWindow.asSequence().take(size), fmtChunk.sampleRate).output
+        val transformedSignal = fftProcessor.process(window.take(size), fmtChunk.sampleRate).output
 
         val convolved = transformedHanningWindow.zip(transformedSignal)
             .map { it.first * it.second }.asSequence()

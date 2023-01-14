@@ -29,6 +29,8 @@ data class FFTData(
 
     // index = Frequency * Number of FFT Points / Sampling Frequency
     fun binIndexOf(frequency: Double): Int = (frequency * sampleSize / samplingRate).roundToInt()
+
+    fun binIndexOf(frequency: Int): Int = binIndexOf(frequency.toDouble())
 }
 
 enum class Method {
