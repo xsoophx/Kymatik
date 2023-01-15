@@ -23,7 +23,6 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:${Version.JUNIT}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Version.JUNIT}")
 
-
     implementation("org.kotlinmath:complex-numbers:${Version.KOTLIN_MATH}")
 }
 

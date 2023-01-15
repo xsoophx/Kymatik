@@ -8,6 +8,5 @@ class CombFilterTest {
 
     @Test
     fun `should process signal correctly`() {
-
     }
 }

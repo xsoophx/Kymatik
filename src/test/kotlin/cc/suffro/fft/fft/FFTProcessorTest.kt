@@ -87,7 +87,7 @@ class FFTProcessorTest {
 
         result.binIndexOf(frequency.toDouble()).let {
             assertNearlyEquals(
-                //not mathematically correct, but enough for testing purposes
+                // not mathematically correct, but enough for testing purposes
                 expected = magnitudes[it], actual = amplitude / 2, e = 20.0,
                 message = "Expected index $it with magnitude ${magnitudes[it]} to be close to ${amplitude / 2}."
             )
@@ -115,7 +115,6 @@ class FFTProcessorTest {
             assertEquals(expected = binIndex, actual = actual.binIndexOf(frequency.toDouble()))
         }
     }
-
 
     @ParameterizedTest
     @ValueSource(ints = [43, 430, 4306])
