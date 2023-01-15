@@ -83,9 +83,6 @@ data class Wav(
     ): Sequence<Window> {
         checkRequirements(channel, numSamples)
         val correctedEnd = checkOrCorrectEnd(end)
-        require(correctedEnd < trackLength) {
-            "Selected end time of $correctedEnd seconds exceeds actual end of track ($trackLength seconds)."
-        }
         return getWindows(samplesOf(start), samplesOf(correctedEnd), interval, channel, numSamples)
     }
 
@@ -108,10 +105,6 @@ data class Wav(
     ): Window {
         val correctedEnd = checkOrCorrectEnd(end)
         checkRequirements(channel)
-        require(correctedEnd < trackLength) {
-            "Selected end time of $correctedEnd seconds exceeds actual end of track ($trackLength seconds)."
-        }
-
         return getWindow(samplesOf(start), samplesOf(correctedEnd), interval, channel)
     }
 
