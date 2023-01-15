@@ -1,14 +1,14 @@
 package cc.suffro.fft.fft
 
-import cc.suffro.fft.FFT
 import cc.suffro.fft.assertNearlyEquals
+import cc.suffro.fft.FFT
+import cc.suffro.fft.fft.data.blackmanFunction
 import cc.suffro.fft.fft.data.FFTData
+import cc.suffro.fft.fft.data.hammingFunction
+import cc.suffro.fft.fft.data.hanningFunction
 import cc.suffro.fft.fft.data.Method
 import cc.suffro.fft.fft.data.Sample
 import cc.suffro.fft.fft.data.WindowFunction
-import cc.suffro.fft.fft.data.blackmanFunction
-import cc.suffro.fft.fft.data.hammingFunction
-import cc.suffro.fft.fft.data.hanningFunction
 import java.util.stream.Stream
 import kotlin.math.PI
 import kotlin.math.pow
@@ -36,7 +36,8 @@ class FFTProcessorTest {
 
         actual.output.forEachIndexed { index, complex ->
             assertNearlyEquals(
-                expected = complex, actual = expected[index],
+                expected = complex,
+                actual = expected[index],
                 message = "Expected ${expected[index]} at index $index, but was $complex."
             )
         }
@@ -50,7 +51,8 @@ class FFTProcessorTest {
 
         fftResults.output.forEachIndexed { index, fft ->
             assertNearlyEquals(
-                expected = fft, actual = dftResults.output.toList()[index],
+                expected = fft,
+                actual = dftResults.output.toList()[index],
                 message = "Value $fft at index $index is not the same as ${dftResults.output.toList()[index]}."
             )
         }
@@ -88,7 +90,9 @@ class FFTProcessorTest {
         result.binIndexOf(frequency.toDouble()).let {
             assertNearlyEquals(
                 // not mathematically correct, but enough for testing purposes
-                expected = magnitudes[it], actual = amplitude / 2, e = 20.0,
+                expected = magnitudes[it],
+                actual = amplitude / 2,
+                e = 20.0,
                 message = "Expected index $it with magnitude ${magnitudes[it]} to be close to ${amplitude / 2}."
             )
         }
@@ -128,7 +132,8 @@ class FFTProcessorTest {
 
         signal.forEachIndexed { index, value ->
             assertNearlyEquals(
-                expected = value, actual = firstResult[index],
+                expected = value,
+                actual = firstResult[index],
                 message = "Expected index $value to be close to ${firstResult[index]}."
             )
         }

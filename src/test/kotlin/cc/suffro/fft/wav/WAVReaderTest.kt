@@ -33,7 +33,8 @@ class WAVReaderTest {
                 filePath = Path(path),
                 fmtChunk = fmtChunk,
                 dataChunk = actual.dataChunk
-            ), actual = actual
+            ),
+            actual = actual
         )
     }
 

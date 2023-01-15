@@ -16,12 +16,11 @@ class FFTProcessor {
         inputSamples: Sequence<Sequence<Double>>,
         samplingRate: Int,
         method: Method = Method.FFT_IN_PLACE,
-        windowFunction: WindowFunction? = null,
+        windowFunction: WindowFunction? = null
     ): Sequence<FFTData> {
-        val complexSamples = (windowFunction
-            ?.let { inputSamples.map { window -> window.applyWindowFunction(it) } }
-            ?: inputSamples)
-            .toComplexSequence()
+        val complexSamples =
+            (windowFunction?.let { inputSamples.map { window -> window.applyWindowFunction(it) } } ?: inputSamples)
+                .toComplexSequence()
 
         return when (method) {
             Method.FFT -> complexSamples.map(::fft)

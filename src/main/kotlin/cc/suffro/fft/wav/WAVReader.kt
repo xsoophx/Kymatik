@@ -91,9 +91,9 @@ object WAVReader : FileReader<Wav> {
             16 -> {
                 for (sampleIndex in 0 until sampleCount) {
                     for (channel in 0 until fmtChunk.numChannels) {
-                        samples[channel][sampleIndex] =
-                            byteBuffer.getShort(sampleIndex * fmtChunk.blockAlign + channel * bytesPerChannel)
-                                .toDouble() / Short.MAX_VALUE
+                        samples[channel][sampleIndex] = byteBuffer.getShort(
+                            sampleIndex * fmtChunk.blockAlign + channel * bytesPerChannel
+                        ).toDouble() / Short.MAX_VALUE
                     }
                 }
                 samples

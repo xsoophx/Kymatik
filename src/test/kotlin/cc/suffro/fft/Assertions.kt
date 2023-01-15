@@ -1,8 +1,8 @@
 package cc.suffro.fft
 
+import org.kotlinmath.Complex
 import kotlin.math.abs
 import kotlin.test.assertTrue
-import org.kotlinmath.Complex
 
 fun assertNearlyEquals(expected: Double, actual: Double, e: Double = 0.2, message: String? = null) {
     assertTrue(actual.closeTo(expected, e), message ?: "Expected <$expected>, actual <$actual>.")

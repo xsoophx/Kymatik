@@ -1,10 +1,10 @@
 package cc.suffro.fft.bpm_analyzing.filters
 
 import cc.suffro.fft.bpm_analzying.filters.DifferentialRectifier
-import kotlin.math.pow
-import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import kotlin.math.pow
+import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DifferentialRectifierTest {

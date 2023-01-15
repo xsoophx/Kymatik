@@ -50,7 +50,7 @@ class BpmAnalyzerTest {
 
     @ParameterizedTest
     @MethodSource("getTracks")
-    fun `should detect correct bpm with Filterbank algorithm`(trackName: String, bpm: Double){
+    fun `should detect correct bpm with Filterbank algorithm`(trackName: String, bpm: Double) {
         val wav = wavReader.read(Path("src/test/resources/tracks/$trackName"))
         val result = BpmAnalyzer().analyzeByEnergyLevels(wav, end = 5.0)
         assertNearlyEquals(expected = bpm, actual = result)
@@ -63,7 +63,7 @@ class BpmAnalyzerTest {
             Arguments.of("Jan Vercauteren - Dysfunction.wav", 149.0),
             Arguments.of("Lucinee, MRD - Bang Juice (MRD Remix).wav", 144.0),
             Arguments.of("Mark Terre - Gravity Zero.wav", 152.0),
-            Arguments.of("Peter Van Hoesen - Vertical Vertigo.wav", 135.0),
+            Arguments.of("Peter Van Hoesen - Vertical Vertigo.wav", 135.0)
         )
     }
 }

@@ -20,7 +20,7 @@ enum class ErrorType {
 
 data class Error(
     val type: ErrorType,
-    var message: String = "",
+    var message: String = ""
 ) {
     init {
         message = type.toString()

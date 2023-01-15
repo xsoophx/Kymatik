@@ -18,7 +18,7 @@ import java.lang.StrictMath.min
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
-import java.util.*
+import java.util.Locale
 
 class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
 
@@ -55,12 +55,12 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
         }
     }
 
-    //TODO: maybe better naming
+    // TODO: maybe better naming
     fun analyzeByEnergyLevels(
         wav: Wav,
         start: Double = 0.0,
         end: Double = 3.0,
-        windowFunction: WindowFunction? = null,
+        windowFunction: WindowFunction? = null
     ): Double {
         val timeFrame = end - start
         require(timeFrame >= 2.2) { "Timeframe needs to be at least 2.2 seconds long for analyzing BPM." }
@@ -113,12 +113,14 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
     }
 
     private fun SeparatedSignals.transformToTimeDomain(interval: Double): Sequence<Window> {
-        //TODO: add better handling for low frequencies, don't cut information
+        // TODO: add better handling for low frequencies, don't cut information
         val signalInTimeDomain =
-            fftProcessor.processInverse(values.asSequence().map {
-                val powerOfTwo = getHighestPowerOfTwo(it.size)
-                it.asSequence().take(powerOfTwo)
-            })
+            fftProcessor.processInverse(
+                values.asSequence().map {
+                    val powerOfTwo = getHighestPowerOfTwo(it.size)
+                    it.asSequence().take(powerOfTwo)
+                }
+            )
 
         return signalInTimeDomain.map { Window(it, interval) }
     }
