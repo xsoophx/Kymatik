@@ -1,3 +1,4 @@
+// ktlint-disable filename
 package cc.suffro.fft
 
 import org.kotlinmath.Complex
