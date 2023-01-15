@@ -1,20 +1,14 @@
 package cc.suffro.fft.fft
 
-import cc.suffro.fft.assertNearlyEquals
 import cc.suffro.fft.FFT
-import cc.suffro.fft.fft.data.blackmanFunction
+import cc.suffro.fft.assertNearlyEquals
 import cc.suffro.fft.fft.data.FFTData
-import cc.suffro.fft.fft.data.hammingFunction
-import cc.suffro.fft.fft.data.hanningFunction
 import cc.suffro.fft.fft.data.Method
 import cc.suffro.fft.fft.data.Sample
 import cc.suffro.fft.fft.data.WindowFunction
-import java.util.stream.Stream
-import kotlin.math.PI
-import kotlin.math.pow
-import kotlin.math.roundToInt
-import kotlin.math.sin
-import kotlin.test.assertEquals
+import cc.suffro.fft.fft.data.blackmanFunction
+import cc.suffro.fft.fft.data.hammingFunction
+import cc.suffro.fft.fft.data.hanningFunction
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
@@ -24,6 +18,12 @@ import org.junit.jupiter.params.provider.ValueSource
 import org.kotlinmath.Complex
 import org.kotlinmath.I
 import org.kotlinmath.R
+import java.util.stream.Stream
+import kotlin.math.PI
+import kotlin.math.pow
+import kotlin.math.roundToInt
+import kotlin.math.sin
+import kotlin.test.assertEquals
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Tag(FFT)
@@ -164,15 +164,22 @@ class FFTProcessorTest {
             Arguments.of(
                 sequenceOf(0.0, -12539.770711739264, 23170.47500592079, -30273.684521329826),
                 listOf(
-                    (-19642.980227).R, (-23170.475006).R - 17733.913810.I,
-                    65983.930239.R, (-23170.475006).R + 17733.913810.I
+                    (-19642.980227).R,
+                    (-23170.475006).R - 17733.913810.I,
+                    65983.930239.R,
+                    (-23170.475006).R + 17733.913810.I
                 )
             ),
             Arguments.of(
                 sequenceOf(2.0, 1.0, -1.0, 5.0, 0.0, 3.0, 0.0, -4.0),
                 listOf(
-                    6.R, (-5.778175).R - 3.949747.I, 3.R - 3.I, 9.778175.R - 5.949747.I,
-                    (-4).R, 9.778175.R + 5.949747.I, 3.R + 3.I, (-5.778175).R + 3.949747.I
+                    6.R,
+                    (-5.778175).R - 3.949747.I,
+                    3.R - 3.I,
+                    9.778175.R - 5.949747.I,
+                    (-4).R, 9.778175.R + 5.949747.I,
+                    3.R + 3.I,
+                    (-5.778175).R + 3.949747.I
                 )
             )
         )

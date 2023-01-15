@@ -1,8 +1,8 @@
 package cc.suffro.fft.fft.data
 
-import kotlin.math.roundToInt
 import org.kotlinmath.Complex
 import org.kotlinmath.sqrt
+import kotlin.math.roundToInt
 
 typealias Sample = Double
 

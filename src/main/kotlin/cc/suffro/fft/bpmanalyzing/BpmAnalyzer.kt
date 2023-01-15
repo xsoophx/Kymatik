@@ -1,11 +1,11 @@
-package cc.suffro.fft.bpm_analzying
+package cc.suffro.fft.bpmanalyzing
 
-import cc.suffro.fft.bpm_analzying.data.Interval
-import cc.suffro.fft.bpm_analzying.data.SeparatedSignals
-import cc.suffro.fft.bpm_analzying.filters.CombFilter
-import cc.suffro.fft.bpm_analzying.filters.DifferentialRectifier
-import cc.suffro.fft.bpm_analzying.filters.Filterbank
-import cc.suffro.fft.bpm_analzying.filters.LowPassFilter
+import cc.suffro.fft.bpmanalyzing.data.Interval
+import cc.suffro.fft.bpmanalyzing.data.SeparatedSignals
+import cc.suffro.fft.bpmanalyzing.filters.CombFilter
+import cc.suffro.fft.bpmanalyzing.filters.DifferentialRectifier
+import cc.suffro.fft.bpmanalyzing.filters.Filterbank
+import cc.suffro.fft.bpmanalyzing.filters.LowPassFilter
 import cc.suffro.fft.fft.FFTProcessor
 import cc.suffro.fft.fft.data.FFTData
 import cc.suffro.fft.fft.data.Window
@@ -151,10 +151,11 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
         val e = 0.05
         val index = peakTimes.indexOfFirst { (abs(it - time)) < e }
 
-        if (index != -1)
+        if (index != -1) {
             peakTimes[index] = (peakTimes[index] + time) / 2
-        else if (peakTimes.all { abs(it - time) > MAX_PEAK_DISTANCE })
+        } else if (peakTimes.all { abs(it - time) > MAX_PEAK_DISTANCE }) {
             peakTimes += time
+        }
     }
 
     private fun List<Double>.getAveragePeakDistance(): Double =

@@ -1,6 +1,5 @@
-package cc.suffro.fft.bpm_analyzing.filters
+package cc.suffro.fft.bpmanalyzing.filters
 
-import cc.suffro.fft.bpm_analzying.filters.DifferentialRectifier
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import kotlin.math.pow

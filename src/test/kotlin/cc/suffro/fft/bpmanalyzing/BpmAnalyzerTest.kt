@@ -1,16 +1,15 @@
-package cc.suffro.fft.bpm_analyzing
+package cc.suffro.fft.bpmanalyzing
 
 import cc.suffro.fft.assertNearlyEquals
-import cc.suffro.fft.bpm_analzying.BpmAnalyzer
 import cc.suffro.fft.wav.WAVReader
-import java.util.stream.Stream
-import kotlin.io.path.Path
-import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import java.util.stream.Stream
+import kotlin.io.path.Path
+import kotlin.test.assertEquals
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class BpmAnalyzerTest {

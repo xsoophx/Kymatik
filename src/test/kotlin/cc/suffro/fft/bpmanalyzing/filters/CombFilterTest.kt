@@ -1,4 +1,4 @@
-package cc.suffro.fft.bpm_analyzing.filters
+package cc.suffro.fft.bpmanalyzing.filters
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance

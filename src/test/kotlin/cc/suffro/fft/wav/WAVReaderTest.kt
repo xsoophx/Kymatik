@@ -5,9 +5,6 @@ import cc.suffro.fft.fft.FFTProcessor
 import cc.suffro.fft.wav.data.AudioFormat
 import cc.suffro.fft.wav.data.FmtChunk
 import cc.suffro.fft.wav.data.Wav
-import java.util.stream.Stream
-import kotlin.io.path.Path
-import kotlin.test.assertEquals
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -16,6 +13,9 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.MethodSource
+import java.util.stream.Stream
+import kotlin.io.path.Path
+import kotlin.test.assertEquals
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Tag(FFT)
@@ -56,9 +56,7 @@ class WAVReaderTest {
         val fftData = FFTProcessor().process(sequenceOf(samples), samplingRate = wav.sampleRate)
         val magnitudes = fftData.first().magnitudes
 
-        assertEquals(
-            expected = fftData.first().binIndexOf(frequency), actual = magnitudes.indexOf(magnitudes.max())
-        )
+        assertEquals(expected = fftData.first().binIndexOf(frequency), actual = magnitudes.indexOf(magnitudes.max()))
     }
 
     @ParameterizedTest
@@ -131,12 +129,8 @@ class WAVReaderTest {
 
         @JvmStatic
         private fun getWavDataWithFrequency() = Stream.of(
-            Arguments.of(
-                "src/test/resources/440.wav", 440.0
-            ),
-            Arguments.of(
-                "src/test/resources/220.wav", 220.0
-            )
+            Arguments.of("src/test/resources/440.wav", 440.0),
+            Arguments.of("src/test/resources/220.wav", 220.0)
         )
     }
 }

@@ -1,4 +1,4 @@
-package cc.suffro.fft.bpm_analzying.data
+package cc.suffro.fft.bpmanalyzing.data
 
 import org.kotlinmath.Complex
 

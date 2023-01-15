@@ -1,6 +1,6 @@
-package cc.suffro.fft.bpm_analzying.filters
+package cc.suffro.fft.bpmanalyzing.filters
 
-import cc.suffro.fft.bpm_analzying.data.Signal
+import cc.suffro.fft.bpmanalyzing.data.Signal
 import cc.suffro.fft.fft.FFTProcessor
 import cc.suffro.fft.fft.data.FFTData
 import cc.suffro.fft.fft.data.Window

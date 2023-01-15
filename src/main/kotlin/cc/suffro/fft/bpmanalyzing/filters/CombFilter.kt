@@ -1,14 +1,14 @@
-package cc.suffro.fft.bpm_analzying.filters
+package cc.suffro.fft.bpmanalyzing.filters
 
 import cc.suffro.fft.abs
-import cc.suffro.fft.bpm_analzying.data.Interval
-import cc.suffro.fft.bpm_analzying.data.Signal
+import cc.suffro.fft.bpmanalyzing.data.Interval
+import cc.suffro.fft.bpmanalyzing.data.Signal
 import cc.suffro.fft.fft.FFTProcessor
-import kotlin.math.floor
-import kotlin.math.roundToInt
 import org.kotlinmath.Complex
 import org.kotlinmath.complex
 import org.kotlinmath.pow
+import kotlin.math.floor
+import kotlin.math.roundToInt
 
 // TODO: let's refactor this
 class CombFilter(private val fftProcessor: FFTProcessor) {

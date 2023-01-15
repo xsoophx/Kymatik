@@ -1,7 +1,7 @@
-package cc.suffro.fft.bpm_analzying.filters
+package cc.suffro.fft.bpmanalyzing.filters
 
-import cc.suffro.fft.bpm_analzying.data.Interval
-import cc.suffro.fft.bpm_analzying.data.SeparatedSignals
+import cc.suffro.fft.bpmanalyzing.data.Interval
+import cc.suffro.fft.bpmanalyzing.data.SeparatedSignals
 import cc.suffro.fft.fft.data.FFTData
 
 object Filterbank {
