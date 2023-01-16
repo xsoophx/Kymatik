@@ -5,10 +5,8 @@ import cc.suffro.fft.bpmanalyzing.data.SeparatedSignals
 import cc.suffro.fft.fft.data.FFTData
 
 object Filterbank {
-    private val bandLimits = listOf(0, 200, 400, 800, 1600, 3200)
-
-    fun separateSignals(fftData: FFTData): SeparatedSignals {
-        val frequencies = fftData.getFrequencyBands()
+    fun separateSignals(fftData: FFTData, maximumFrequency: Int): SeparatedSignals {
+        val frequencies = fftData.getFrequencyBands(maximumFrequency)
 
         return frequencies.associate { interval ->
             val firstHalf = fftData.output.subList(interval.lowerBound, interval.upperBound)
@@ -20,13 +18,15 @@ object Filterbank {
         }
     }
 
-    private fun FFTData.getFrequencyBands(): List<Interval> {
-        val limits = bandLimits.zipWithNext { current, next ->
-            Interval(binIndexOf(current), binIndexOf(next) - 1)
-        }
+    private fun FFTData.getFrequencyBands(maximumFrequency: Int): List<Interval> {
+        val limits = generateSequence(0 to 200) { it.second to it.second * 2 }
+            .takeWhile { it.second <= maximumFrequency }
+            .map { (lower, upper) ->
+                Interval(binIndexOf(lower), binIndexOf(upper) - 1)
+            }
 
         return limits.toMutableList().apply {
-            this += Interval(binIndexOf(bandLimits.last()), bins.count - 1)
+            this += Interval(limits.last().upperBound, binIndexOf(maximumFrequency))
         }
     }
 }

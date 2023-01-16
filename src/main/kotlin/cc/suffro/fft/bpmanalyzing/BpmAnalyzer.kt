@@ -84,7 +84,7 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
         filterParams: FilterParams
     ): Double {
         // transforms the signal into multiple signals, split by frequency intervals
-        val separatedSignals = Filterbank.separateSignals(this)
+        val separatedSignals = Filterbank.separateSignals(this, MAXIMUM_FREQUENCY)
 
         return separatedSignals
             .transformToTimeDomain(filterParams.interval)
