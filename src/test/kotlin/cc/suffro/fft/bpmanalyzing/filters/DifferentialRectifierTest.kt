@@ -1,5 +1,6 @@
 package cc.suffro.fft.bpmanalyzing.filters
 
+import cc.suffro.fft.bpmanalyzing.filters.DifferentialRectifier.process
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import kotlin.math.pow
@@ -16,6 +17,4 @@ class DifferentialRectifierTest {
         assertTrue(actual.none { it < 0 })
         assertTrue(actual.filterIndexed { index, _ -> index and 1 == 0 }.all { it == 0.0 })
     }
-
-    private fun process(signal: Sequence<Double>) = DifferentialRectifier.process(sequenceOf(signal)).first()
 }

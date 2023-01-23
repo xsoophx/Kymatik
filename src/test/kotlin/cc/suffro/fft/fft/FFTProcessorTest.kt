@@ -70,7 +70,7 @@ class FFTProcessorTest {
         val result = processWindow(signal, samplingRate = DEFAULT_SAMPLING_RATE)
 
         val magnitudes = result.magnitudes
-        val maximumIndex = magnitudes.indexOf(magnitudes.max())
+        val maximumIndex = magnitudes.indexOf(magnitudes.maxOf { it })
         val binIndex = (frequency * DEFAULT_SAMPLE_SIZE / DEFAULT_SAMPLING_RATE.toDouble()).roundToInt()
 
         // TODO: some refactoring, extract into separate tests
@@ -112,7 +112,7 @@ class FFTProcessorTest {
             val actual = processWindow(input = signal, samplingRate = DEFAULT_SAMPLING_RATE, windowFunction = function)
             val magnitudes = actual.magnitudes
 
-            val maximumIndex = magnitudes.indexOf(magnitudes.max())
+            val maximumIndex = magnitudes.indexOf(magnitudes.maxOf { it })
             val binIndex = (frequency * DEFAULT_SAMPLE_SIZE / DEFAULT_SAMPLING_RATE.toDouble()).roundToInt()
 
             assertEquals(expected = binIndex, actual = maximumIndex)

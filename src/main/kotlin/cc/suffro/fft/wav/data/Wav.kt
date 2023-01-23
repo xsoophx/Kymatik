@@ -108,6 +108,17 @@ data class Wav(
         return getWindow(samplesOf(start), samplesOf(correctedEnd), interval, channel)
     }
 
+    fun getWindow(
+        start: Double = 0.0,
+        numSamples: Int,
+        channel: Int = 0
+    ): Window {
+        checkRequirements(channel, numSamples)
+        //
+        val interval = numSamples.toDouble() / sampleRate
+        return getWindow(samplesOf(start), samplesOf(start) + numSamples, interval, channel)
+    }
+
     private fun getWindow(start: Int, end: Int, interval: Double, channel: Int): Window {
         val numSamples = getHighestPowerOfTwo(end - start)
         val endSample = start + numSamples

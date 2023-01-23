@@ -65,17 +65,16 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
         val timeFrame = end - start
         require(timeFrame >= 2.2) { "Timeframe needs to be at least 2.2 seconds long for analyzing BPM." }
 
-        val window = wav.getWindow(start = start, end = min(wav.timestampLastSample, end))
+        val window = wav.getWindow(start = start, numSamples = MINIMUM_FFT_SIZE_BY_ENERGY_LEVELS)
         val fftResult =
             fftProcessor.processSingle(window, wav.sampleRate, windowFunction = windowFunction)
-        val filterParams = FilterParams(wav.fmtChunk, timeFrame, timeFrame)
+        val filterParams = FilterParams(wav.fmtChunk, fftResult.duration, timeFrame)
 
         return fftResult.analyzeSingleWindow(LowPassFilter(fftProcessor), CombFilter(fftProcessor), filterParams)
     }
 
-    private fun Wav.getWindow(start: Double, end: Double): Window {
-        val interval = end - start
-        return getWindow(start, end, interval)
+    private fun Wav.getWindow(start: Double, numSamples: Int): Window {
+        return getWindow(start, numSamples)
     }
 
     private fun FFTData.analyzeSingleWindow(
@@ -97,19 +96,16 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
         filterParams: FilterParams,
         bandLimits: Set<Interval>
     ): Double {
-        val estimatedBpm = map { signal -> lowPassFilter.process(signal, filterParams.fmtChunk) }
-            .map(DifferentialRectifier::process)
-            .map { signal ->
-                combFilter.process(
-                    signal,
-                    bandLimits,
-                    MAXIMUM_FREQUENCY,
-                    filterParams.fmtChunk.sampleRate,
-                    filterParams.timeFrame
-                )
-            }
+        val lowPassFiltered = map { signal -> lowPassFilter.process(signal, filterParams.fmtChunk) }
+        val differentials = lowPassFiltered.map(DifferentialRectifier::process)
+        val combFiltered = combFilter.process(
+            differentials,
+            bandLimits,
+            MAXIMUM_FREQUENCY,
+            filterParams.fmtChunk.sampleRate
+        )
 
-        return estimatedBpm.average()
+        return combFiltered.toDouble()
     }
 
     private fun SeparatedSignals.transformToTimeDomain(interval: Double): Sequence<Window> {
@@ -191,5 +187,7 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
         private const val HIGHER_FREQUENCY_BOUND = 120.0
         private const val MAX_PEAK_DISTANCE = 60.0 / 220.0
         private const val MAXIMUM_FREQUENCY = 4096
+
+        private const val MINIMUM_FFT_SIZE_BY_ENERGY_LEVELS = MAXIMUM_FREQUENCY * 4
     }
 }

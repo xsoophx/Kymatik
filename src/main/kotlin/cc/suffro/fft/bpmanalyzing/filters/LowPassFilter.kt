@@ -7,17 +7,18 @@ import cc.suffro.fft.fft.data.Window
 import cc.suffro.fft.fft.data.hanningFunction
 import cc.suffro.fft.getHighestPowerOfTwo
 import cc.suffro.fft.wav.data.FmtChunk
+import org.kotlinmath.Complex
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
 class LowPassFilter(private val fftProcessor: FFTProcessor) {
-    fun process(window: Window, fmtChunk: FmtChunk): Sequence<Signal> {
-        val fullWaveRectified = Window(window.map(::abs), window.intervalTime)
+    fun process(window: Window, fmtChunk: FmtChunk): Signal {
+        val fullWaveRectified = Window(window.map(::abs), window.duration)
         return convolve(fullWaveRectified, fmtChunk)
     }
 
-    private fun convolve(window: Window, fmtChunk: FmtChunk): Sequence<Signal> {
-        val samples = (window.intervalTime * 2 * fmtChunk.sampleRate).roundToInt()
+    private fun convolve(window: Window, fmtChunk: FmtChunk): Signal {
+        val samples = (window.duration * 2 * fmtChunk.sampleRate).roundToInt()
 
         val halfHanningWindow = (0 until samples)
             .map { hanningFunction(it, samples) }
@@ -35,9 +36,12 @@ class LowPassFilter(private val fftProcessor: FFTProcessor) {
         val convolved = transformedHanningWindow.zip(transformedSignal)
             .map { it.first * it.second }.asSequence()
 
-        return fftProcessor.processInverse(sequenceOf(convolved))
+        return fftProcessor.processInverse(convolved)
     }
 
     private fun FFTProcessor.process(signal: Sequence<Double>, sampleRate: Int): FFTData =
         process(sequenceOf(signal), sampleRate).first()
+
+    private fun FFTProcessor.processInverse(signal: Sequence<Complex>): Sequence<Double> =
+        processInverse(sequenceOf(signal)).first()
 }

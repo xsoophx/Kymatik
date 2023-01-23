@@ -49,7 +49,7 @@ class FFTProcessor {
         return inputSamples.map { samples -> inverseFftInPlace(samples).map { it.re } }
     }
 
-    private fun Sequence<Double>.applyWindowFunction(function: (Int, Int) -> Double): Sequence<Double> {
+    private inline fun Sequence<Double>.applyWindowFunction(crossinline function: (Int, Int) -> Double): Sequence<Double> {
         val length = this.count()
         return mapIndexed { index, sample -> function(index, length) * sample }
     }

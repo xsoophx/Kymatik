@@ -27,6 +27,9 @@ data class FFTData(
     val magnitudes: List<Double>
         get() = output.take(bins.count).map { abs(it).re / sampleSize }
 
+    val duration: Double
+        get() = sampleSize.toDouble() / samplingRate
+
     // index = Frequency * Number of FFT Points / Sampling Frequency
     fun binIndexOf(frequency: Double): Int = (frequency * sampleSize / samplingRate).roundToInt()
 
@@ -41,5 +44,5 @@ enum class Method {
 
 data class Window(
     val samples: Sequence<Sample>,
-    val intervalTime: Double
+    val duration: Double
 ) : Sequence<Sample> by samples
