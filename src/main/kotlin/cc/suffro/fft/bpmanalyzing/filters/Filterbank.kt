@@ -16,8 +16,7 @@ object Filterbank {
                 output[index][value] = fftData.output[value]
             }
 
-            (fftData.sampleSize - interval.upperBound
-                until fftData.sampleSize - interval.lowerBound).map { value ->
+            (fftData.sampleSize - interval.upperBound until fftData.sampleSize - interval.lowerBound).map { value ->
                 output[index][value] = fftData.output[value]
             }
         }
