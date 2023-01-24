@@ -1,7 +1,7 @@
 package cc.suffro.fft.fft.data
 
+import cc.suffro.fft.abs
 import org.kotlinmath.Complex
-import org.kotlinmath.sqrt
 import kotlin.math.roundToInt
 
 typealias Sample = Double
@@ -22,10 +22,8 @@ data class FFTData(
     val samplingRate: Int,
     val output: List<Complex>
 ) {
-    private fun abs(n: Complex): Complex = sqrt(n.re * n.re + n.im * n.im)
-
     val magnitudes: List<Double>
-        get() = output.take(bins.count).map { abs(it).re / sampleSize }
+        get() = output.take(bins.count).map { abs(it) / sampleSize }
 
     val duration: Double
         get() = sampleSize.toDouble() / samplingRate
