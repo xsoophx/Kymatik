@@ -5,6 +5,7 @@ import cc.suffro.fft.bpmanalyzing.data.Interval
 import cc.suffro.fft.bpmanalyzing.data.Signal
 import cc.suffro.fft.fft.FFTProcessor
 import org.kotlinmath.Complex
+import org.kotlinmath.R
 import org.kotlinmath.complex
 import org.kotlinmath.pow
 
@@ -28,11 +29,11 @@ class CombFilter(private val fftProcessor: FFTProcessor) {
         for (bpm in MINIMUM_BPM..MAXIMUM_BPM step STEP_SIZE) {
             var energy = 0.0
             fillPulses(120.0, maximumFrequency, bpm, pulses)
-            val fftOfFilter = fftProcessor.process(pulses.asSequence(), samplingRate).toList()
+            val fftOfFilter = fftProcessor.process(pulses.asSequence(), samplingRate).toList().first()
 
             bandLimits.forEachIndexed { index, _ ->
                 val convolution =
-                    (fftResult[index].output zip fftOfFilter[index].output).map { pow(2, abs(it.first * it.second)) }
+                    (fftResult[index].output zip fftOfFilter.output).map { pow(abs(it.first * it.second), 2.R) }
                 energy += convolution.sum { it }.re
             }
 
@@ -57,7 +58,7 @@ class CombFilter(private val fftProcessor: FFTProcessor) {
     }
 
     private fun fillPulses(bpmInTimeFrame: Double, maximumFrequency: Int, bpm: Int, pulses: MutableList<Int>) {
-        val step = (bpmInTimeFrame / bpm * maximumFrequency).toInt()
+        val step = (bpmInTimeFrame / bpm * maximumFrequency).toInt() - 1
 
         for (i in 0 until PULSES) {
             pulses[i * step] = 1

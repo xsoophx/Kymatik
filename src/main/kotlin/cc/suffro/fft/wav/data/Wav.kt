@@ -56,10 +56,6 @@ data class Wav(
         require((numSamples != 0) && numSamples and (numSamples - 1) == 0) { "Length has to be power of tow, but is $numSamples." }
     }
 
-    private fun checkRequirements(channel: Int) {
-        checkChannelRequirements(channel)
-    }
-
     private fun checkChannelRequirements(channel: Int) {
         require(channel >= 0) { "Selected Channel has to be greater than or equal to zero." }
         require(channel < dataChunk.size) { "Selected Channel has to be smaller than available channels (${dataChunk.size})." }
@@ -99,22 +95,10 @@ data class Wav(
 
     fun getWindow(
         start: Double = 0.0,
-        end: Double = timestampLastSample,
-        interval: Double,
-        channel: Int = 0
-    ): Window {
-        val correctedEnd = checkOrCorrectEnd(end)
-        checkRequirements(channel)
-        return getWindow(samplesOf(start), samplesOf(correctedEnd), interval, channel)
-    }
-
-    fun getWindow(
-        start: Double = 0.0,
         numSamples: Int,
         channel: Int = 0
     ): Window {
         checkRequirements(channel, numSamples)
-        //
         val interval = numSamples.toDouble() / sampleRate
         return getWindow(samplesOf(start), samplesOf(start) + numSamples, interval, channel)
     }

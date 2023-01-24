@@ -56,7 +56,10 @@ class WAVReaderTest {
         val fftData = FFTProcessor().process(sequenceOf(samples), samplingRate = wav.sampleRate)
         val magnitudes = fftData.first().magnitudes
 
-        assertEquals(expected = fftData.first().binIndexOf(frequency), actual = magnitudes.indexOf(magnitudes.max()))
+        assertEquals(
+            expected = fftData.first().binIndexOf(frequency),
+            actual = magnitudes.indexOf(magnitudes.maxOf { it })
+        )
     }
 
     @ParameterizedTest
