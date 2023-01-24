@@ -4,10 +4,7 @@ import cc.suffro.fft.abs
 import cc.suffro.fft.bpmanalyzing.data.Interval
 import cc.suffro.fft.bpmanalyzing.data.Signal
 import cc.suffro.fft.fft.FFTProcessor
-import org.kotlinmath.Complex
-import org.kotlinmath.R
-import org.kotlinmath.complex
-import org.kotlinmath.pow
+import kotlin.math.pow
 
 // TODO: let's refactor this
 class CombFilter(private val fftProcessor: FFTProcessor) {
@@ -22,19 +19,19 @@ class CombFilter(private val fftProcessor: FFTProcessor) {
 
         val fftResult = fftProcessor.process(signals, samplingRate).toList()
         // val bpmInTimeFrame = (MINIMUM_BPM * timeFrame).roundToInt()
-        val pulses = MutableList(length) { 0 }
         var maxEnergy = 0.0
         var estimatedBpm = 0
 
         for (bpm in MINIMUM_BPM..MAXIMUM_BPM step STEP_SIZE) {
             var energy = 0.0
+            val pulses = MutableList(length) { 0 }
             fillPulses(120.0, maximumFrequency, bpm, pulses)
             val fftOfFilter = fftProcessor.process(pulses.asSequence(), samplingRate).toList().first()
 
             bandLimits.forEachIndexed { index, _ ->
                 val convolution =
-                    (fftResult[index].output zip fftOfFilter.output).map { pow(abs(it.first * it.second), 2.R) }
-                energy += convolution.sum { it }.re
+                    (fftResult[index].output zip fftOfFilter.output).map { abs(it.first * it.second).pow(2) }
+                energy += convolution.sum()
             }
 
             if (energy > maxEnergy) {
@@ -47,14 +44,6 @@ class CombFilter(private val fftProcessor: FFTProcessor) {
 
     private fun MutableList<Int>.asSequence(): Sequence<Sequence<Double>> {
         return sequenceOf(map { it.toDouble() }.asSequence())
-    }
-
-    private inline fun List<Complex>.sum(selector: (Complex) -> Complex): Complex {
-        var result = complex(0, 0)
-        for (element in this) {
-            result += selector(element)
-        }
-        return result
     }
 
     private fun fillPulses(bpmInTimeFrame: Double, maximumFrequency: Int, bpm: Int, pulses: MutableList<Int>) {

@@ -68,7 +68,7 @@ data class Wav(
 
     private fun samplesOf(number: Double): Int = (number * sampleRate).roundToInt()
 
-    private fun checkOrCorrectEnd(end: Double): Double = if (end == trackLength) timestampLastSample else end
+    private fun checkOrCorrectEnd(end: Double): Double = if (end >= trackLength) timestampLastSample else end
 
     fun getWindows(
         start: Double = 0.0,

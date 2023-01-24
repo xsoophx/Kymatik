@@ -8,7 +8,6 @@ import cc.suffro.fft.wav.data.Wav
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.CsvSource
@@ -87,12 +86,6 @@ class WAVReaderTest {
         val actual = wav.getWindows(start = wav.trackLength - windowTime, end = wav.trackLength, interval = windowTime)
 
         assertEquals(expected = 0, actual = actual.count())
-    }
-
-    @Test
-    fun `should throw error if selected end time is exceeds time of actual track`() {
-        val wav = wavReader.read(Path("src/test/resources/440.wav"))
-        assertThrows<IllegalArgumentException> { wav.getWindows(start = 7.0, end = 10.001, interval = 0.01) }
     }
 
     companion object {

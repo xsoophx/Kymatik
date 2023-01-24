@@ -73,10 +73,6 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
         return fftResult.analyzeSingleWindow(LowPassFilter(fftProcessor), CombFilter(fftProcessor), filterParams)
     }
 
-    private fun Wav.getWindow(start: Double, numSamples: Int): Window {
-        return getWindow(start, numSamples)
-    }
-
     private fun FFTData.analyzeSingleWindow(
         lowPassFilter: LowPassFilter,
         combFilter: CombFilter,
@@ -188,6 +184,11 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
         private const val MAX_PEAK_DISTANCE = 60.0 / 220.0
         private const val MAXIMUM_FREQUENCY = 4096
 
-        private const val MINIMUM_FFT_SIZE_BY_ENERGY_LEVELS = MAXIMUM_FREQUENCY * 4
+        // assuming the first kick is starting at 0.0s
+        // 60 bpm minimum bpm, one interval would be 2 seconds + ~ 0.3s buffer
+        // FFTSamples = 2s * samplingRate + 0.3s * samplingRate
+        // e.g. 2s * 44100Hz + 0.3s * 44100Hz = 88.200 + 13.230 = 101.430
+        // next potency of two is 131.072 (2^17)
+        private const val MINIMUM_FFT_SIZE_BY_ENERGY_LEVELS = 131072
     }
 }
