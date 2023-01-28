@@ -1,6 +1,6 @@
 package cc.suffro.fft
 
-import cc.suffro.fft.bpmanalyzing.BpmAnalyzer
+import cc.suffro.fft.bpmanalyzing.analyzers.CombFilterAnalyzer
 import cc.suffro.fft.wav.WAVReader
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -8,8 +8,8 @@ import java.nio.file.Paths
 object Main {
     private fun analyzeWav(file: Path) {
         val wav = WAVReader.read(file)
-        val bpmAnalyzer = BpmAnalyzer()
-        val bpm = bpmAnalyzer.analyzeByPeakDistance(wav)
+        val bpmAnalyzer = CombFilterAnalyzer()
+        val bpm = bpmAnalyzer.analyze(wav)
         println("$file has a BPM of $bpm.")
     }
 

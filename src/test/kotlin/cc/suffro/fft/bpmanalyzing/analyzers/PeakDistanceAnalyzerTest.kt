@@ -1,4 +1,4 @@
-package cc.suffro.fft.bpmanalyzing
+package cc.suffro.fft.bpmanalyzing.analyzers
 
 import cc.suffro.fft.assertNearlyEquals
 import cc.suffro.fft.wav.WAVReader
@@ -12,14 +12,14 @@ import kotlin.io.path.Path
 import kotlin.test.assertEquals
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class BpmAnalyzerTest {
+class PeakDistanceAnalyzerTest {
 
     private val wavReader = WAVReader
 
     @Test
     fun `should detect correct BPM for plain kicks`() {
         val wav = wavReader.read(Path("src/test/resources/120bpmkick_60-140Hz.wav"))
-        val result = BpmAnalyzer().analyzeByPeakDistance(wav)
+        val result = PeakDistanceAnalyzer().analyze(wav)
         assertEquals(expected = 120.0, actual = result)
     }
 
@@ -27,7 +27,7 @@ class BpmAnalyzerTest {
     @MethodSource("getTracks")
     fun `should detect correct BPM for test tracks in 20 seconds`(trackName: String, bpm: Double) {
         val wav = wavReader.read(Path("src/test/resources/tracks/$trackName"))
-        val result = BpmAnalyzer().analyzeByPeakDistance(wav, end = 20.0)
+        val result = PeakDistanceAnalyzer().analyze(wav, end = 20.0)
         assertNearlyEquals(expected = bpm, actual = result)
     }
 
@@ -35,7 +35,7 @@ class BpmAnalyzerTest {
     @MethodSource("getTracks")
     fun `should detect correct BPM for test tracks in 10 seconds`(trackName: String, bpm: Double) {
         val wav = wavReader.read(Path("src/test/resources/tracks/$trackName"))
-        val result = BpmAnalyzer().analyzeByPeakDistance(wav, end = 10.0)
+        val result = PeakDistanceAnalyzer().analyze(wav, end = 10.0)
         assertNearlyEquals(expected = bpm, actual = result)
     }
 
@@ -43,7 +43,7 @@ class BpmAnalyzerTest {
     @MethodSource("getTracks")
     fun `should detect correct BPM for test tracks in 5 seconds`(trackName: String, bpm: Double) {
         val wav = wavReader.read(Path("src/test/resources/tracks/$trackName"))
-        val result = BpmAnalyzer().analyzeByPeakDistance(wav, end = 5.0)
+        val result = PeakDistanceAnalyzer().analyze(wav, end = 5.0)
         assertNearlyEquals(expected = bpm, actual = result)
     }
 
@@ -51,7 +51,7 @@ class BpmAnalyzerTest {
     @MethodSource("getTracks")
     fun `should detect correct bpm with Filterbank algorithm`(trackName: String, bpm: Double) {
         val wav = wavReader.read(Path("src/test/resources/tracks/$trackName"))
-        val result = BpmAnalyzer().analyzeByEnergyLevels(wav, end = 5.0)
+        val result = PeakDistanceAnalyzer().analyze(wav, end = 5.0)
         assertNearlyEquals(expected = bpm, actual = result)
     }
 
