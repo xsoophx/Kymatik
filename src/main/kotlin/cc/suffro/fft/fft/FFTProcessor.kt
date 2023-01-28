@@ -37,8 +37,7 @@ class FFTProcessor {
         }
     }
 
-    // cannot overload "process", because of platform declaration clash (Sequence)
-    fun processSingle(
+    fun process(
         inputSample: Sequence<Double>,
         samplingRate: Int,
         method: Method = Method.FFT_IN_PLACE,

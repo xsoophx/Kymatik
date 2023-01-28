@@ -1,6 +1,5 @@
 package cc.suffro.fft.bpmanalyzing
 
-import cc.suffro.fft.bpmanalyzing.data.Interval
 import cc.suffro.fft.bpmanalyzing.data.SeparatedSignals
 import cc.suffro.fft.bpmanalyzing.filters.CombFilter
 import cc.suffro.fft.bpmanalyzing.filters.DifferentialRectifier
@@ -55,7 +54,6 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
         }
     }
 
-    // TODO: maybe better naming
     fun analyzeByEnergyLevels(
         wav: Wav,
         start: Double = 0.0,
@@ -66,8 +64,7 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
         require(timeFrame >= 2.2) { "Timeframe needs to be at least 2.2 seconds long for analyzing BPM." }
 
         val window = wav.getWindow(start = start, numSamples = MINIMUM_FFT_SIZE_BY_ENERGY_LEVELS)
-        val fftResult =
-            fftProcessor.processSingle(window, wav.sampleRate, windowFunction = windowFunction)
+        val fftResult = fftProcessor.process(window, wav.sampleRate, windowFunction = windowFunction)
         val filterParams = FilterParams(wav.fmtChunk, fftResult.duration, timeFrame)
 
         return fftResult.analyzeSingleWindow(LowPassFilter(fftProcessor), CombFilter(fftProcessor), filterParams)
@@ -80,26 +77,21 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
     ): Double {
         // transforms the signal into multiple signals, split by frequency intervals
         val separatedSignals = Filterbank.separateSignals(this, MAXIMUM_FREQUENCY)
+        val timeTransformed = separatedSignals.transformToTimeDomain(filterParams.interval)
 
-        return separatedSignals
-            .transformToTimeDomain(filterParams.interval)
-            .applyFilters(lowPassFilter, combFilter, filterParams, separatedSignals.keys)
+        val bassBand = timeTransformed.first()
+
+        return bassBand.applyFilters(lowPassFilter, combFilter, filterParams)
     }
 
-    private fun Sequence<Window>.applyFilters(
+    private fun Window.applyFilters(
         lowPassFilter: LowPassFilter,
         combFilter: CombFilter,
-        filterParams: FilterParams,
-        bandLimits: Set<Interval>
+        filterParams: FilterParams
     ): Double {
-        val lowPassFiltered = map { signal -> lowPassFilter.process(signal, filterParams.fmtChunk) }
-        val differentials = lowPassFiltered.map(DifferentialRectifier::process)
-        val combFiltered = combFilter.process(
-            differentials,
-            bandLimits,
-            MAXIMUM_FREQUENCY,
-            filterParams.fmtChunk.sampleRate
-        )
+        val lowPassFiltered = lowPassFilter.process(this, filterParams.fmtChunk)
+        val differentials = DifferentialRectifier.process(lowPassFiltered)
+        val combFiltered = combFilter.process(differentials, filterParams.fmtChunk.sampleRate)
 
         return combFiltered.toDouble()
     }
@@ -186,9 +178,9 @@ class BpmAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) {
 
         // assuming the first kick is starting at 0.0s
         // 60 bpm minimum bpm, one interval would be 2 seconds + ~ 0.3s buffer
-        // FFTSamples = 2s * samplingRate + 0.3s * samplingRate
-        // e.g. 2s * 44100Hz + 0.3s * 44100Hz = 88.200 + 13.230 = 101.430
-        // next potency of two is 131.072 (2^17)
+        // minimum FFT size is determined by sampling frequency (minBpm = 60)
+        // (1.0 / minBpm * 60 * samplingRate) = samplingRate
+        // CombFilter has three pulses: 1, 44100, 88200 (-1 offset)
         private const val MINIMUM_FFT_SIZE_BY_ENERGY_LEVELS = 131072
     }
 }

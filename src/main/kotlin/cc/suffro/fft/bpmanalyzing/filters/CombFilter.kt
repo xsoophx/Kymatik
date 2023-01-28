@@ -1,39 +1,30 @@
 package cc.suffro.fft.bpmanalyzing.filters
 
 import cc.suffro.fft.abs
-import cc.suffro.fft.bpmanalyzing.data.Interval
 import cc.suffro.fft.bpmanalyzing.data.Signal
 import cc.suffro.fft.fft.FFTProcessor
+import mu.KotlinLogging
 import kotlin.math.pow
+
+private val logger = KotlinLogging.logger {}
 
 // TODO: let's refactor this
 class CombFilter(private val fftProcessor: FFTProcessor) {
-    fun process(
-        signals: Sequence<Signal>,
-        bandLimits: Set<Interval>,
-        maximumFrequency: Int,
-        samplingRate: Int
-    ): Int {
-        val first = signals.first()
-        val length = first.count()
-
-        val fftResult = fftProcessor.process(signals, samplingRate).toList()
-        // val bpmInTimeFrame = (MINIMUM_BPM * timeFrame).roundToInt()
+    fun process(bassSignal: Signal, samplingRate: Int): Int {
+        val fftResult = fftProcessor.process(bassSignal, samplingRate)
         var maxEnergy = 0.0
         var estimatedBpm = 0
 
         for (bpm in MINIMUM_BPM..MAXIMUM_BPM step STEP_SIZE) {
             var energy = 0.0
-            val pulses = MutableList(length) { 0 }
-            fillPulses(120.0, maximumFrequency, bpm, pulses)
-            val fftOfFilter = fftProcessor.process(pulses.asSequence(), samplingRate).toList().first()
+            val pulses = MutableList(bassSignal.count()) { 0.0 }
+            fillPulses(bpm, pulses, samplingRate)
+            val fftOfFilter = fftProcessor.process(pulses.asSequence(), samplingRate)
 
-            bandLimits.forEachIndexed { index, _ ->
-                val convolution =
-                    (fftResult[index].output zip fftOfFilter.output).map { abs(it.first * it.second).pow(2) }
-                energy += convolution.sum()
-            }
+            val convolution = (fftResult.output zip fftOfFilter.output).map { abs(it.first * it.second).pow(2) }
+            energy += convolution.sum()
 
+            logger.info { "$bpm BPM with energy: $energy." }
             if (energy > maxEnergy) {
                 estimatedBpm = bpm
                 maxEnergy = energy
@@ -42,15 +33,10 @@ class CombFilter(private val fftProcessor: FFTProcessor) {
         return estimatedBpm
     }
 
-    private fun MutableList<Int>.asSequence(): Sequence<Sequence<Double>> {
-        return sequenceOf(map { it.toDouble() }.asSequence())
-    }
-
-    private fun fillPulses(bpmInTimeFrame: Double, maximumFrequency: Int, bpm: Int, pulses: MutableList<Int>) {
-        val step = (bpmInTimeFrame / bpm * maximumFrequency).toInt() - 1
-
+    private fun fillPulses(bpm: Int, pulses: MutableList<Double>, samplingRate: Int) {
+        val step = (1.0 / bpm * 60 * samplingRate).toInt()
         for (i in 0 until PULSES) {
-            pulses[i * step] = 1
+            pulses[i * step] = 1.0
         }
     }
 
