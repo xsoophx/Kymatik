@@ -1,5 +1,6 @@
 package cc.suffro.fft.bpmanalyzing.analyzers
 
+import cc.suffro.fft.bpmanalyzing.data.Bpm
 import cc.suffro.fft.fft.FFTProcessor
 import cc.suffro.fft.fft.data.FFTData
 import cc.suffro.fft.fft.data.WindowFunction
@@ -19,7 +20,7 @@ class PeakDistanceAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor
         end: Double = 10.0,
         interval: Double = 0.01,
         windowFunction: WindowFunction? = null
-    ): Double {
+    ): Bpm {
         val windows = wav.getWindows(start = start, end = min(wav.timestampLastSample, end), interval = interval)
 
         val averagePeakTimes = fftProcessor

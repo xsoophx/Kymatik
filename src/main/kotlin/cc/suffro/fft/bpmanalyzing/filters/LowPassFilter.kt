@@ -16,18 +16,26 @@ class LowPassFilter(private val fftProcessor: FFTProcessor) {
         val fullWaveRectified = Window(window.map(::abs), window.duration)
         val numSamples = (window.duration * 2 * fmtChunk.sampleRate).roundToInt()
         val halfHanningWindow = getHalfOfHanningWindow(numSamples)
-
-        val size = getSmallerSizeOf(halfHanningWindow.count(), fullWaveRectified.count())
-        val first = fftProcessor.process(halfHanningWindow.take(size), fmtChunk.sampleRate).output
-        val second = fftProcessor.process(fullWaveRectified.take(size), fmtChunk.sampleRate).output
+        val (first, second) = processSignals(fullWaveRectified, halfHanningWindow, fmtChunk.sampleRate)
 
         val convolved = convolve(first, second)
         return fftProcessor.processInverse(convolved)
     }
 
+    private fun processSignals(
+        a: Sequence<Double>,
+        b: Sequence<Double>,
+        sampleRate: Int
+    ): Pair<List<Complex>, List<Complex>> {
+        val size = getSmallerSizeOf(a.count(), b.count())
+        val first = fftProcessor.process(a.take(size), sampleRate).output
+        val second = fftProcessor.process(b.take(size), sampleRate).output
+        return first to second
+    }
+
     private fun convolve(
-        a: Collection<Complex>,
-        b: Collection<Complex>,
+        a: List<Complex>,
+        b: List<Complex>,
         block: (Pair<Complex, Complex>) -> Complex = { it.first * it.second }
     ): Sequence<Complex> {
         return a.zip(b).map(block).asSequence()

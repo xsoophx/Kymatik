@@ -1,5 +1,6 @@
 package cc.suffro.fft.bpmanalyzing.analyzers
 
+import cc.suffro.fft.bpmanalyzing.data.Bpm
 import cc.suffro.fft.bpmanalyzing.data.SeparatedSignals
 import cc.suffro.fft.bpmanalyzing.filters.CombFilter
 import cc.suffro.fft.bpmanalyzing.filters.DifferentialRectifier
@@ -19,42 +20,33 @@ class CombFilterAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()
         wav: Wav,
         start: Double = 0.0,
         windowFunction: WindowFunction? = null
-    ): Double {
+    ): Bpm {
         require(start + ANALYZING_DURATION < wav.trackLength) {
             "Starting time of $start seconds is too close to track end."
         }
-
         val window = wav.getWindow(start = start, numSamples = MINIMUM_FFT_SIZE_BY_ENERGY_LEVELS)
         val fftResult = fftProcessor.process(window, wav.sampleRate, windowFunction = windowFunction)
-        val filterParams = FilterParams(wav.fmtChunk, fftResult.duration, ANALYZING_DURATION)
 
-        return fftResult.analyzeSingleWindow(LowPassFilter(fftProcessor), CombFilter(fftProcessor), filterParams)
+        return fftResult
+            .getBassBand(fftResult.duration)
+            .getBpm(LowPassFilter(fftProcessor), CombFilter(fftProcessor), wav.fmtChunk)
     }
 
-    private fun FFTData.analyzeSingleWindow(
+    private fun FFTData.getBassBand(interval: Double): Window =
+        Filterbank
+            .separateSignals(this, MAXIMUM_FREQUENCY)
+            .transformToTimeDomain(interval)
+            .first()
+
+    private fun Window.getBpm(
         lowPassFilter: LowPassFilter,
         combFilter: CombFilter,
-        filterParams: FilterParams
-    ): Double {
-        // transforms the signal into multiple signals, split by frequency intervals
-        val separatedSignals = Filterbank.separateSignals(this, MAXIMUM_FREQUENCY)
-        val timeTransformed = separatedSignals.transformToTimeDomain(filterParams.interval)
-
-        val bassBand = timeTransformed.first()
-
-        return bassBand.applyFilters(lowPassFilter, combFilter, filterParams)
-    }
-
-    private fun Window.applyFilters(
-        lowPassFilter: LowPassFilter,
-        combFilter: CombFilter,
-        filterParams: FilterParams
-    ): Double {
-        val lowPassFiltered = lowPassFilter.process(this, filterParams.fmtChunk)
+        fmtChunk: FmtChunk
+    ): Bpm {
+        val lowPassFiltered = lowPassFilter.process(this, fmtChunk)
         val differentials = DifferentialRectifier.process(lowPassFiltered)
-        val combFiltered = combFilter.process(differentials, filterParams.fmtChunk.sampleRate)
 
-        return combFiltered.toDouble()
+        return combFilter.process(differentials, fmtChunk.sampleRate)
     }
 
     private fun SeparatedSignals.transformToTimeDomain(interval: Double): Sequence<Window> {
@@ -69,12 +61,6 @@ class CombFilterAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()
 
         return signalInTimeDomain.map { Window(it, interval) }
     }
-
-    data class FilterParams(
-        val fmtChunk: FmtChunk,
-        val interval: Double,
-        val timeFrame: Double
-    )
 
     companion object {
         private const val MAXIMUM_FREQUENCY = 4096
