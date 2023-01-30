@@ -1,13 +1,41 @@
 plugins {
+    application
     kotlin("jvm") version "1.7.10"
     id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
+    id("org.openjfx.javafxplugin") version "0.0.13"
 }
 
-group = "org.example"
+group = "cc.suffro"
 version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    repositories {
+        maven {
+            url = uri("https://maven.pkg.jetbrains.space/data2viz/p/maven/public")
+        }
+    }
+}
+
+buildscript {
+    repositories {
+        maven {
+            setUrl("https://plugins.gradle.org/m2/")
+        }
+    }
+    dependencies {
+        classpath("org.openjfx:javafx-plugin:0.0.13")
+    }
+}
+apply(plugin = "org.openjfx.javafxplugin")
+
+javafx {
+    version = "19"
+    modules = listOf("javafx.controls", "javafx.graphics", "javafx.media")
+}
+
+application {
+    mainClass.set("cc.suffro.fft.Main")
 }
 
 object Version {
@@ -17,6 +45,7 @@ object Version {
     const val LOGBACK = "1.2.3"
     const val LOGGING = "3.0.2"
     const val SLF4J = "2.0.3"
+    const val VIZ = "0.9.1"
 }
 
 dependencies {
@@ -32,6 +61,17 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm:${Version.LOGGING}")
     runtimeOnly("ch.qos.logback:logback-classic:${Version.LOGBACK}")
     implementation("org.slf4j:slf4j-simple:${Version.SLF4J}")
+
+    implementation("io.data2viz.d2v:d2v-axis:${Version.VIZ}")
+    implementation("io.data2viz.d2v:d2v-color:${Version.VIZ}")
+    implementation("io.data2viz.d2v:d2v-delaunay:${Version.VIZ}")
+    implementation("io.data2viz.d2v:d2v-dsv:${Version.VIZ}")
+    implementation("io.data2viz.d2v:d2v-ease:${Version.VIZ}")
+    implementation("io.data2viz.d2v:d2v-force:${Version.VIZ}")
+    implementation("io.data2viz.d2v:d2v-format:${Version.VIZ}")
+    implementation("io.data2viz.d2v:d2v-scale:${Version.VIZ}")
+    implementation("io.data2viz.d2v:d2v-shape:${Version.VIZ}")
+    implementation("io.data2viz.d2v:d2v-viz:${Version.VIZ}")
 }
 
 tasks {
