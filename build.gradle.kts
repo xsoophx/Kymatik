@@ -17,18 +17,6 @@ repositories {
     }
 }
 
-buildscript {
-    repositories {
-        maven {
-            setUrl("https://plugins.gradle.org/m2/")
-        }
-    }
-    dependencies {
-        classpath("org.openjfx:javafx-plugin:0.0.13")
-    }
-}
-apply(plugin = "org.openjfx.javafxplugin")
-
 javafx {
     version = "19"
     modules = listOf("javafx.controls", "javafx.graphics", "javafx.media")
