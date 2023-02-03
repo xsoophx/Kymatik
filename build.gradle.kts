@@ -23,7 +23,7 @@ javafx {
 }
 
 application {
-    mainClass.set("cc.suffro.fft.Main")
+    mainClass.set("cc.suffro.bpmanalyzer.Main")
 }
 
 object Version {
