@@ -1,6 +1,8 @@
 package cc.suffro.bpmanalyzer
 
 import javafx.application.Application
+import javafx.scene.Group
+import javafx.scene.Scene
 import javafx.stage.Stage
 
 class Main : Application() {
@@ -14,7 +16,10 @@ class Main : Application() {
     }
 
     override fun start(stage: Stage) {
+        val scene = Scene(Group())
         stage.apply {
+            setScene(scene)
+            isMaximized = true
             title = "BPM Analyzer"
             show()
         }
