@@ -10,10 +10,8 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
-    repositories {
-        maven {
-            url = uri("https://maven.pkg.jetbrains.space/data2viz/p/maven/public")
-        }
+    maven {
+        url = uri("https://maven.pkg.jetbrains.space/data2viz/p/maven/public")
     }
 }
 
