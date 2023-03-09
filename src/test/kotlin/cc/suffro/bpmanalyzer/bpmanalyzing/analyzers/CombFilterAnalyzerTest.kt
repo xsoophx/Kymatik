@@ -8,7 +8,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import java.util.stream.Stream
-import kotlin.io.path.Path
 import kotlin.test.assertEquals
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -18,7 +17,7 @@ class CombFilterAnalyzerTest {
 
     @Test
     fun `should detect correct BPM for plain kicks`() {
-        val wav = wavReader.read(Path("src/test/resources/120bpmkick_60-140Hz.wav"))
+        val wav = wavReader.read("src/test/resources/120bpmkick_60-140Hz.wav")
         val result = CombFilterAnalyzer().analyze(wav)
         assertEquals(expected = 120.0, actual = result)
     }
@@ -26,7 +25,7 @@ class CombFilterAnalyzerTest {
     @ParameterizedTest
     @MethodSource("getTracks")
     fun `should detect correct BPM for test tracks seconds`(trackName: String, bpm: Double) {
-        val wav = wavReader.read(Path("src/test/resources/tracks/$trackName"))
+        val wav = wavReader.read("src/test/resources/tracks/$trackName")
         val result = CombFilterAnalyzer().analyze(wav)
         assertNearlyEquals(expected = bpm, actual = result)
     }

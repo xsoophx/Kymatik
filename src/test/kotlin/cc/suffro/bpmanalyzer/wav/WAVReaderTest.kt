@@ -25,7 +25,7 @@ class WAVReaderTest {
     @ParameterizedTest
     @MethodSource("getWavDataWithFmt")
     fun `should read correct header and data`(path: String, fmtChunk: FmtChunk) {
-        val actual = wavReader.read(Path(path))
+        val actual = wavReader.read(path)
 
         assertEquals(
             expected = Wav(
@@ -50,7 +50,7 @@ class WAVReaderTest {
     @ParameterizedTest
     @MethodSource("getWavDataWithFrequency")
     fun `should read correct Samples from wav file`(path: String, frequency: Double) {
-        val wav = wavReader.read(Path(path))
+        val wav = wavReader.read(path)
         val samples = wav.getWindowContent(channel = 0, begin = 0)
         val fftData = FFTProcessor().process(sequenceOf(samples), samplingRate = wav.sampleRate)
         val magnitudes = fftData.first().magnitudes
@@ -73,7 +73,7 @@ class WAVReaderTest {
         interval: Double,
         expectedWindows: Int
     ) {
-        val wav = wavReader.read(Path("src/test/resources/440.wav"))
+        val wav = wavReader.read("src/test/resources/440.wav")
         val actual = wav.getWindows(start = start, end = end, interval, 0, DEFAULT_SAMPLE_NUMBER)
 
         assertEquals(expected = expectedWindows, actual = actual.count())
@@ -81,7 +81,7 @@ class WAVReaderTest {
 
     @Test
     fun `should handle track length as end correctly`() {
-        val wav = wavReader.read(Path("src/test/resources/440.wav"))
+        val wav = wavReader.read("src/test/resources/440.wav")
         val windowTime = DEFAULT_SAMPLE_NUMBER.toDouble() / wav.sampleRate
         val actual = wav.getWindows(start = wav.trackLength - windowTime, end = wav.trackLength, interval = windowTime)
 
