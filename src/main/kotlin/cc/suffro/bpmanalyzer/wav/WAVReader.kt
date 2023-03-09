@@ -12,6 +12,7 @@ import java.nio.ByteOrder
 import java.nio.file.Path
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
+import kotlin.io.path.Path
 import kotlin.io.path.inputStream
 
 // TODO: needs refactoring
@@ -27,6 +28,8 @@ object WAVReader : FileReader<Wav> {
     private const val DATA_SIGNATURE = "data"
 
     private const val MAX_VALUE_24BIT = 0x7FFFFF
+
+    fun read(path: String): Wav = read(Path(path))
 
     override fun read(path: Path): Wav = path.inputStream().buffered().use { input ->
         val riffChunkSize = getRiffChunkSize(input)

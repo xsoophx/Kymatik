@@ -1,10 +1,10 @@
 package cc.suffro.bpmanalyzer.ui
 
+import cc.suffro.bpmanalyzer.fft.FFTProcessor
+import cc.suffro.bpmanalyzer.wav.WAVReader
 import io.data2viz.color.Colors
 import io.data2viz.scale.Scales
 import io.data2viz.viz.JFxVizRenderer
-import io.data2viz.viz.TextHAlign
-import io.data2viz.viz.TextVAlign
 import io.data2viz.viz.viz
 import javafx.scene.Group
 import javafx.scene.Scene
@@ -13,16 +13,23 @@ import javafx.stage.Stage
 
 object MainWindow {
     private const val WIDTH = 700.0
-    private const val HEIGHT = 500.0
-    private val data = listOf(1, 4, 14, 18, 34, 64)
-    private const val barHeight = 14.0
-    private const val padding = 2.0
+    private const val HEIGHT = 1500.0
+    private const val PADDING = 1.0
 
-    private fun xScale(value: Int) = xPosition(value.toDouble())
+    private const val path = "src/test/resources/440.wav"
+    private val wav = WAVReader.read(path)
+    private val data = getFrequencies()
+    private val barHeight = HEIGHT / data.size.toDouble()
 
-    val xPosition = Scales.Continuous.linear {
-        domain = listOf(.0, data.max().toDouble())
-        range = listOf(.0, WIDTH - 2 * padding)
+    private fun getFrequencies(channel: Int = 0, begin: Int = 0): List<Double> {
+        return FFTProcessor().process(wav, channel, begin).magnitudes
+    }
+
+    private fun xScale(value: Double, data: List<Double> = this.data) = xPosition(data)(value)
+
+    private fun xPosition(data: List<Double>) = Scales.Continuous.linear {
+        domain = listOf(.0, data.max())
+        range = listOf(.0, WIDTH - 2 * PADDING)
     }
 
     fun show(root: Group, stage: Stage?) {
@@ -38,23 +45,14 @@ object MainWindow {
                     group {
                         transform {
                             translate(
-                                x = padding,
-                                y = padding + index * (padding + barHeight) + HEIGHT / 2
+                                x = PADDING,
+                                y = PADDING + index * (PADDING + barHeight)
                             )
                         }
                         rect {
-                            width = xScale(value)
+                            width = xScale(value, data)
                             height = barHeight
                             fill = Colors.Web.steelblue
-                        }
-                        text {
-                            textContent = value.toString()
-                            hAlign = TextHAlign.RIGHT
-                            vAlign = TextVAlign.HANGING
-                            x = xScale(value) - 2.0
-                            y = 1.5
-                            textColor = Colors.Web.white
-                            fontSize = 10.0
                         }
                     }
                 }
