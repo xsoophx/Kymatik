@@ -3,6 +3,7 @@ package cc.suffro.bpmanalyzer.fft
 import cc.suffro.bpmanalyzer.FFT
 import cc.suffro.bpmanalyzer.assertNearlyEquals
 import cc.suffro.bpmanalyzer.fft.data.FFTData
+import cc.suffro.bpmanalyzer.fft.data.FftSampleSize
 import cc.suffro.bpmanalyzer.fft.data.Method
 import cc.suffro.bpmanalyzer.fft.data.Sample
 import cc.suffro.bpmanalyzer.fft.data.WindowFunction
@@ -71,7 +72,7 @@ class FFTProcessorTest {
 
         val magnitudes = result.magnitudes
         val maximumIndex = magnitudes.indexOf(magnitudes.maxOf { it })
-        val binIndex = (frequency * DEFAULT_SAMPLE_SIZE / DEFAULT_SAMPLING_RATE.toDouble()).roundToInt()
+        val binIndex = (frequency * FftSampleSize.DEFAULT / DEFAULT_SAMPLING_RATE.toDouble()).roundToInt()
 
         // TODO: some refactoring, extract into separate tests
         assertEquals(expected = binIndex, actual = maximumIndex)
@@ -113,7 +114,7 @@ class FFTProcessorTest {
             val magnitudes = actual.magnitudes
 
             val maximumIndex = magnitudes.indexOf(magnitudes.maxOf { it })
-            val binIndex = (frequency * DEFAULT_SAMPLE_SIZE / DEFAULT_SAMPLING_RATE.toDouble()).roundToInt()
+            val binIndex = (frequency * FftSampleSize.DEFAULT / DEFAULT_SAMPLING_RATE.toDouble()).roundToInt()
 
             assertEquals(expected = binIndex, actual = maximumIndex)
             assertEquals(expected = binIndex, actual = actual.binIndexOf(frequency.toDouble()))
@@ -155,7 +156,6 @@ class FFTProcessorTest {
     }
 
     companion object {
-        private const val DEFAULT_SAMPLE_SIZE = 1024
         private const val DEFAULT_SAMPLING_RATE = 44100
 
         @JvmStatic
@@ -191,7 +191,7 @@ class FFTProcessorTest {
             cache.getOrPut(frequency) { signal(frequency.toDouble(), amplitude) }
 
         private fun signal(frequency: Double, amplitude: Double): Sequence<Sample> {
-            return (0 until DEFAULT_SAMPLING_RATE).take(DEFAULT_SAMPLE_SIZE).asSequence()
+            return (0 until DEFAULT_SAMPLING_RATE).take(FftSampleSize.DEFAULT).asSequence()
                 .map { index -> index.toDouble() / DEFAULT_SAMPLING_RATE }
                 .map { t -> amplitude * sin(PI * 2.0 * frequency * t) }
         }

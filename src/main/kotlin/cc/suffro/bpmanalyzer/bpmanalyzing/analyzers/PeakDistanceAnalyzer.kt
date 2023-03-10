@@ -5,6 +5,7 @@ import cc.suffro.bpmanalyzer.fft.FFTProcessor
 import cc.suffro.bpmanalyzer.fft.data.FFTData
 import cc.suffro.bpmanalyzer.fft.data.WindowFunction
 import cc.suffro.bpmanalyzer.wav.data.Wav
+import cc.suffro.bpmanalyzer.wav.data.WindowProcessingParams
 import java.lang.StrictMath.abs
 import java.lang.StrictMath.min
 import java.math.RoundingMode
@@ -21,7 +22,8 @@ class PeakDistanceAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor
         interval: Double = 0.01,
         windowFunction: WindowFunction? = null
     ): Bpm {
-        val windows = wav.getWindows(start = start, end = min(wav.timestampLastSample, end), interval = interval)
+        val params = WindowProcessingParams(start = start, end = min(wav.timestampLastSample, end), interval = interval)
+        val windows = wav.getWindows(params)
 
         val averagePeakTimes = fftProcessor
             .process(windows, samplingRate = wav.sampleRate, windowFunction = windowFunction)

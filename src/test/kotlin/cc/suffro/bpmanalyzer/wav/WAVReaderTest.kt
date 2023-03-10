@@ -2,9 +2,11 @@ package cc.suffro.bpmanalyzer.wav
 
 import cc.suffro.bpmanalyzer.FFT
 import cc.suffro.bpmanalyzer.fft.FFTProcessor
+import cc.suffro.bpmanalyzer.fft.data.FftSampleSize
 import cc.suffro.bpmanalyzer.wav.data.AudioFormat
 import cc.suffro.bpmanalyzer.wav.data.FmtChunk
 import cc.suffro.bpmanalyzer.wav.data.Wav
+import cc.suffro.bpmanalyzer.wav.data.WindowProcessingParams
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -74,7 +76,8 @@ class WAVReaderTest {
         expectedWindows: Int
     ) {
         val wav = wavReader.read("src/test/resources/440.wav")
-        val actual = wav.getWindows(start = start, end = end, interval, 0, DEFAULT_SAMPLE_NUMBER)
+        val params = WindowProcessingParams(start = start, end = end, interval = interval)
+        val actual = wav.getWindows(params)
 
         assertEquals(expected = expectedWindows, actual = actual.count())
     }
@@ -82,15 +85,15 @@ class WAVReaderTest {
     @Test
     fun `should handle track length as end correctly`() {
         val wav = wavReader.read("src/test/resources/440.wav")
-        val windowTime = DEFAULT_SAMPLE_NUMBER.toDouble() / wav.sampleRate
-        val actual = wav.getWindows(start = wav.trackLength - windowTime, end = wav.trackLength, interval = windowTime)
+        val windowTime = FftSampleSize.DEFAULT.toDouble() / wav.sampleRate
+        val params =
+            WindowProcessingParams(start = wav.trackLength - windowTime, end = wav.trackLength, interval = windowTime)
+        val actual = wav.getWindows(params)
 
         assertEquals(expected = 0, actual = actual.count())
     }
 
     companion object {
-        private const val DEFAULT_SAMPLE_NUMBER = 1024
-
         @JvmStatic
         private fun getWavDataWithFmt() = Stream.of(
             Arguments.of(

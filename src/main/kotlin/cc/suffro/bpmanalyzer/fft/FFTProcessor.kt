@@ -5,6 +5,7 @@ import cc.suffro.bpmanalyzer.fft.data.FFTData
 import cc.suffro.bpmanalyzer.fft.data.Method
 import cc.suffro.bpmanalyzer.fft.data.WindowFunction
 import cc.suffro.bpmanalyzer.wav.data.Wav
+import cc.suffro.bpmanalyzer.wav.data.WindowProcessingParams
 import org.kotlinmath.Complex
 import org.kotlinmath.I
 import org.kotlinmath.R
@@ -45,8 +46,8 @@ class FFTProcessor {
         windowFunction: WindowFunction? = null
     ): FFTData = process(sequenceOf(inputSample), samplingRate, method, windowFunction).first()
 
-    fun process(wav: Wav, channel: Int, begin: Int): FFTData =
-        process(wav.getWindowContent(channel, begin), samplingRate = wav.sampleRate)
+    fun process(wav: Wav, params: WindowProcessingParams): Sequence<FFTData> =
+        process(wav.getWindows(params), samplingRate = wav.sampleRate)
 
     fun processInverse(inputSamples: Sequence<Sequence<Complex>>): Sequence<Sequence<Double>> {
         return inputSamples.map { samples -> inverseFftInPlace(samples).map { it.re } }

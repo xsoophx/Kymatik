@@ -1,7 +1,5 @@
 package cc.suffro.bpmanalyzer.ui
 
-import cc.suffro.bpmanalyzer.fft.FFTProcessor
-import cc.suffro.bpmanalyzer.wav.WAVReader
 import io.data2viz.color.Colors
 import io.data2viz.scale.Scales
 import io.data2viz.viz.JFxVizRenderer
@@ -12,16 +10,12 @@ import javafx.scene.Scene
 import javafx.scene.canvas.Canvas
 import javafx.stage.Stage
 
-class MainWindow(path: String) {
-    private val wav = WAVReader.read(path)
-    private val data = getFrequencies()
-    private val barHeight = HEIGHT / data.size.toDouble()
+object MainWindow {
+    private const val WIDTH = 700.0
+    private const val HEIGHT = 1500.0
+    private const val PADDING = 1.0
 
-    private fun getFrequencies(channel: Int = 0, begin: Int = 0): List<Double> {
-        return FFTProcessor().process(wav, channel, begin).magnitudes
-    }
-
-    private fun xScale(value: Double, data: List<Double> = this.data) = xPosition(data)(value)
+    private fun xScale(value: Double, data: List<Double>) = xPosition(data)(value)
 
     private fun xPosition(data: List<Double>) = Scales.Continuous.linear {
         domain = listOf(.0, data.max())
@@ -29,6 +23,8 @@ class MainWindow(path: String) {
     }
 
     private fun createBarChart(data: List<Double>): Viz {
+        val barHeight = HEIGHT / data.size.toDouble()
+
         return viz {
             data.forEachIndexed { index, value ->
                 group {
@@ -53,7 +49,7 @@ class MainWindow(path: String) {
         viz.render()
     }
 
-    fun show(root: Group, stage: Stage?) {
+    fun show(root: Group, stage: Stage?, data: List<Double>) {
         stage?.apply {
             title = "BPM Analyzer"
             scene = Scene(root, WIDTH, HEIGHT)
@@ -65,11 +61,5 @@ class MainWindow(path: String) {
             renderVizOnCanvas(viz, canvas)
             show()
         }
-    }
-
-    companion object {
-        private const val WIDTH = 700.0
-        private const val HEIGHT = 1500.0
-        private const val PADDING = 1.0
     }
 }

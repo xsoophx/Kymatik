@@ -1,5 +1,6 @@
 package cc.suffro.bpmanalyzer.wav.data
 
+import cc.suffro.bpmanalyzer.fft.data.FftSampleSize
 import cc.suffro.bpmanalyzer.fft.data.Window
 import cc.suffro.bpmanalyzer.getHighestPowerOfTwo
 import java.nio.file.Path
@@ -51,18 +52,17 @@ data class Wav(
         return this.asSequence().drop(begin).take(length)
     }
 
-    private fun checkRequirements(channel: Int, numSamples: Int) {
-        checkChannelRequirements(channel)
-        require((numSamples != 0) && numSamples and (numSamples - 1) == 0) { "Length has to be power of tow, but is $numSamples." }
-    }
-
     private fun checkChannelRequirements(channel: Int) {
         require(channel >= 0) { "Selected Channel has to be greater than or equal to zero." }
         require(channel < dataChunk.size) { "Selected Channel has to be smaller than available channels (${dataChunk.size})." }
     }
 
-    fun getWindowContent(channel: Int, begin: Int, numSamples: Int = DEFAULT_SAMPLE_NUMBER): Sequence<Double> {
-        checkRequirements(channel, numSamples)
+    fun getWindowContent(
+        channel: Int,
+        begin: Int,
+        numSamples: Int = FftSampleSize.DEFAULT
+    ): Sequence<Double> {
+        checkChannelRequirements(channel)
         return dataChunk[channel].get(begin, numSamples)
     }
 
@@ -70,16 +70,12 @@ data class Wav(
 
     private fun checkOrCorrectEnd(end: Double): Double = if (end >= trackLength) timestampLastSample else end
 
-    fun getWindows(
-        start: Double = 0.0,
-        end: Double = timestampLastSample,
-        interval: Double,
-        channel: Int = 0,
-        numSamples: Int = DEFAULT_SAMPLE_NUMBER
-    ): Sequence<Window> {
-        checkRequirements(channel, numSamples)
-        val correctedEnd = checkOrCorrectEnd(end)
-        return getWindows(samplesOf(start), samplesOf(correctedEnd), interval, channel, numSamples)
+    fun getWindows(params: WindowProcessingParams): Sequence<Window> {
+        with(params) {
+            checkChannelRequirements(channel)
+            val correctedEnd = checkOrCorrectEnd(end)
+            return getWindows(samplesOf(start), samplesOf(correctedEnd), interval, channel, numSamples)
+        }
     }
 
     private fun getWindows(start: Int, end: Int, interval: Double, channel: Int, numSamples: Int): Sequence<Window> {
@@ -98,7 +94,7 @@ data class Wav(
         numSamples: Int,
         channel: Int = 0
     ): Window {
-        checkRequirements(channel, numSamples)
+        checkChannelRequirements(channel)
         val interval = numSamples.toDouble() / sampleRate
         return getWindow(samplesOf(start), samplesOf(start) + numSamples, interval, channel)
     }
@@ -125,19 +121,5 @@ data class Wav(
             .map { index -> dataChunk[channel].get(index, numSamples) }
 
         return samples.map { Window(it, interval) }
-    }
-
-    companion object {
-        private const val DEFAULT_SAMPLE_NUMBER = 1024
-    }
-}
-
-enum class AudioFormat(val value: UShort) {
-    PCM(0x0001U);
-
-    companion object {
-        private val mapping = values().associateBy(AudioFormat::value)
-
-        fun fromShort(key: UShort): AudioFormat = mapping.getValue(key)
     }
 }
