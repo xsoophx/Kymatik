@@ -2,7 +2,7 @@ package cc.suffro.bpmanalyzer.bpmanalyzing.filters
 
 import cc.suffro.bpmanalyzer.bpmanalyzing.data.Signal
 import cc.suffro.bpmanalyzer.fft.FFTProcessor
-import cc.suffro.bpmanalyzer.fft.data.Window
+import cc.suffro.bpmanalyzer.fft.data.TimeDomainWindow
 import cc.suffro.bpmanalyzer.fft.data.hanningFunction
 import cc.suffro.bpmanalyzer.getHighestPowerOfTwo
 import cc.suffro.bpmanalyzer.wav.data.FmtChunk
@@ -12,8 +12,8 @@ import kotlin.math.roundToInt
 
 class LowPassFilter(private val fftProcessor: FFTProcessor) {
 
-    fun process(window: Window, fmtChunk: FmtChunk): Signal {
-        val fullWaveRectified = Window(window.map(::abs), window.duration)
+    fun process(window: TimeDomainWindow, fmtChunk: FmtChunk): Signal {
+        val fullWaveRectified = TimeDomainWindow(window.map(::abs), window.duration, window.startingTime)
         val numSamples = (window.duration * 2 * fmtChunk.sampleRate).roundToInt()
         val halfHanningWindow = getHalfOfHanningWindow(numSamples)
         val (first, second) = processSignals(fullWaveRectified, halfHanningWindow, fmtChunk.sampleRate)

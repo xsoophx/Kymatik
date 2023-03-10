@@ -1,5 +1,6 @@
 package cc.suffro.bpmanalyzer.ui
 
+import cc.suffro.bpmanalyzer.fft.data.FrequencyDomainWindow
 import io.data2viz.color.Colors
 import io.data2viz.scale.Scales
 import io.data2viz.viz.JFxVizRenderer
@@ -9,19 +10,18 @@ import javafx.scene.Group
 import javafx.scene.Scene
 import javafx.scene.canvas.Canvas
 import javafx.stage.Stage
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.javafx.JavaFx
+import kotlinx.coroutines.launch
+import mu.KotlinLogging
+import kotlin.coroutines.CoroutineContext
 
-object MainWindow {
-    private val scope = MainScope()
+private val logger = KotlinLogging.logger {}
 
-    private const val WIDTH = 700.0
-    private const val HEIGHT = 1500.0
-    private const val PADDING = 1.0
-
-    fun destroy() {
-        scope.cancel()
-    }
+class MainWindow : CoroutineScope {
+    override val coroutineContext: CoroutineContext = Dispatchers.JavaFx
 
     private fun xScale(value: Double, data: List<Double>) = xPosition(data)(value)
 
@@ -57,17 +57,37 @@ object MainWindow {
         viz.render()
     }
 
-    fun show(root: Group, stage: Stage?, data: List<List<Double>>) {
+    private fun setup(canvas: Canvas, data: List<FrequencyDomainWindow>) =
+        launch(Dispatchers.JavaFx) {
+            val start = System.currentTimeMillis()
+            repeat(data.size) { i ->
+                delay(20)
+                val timeSinceStart = System.currentTimeMillis() - start
+                logger.info { "Time since start: $timeSinceStart." }
+
+                if (timeSinceStart >= data[i].startingTime * 1000) {
+                    val viz = createBarChart(data[i].magnitudes)
+                    renderVizOnCanvas(viz, canvas)
+                    logger.info { "Done with sample $i at $timeSinceStart." }
+                }
+            }
+        }
+
+    fun show(root: Group, stage: Stage?, data: List<FrequencyDomainWindow>) {
         stage?.apply {
             title = "BPM Analyzer"
             scene = Scene(root, WIDTH, HEIGHT)
 
             val canvas = Canvas(WIDTH, HEIGHT)
             root.children.add(canvas)
-
-            val viz = createBarChart(data.first())
-            renderVizOnCanvas(viz, canvas)
             show()
+            setup(canvas, data)
         }
+    }
+
+    companion object {
+        private const val WIDTH = 700.0
+        private const val HEIGHT = 1500.0
+        private const val PADDING = 1.0
     }
 }

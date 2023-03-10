@@ -40,7 +40,14 @@ enum class Method {
     R2C_DFT
 }
 
-data class Window(
+// TODO: think about better solution
+data class TimeDomainWindow(
     val samples: Sequence<Sample>,
-    val duration: Double
+    val duration: Double,
+    val startingTime: Double
 ) : Sequence<Sample> by samples
+
+data class FrequencyDomainWindow(
+    val magnitudes: List<Double>,
+    val startingTime: Double
+)

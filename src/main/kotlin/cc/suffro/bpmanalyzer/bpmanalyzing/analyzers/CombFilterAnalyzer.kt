@@ -8,7 +8,7 @@ import cc.suffro.bpmanalyzer.bpmanalyzing.filters.Filterbank
 import cc.suffro.bpmanalyzer.bpmanalyzing.filters.LowPassFilter
 import cc.suffro.bpmanalyzer.fft.FFTProcessor
 import cc.suffro.bpmanalyzer.fft.data.FFTData
-import cc.suffro.bpmanalyzer.fft.data.Window
+import cc.suffro.bpmanalyzer.fft.data.TimeDomainWindow
 import cc.suffro.bpmanalyzer.fft.data.WindowFunction
 import cc.suffro.bpmanalyzer.getHighestPowerOfTwo
 import cc.suffro.bpmanalyzer.wav.data.FmtChunk
@@ -32,13 +32,13 @@ class CombFilterAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()
             .getBpm(LowPassFilter(fftProcessor), CombFilter(fftProcessor), wav.fmtChunk)
     }
 
-    private fun FFTData.getBassBand(interval: Double): Window =
+    private fun FFTData.getBassBand(interval: Double): TimeDomainWindow =
         Filterbank
             .separateSignals(this, MAXIMUM_FREQUENCY)
             .transformToTimeDomain(interval)
             .first()
 
-    private fun Window.getBpm(
+    private fun TimeDomainWindow.getBpm(
         lowPassFilter: LowPassFilter,
         combFilter: CombFilter,
         fmtChunk: FmtChunk
@@ -49,7 +49,7 @@ class CombFilterAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()
         return combFilter.process(differentials, fmtChunk.sampleRate)
     }
 
-    private fun SeparatedSignals.transformToTimeDomain(interval: Double): Sequence<Window> {
+    private fun SeparatedSignals.transformToTimeDomain(interval: Double): Sequence<TimeDomainWindow> {
         // TODO: add better handling for low frequencies, don't cut information
         val signalInTimeDomain =
             fftProcessor.processInverse(
@@ -59,7 +59,7 @@ class CombFilterAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()
                 }
             )
 
-        return signalInTimeDomain.map { Window(it, interval) }
+        return signalInTimeDomain.mapIndexed { index, samples -> TimeDomainWindow(samples, interval, index * interval) }
     }
 
     companion object {

@@ -2,6 +2,8 @@ package cc.suffro.bpmanalyzer
 
 import cc.suffro.bpmanalyzer.fft.FFTProcessor
 import cc.suffro.bpmanalyzer.fft.data.FftSampleSize
+import cc.suffro.bpmanalyzer.fft.data.FrequencyDomainWindow
+import cc.suffro.bpmanalyzer.fft.data.hammingFunction
 import cc.suffro.bpmanalyzer.ui.MainWindow
 import cc.suffro.bpmanalyzer.wav.WAVReader
 import cc.suffro.bpmanalyzer.wav.data.Wav
@@ -24,12 +26,12 @@ class Main : Application() {
         val data = wav.getFrequencies(params)
 
         val root = Group()
-        MainWindow.show(root, stage, data)
+        MainWindow().show(root, stage, data)
     }
 
-    private fun Wav.getFrequencies(params: WindowProcessingParams): List<List<Double>> {
-        val fftData = FFTProcessor().process(this, params)
-        return fftData.map { it.magnitudes }.toList()
+    private fun Wav.getFrequencies(params: WindowProcessingParams): List<FrequencyDomainWindow> {
+        val frequencyWindows = FFTProcessor().processWav(this, params, ::hammingFunction)
+        return frequencyWindows.toList()
     }
 
     companion object {

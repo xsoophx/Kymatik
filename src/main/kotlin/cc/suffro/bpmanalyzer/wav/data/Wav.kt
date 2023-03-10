@@ -1,7 +1,7 @@
 package cc.suffro.bpmanalyzer.wav.data
 
 import cc.suffro.bpmanalyzer.fft.data.FftSampleSize
-import cc.suffro.bpmanalyzer.fft.data.Window
+import cc.suffro.bpmanalyzer.fft.data.TimeDomainWindow
 import cc.suffro.bpmanalyzer.getHighestPowerOfTwo
 import java.nio.file.Path
 import kotlin.math.roundToInt
@@ -70,7 +70,7 @@ data class Wav(
 
     private fun checkOrCorrectEnd(end: Double): Double = if (end >= trackLength) timestampLastSample else end
 
-    fun getWindows(params: WindowProcessingParams): Sequence<Window> {
+    fun getWindows(params: WindowProcessingParams): Sequence<TimeDomainWindow> {
         with(params) {
             checkChannelRequirements(channel)
             val correctedEnd = checkOrCorrectEnd(end)
@@ -78,7 +78,13 @@ data class Wav(
         }
     }
 
-    private fun getWindows(start: Int, end: Int, interval: Double, channel: Int, numSamples: Int): Sequence<Window> {
+    private fun getWindows(
+        start: Int,
+        end: Int,
+        interval: Double,
+        channel: Int,
+        numSamples: Int
+    ): Sequence<TimeDomainWindow> {
         return getSamples(
             start,
             minOf(end, indexLastSample - numSamples),
@@ -93,13 +99,13 @@ data class Wav(
         start: Double = 0.0,
         numSamples: Int,
         channel: Int = 0
-    ): Window {
+    ): TimeDomainWindow {
         checkChannelRequirements(channel)
         val interval = numSamples.toDouble() / sampleRate
         return getWindow(samplesOf(start), samplesOf(start) + numSamples, interval, channel)
     }
 
-    private fun getWindow(start: Int, end: Int, interval: Double, channel: Int): Window {
+    private fun getWindow(start: Int, end: Int, interval: Double, channel: Int): TimeDomainWindow {
         val numSamples = getHighestPowerOfTwo(end - start)
         val endSample = start + numSamples
 
@@ -113,13 +119,13 @@ data class Wav(
         channel: Int,
         numSamples: Int,
         interval: Double
-    ): Sequence<Window> {
+    ): Sequence<TimeDomainWindow> {
         val samples = (startSample until endSample)
             .step(sampleInterval)
             .asSequence()
             .takeWhile { it < endSample }
             .map { index -> dataChunk[channel].get(index, numSamples) }
 
-        return samples.map { Window(it, interval) }
+        return samples.mapIndexed { index, sample -> TimeDomainWindow(sample, interval, index * interval) }
     }
 }

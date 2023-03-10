@@ -2,6 +2,7 @@ package cc.suffro.bpmanalyzer.fft
 
 import cc.suffro.bpmanalyzer.fft.data.Bins
 import cc.suffro.bpmanalyzer.fft.data.FFTData
+import cc.suffro.bpmanalyzer.fft.data.FrequencyDomainWindow
 import cc.suffro.bpmanalyzer.fft.data.Method
 import cc.suffro.bpmanalyzer.fft.data.WindowFunction
 import cc.suffro.bpmanalyzer.wav.data.Wav
@@ -46,8 +47,16 @@ class FFTProcessor {
         windowFunction: WindowFunction? = null
     ): FFTData = process(sequenceOf(inputSample), samplingRate, method, windowFunction).first()
 
-    fun process(wav: Wav, params: WindowProcessingParams): Sequence<FFTData> =
-        process(wav.getWindows(params), samplingRate = wav.sampleRate)
+    fun processWav(
+        wav: Wav,
+        params: WindowProcessingParams,
+        windowFunction: WindowFunction? = null
+    ): Sequence<FrequencyDomainWindow> =
+        process(
+            wav.getWindows(params),
+            samplingRate = wav.sampleRate,
+            windowFunction = windowFunction
+        ).mapIndexed { index, fftData -> FrequencyDomainWindow(fftData.magnitudes, index * params.interval) }
 
     fun processInverse(inputSamples: Sequence<Sequence<Complex>>): Sequence<Sequence<Double>> {
         return inputSamples.map { samples -> inverseFftInPlace(samples).map { it.re } }

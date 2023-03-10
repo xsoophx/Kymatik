@@ -40,6 +40,7 @@ dependencies {
     testImplementation(kotlin("test-junit5"))
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Version.COROUTINES}")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-javafx:${Version.COROUTINES}")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Version.JUNIT}")
     testImplementation("org.junit.jupiter:junit-jupiter-params:${Version.JUNIT}")
