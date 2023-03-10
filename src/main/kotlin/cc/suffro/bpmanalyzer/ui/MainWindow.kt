@@ -9,11 +9,19 @@ import javafx.scene.Group
 import javafx.scene.Scene
 import javafx.scene.canvas.Canvas
 import javafx.stage.Stage
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 
 object MainWindow {
+    private val scope = MainScope()
+
     private const val WIDTH = 700.0
     private const val HEIGHT = 1500.0
     private const val PADDING = 1.0
+
+    fun destroy() {
+        scope.cancel()
+    }
 
     private fun xScale(value: Double, data: List<Double>) = xPosition(data)(value)
 
@@ -49,7 +57,7 @@ object MainWindow {
         viz.render()
     }
 
-    fun show(root: Group, stage: Stage?, data: List<Double>) {
+    fun show(root: Group, stage: Stage?, data: List<List<Double>>) {
         stage?.apply {
             title = "BPM Analyzer"
             scene = Scene(root, WIDTH, HEIGHT)
@@ -57,7 +65,7 @@ object MainWindow {
             val canvas = Canvas(WIDTH, HEIGHT)
             root.children.add(canvas)
 
-            val viz = createBarChart(data)
+            val viz = createBarChart(data.first())
             renderVizOnCanvas(viz, canvas)
             show()
         }

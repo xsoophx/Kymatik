@@ -10,8 +10,6 @@ import javafx.application.Application
 import javafx.scene.Group
 import javafx.stage.Stage
 import mu.KotlinLogging
-import java.util.Timer
-import kotlin.concurrent.schedule
 
 private val logger = KotlinLogging.logger {}
 
@@ -25,13 +23,6 @@ class Main : Application() {
         val params = WindowProcessingParams(end = 10.0, interval = 0.04, numSamples = FftSampleSize.TWO_THOUSAND)
         val data = wav.getFrequencies(params)
 
-        var count = 0
-        Timer("ShowData").schedule(500) {
-            showData(stage, data.toList()[count++])
-        }
-    }
-
-    private fun showData(stage: Stage?, data: List<Double>) {
         val root = Group()
         MainWindow.show(root, stage, data)
     }

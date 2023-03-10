@@ -1,6 +1,6 @@
 plugins {
     application
-    kotlin("jvm") version "1.7.10"
+    kotlin("jvm") version "1.8.10"
     id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
     id("org.openjfx.javafxplugin") version "0.0.13"
 }
@@ -26,6 +26,7 @@ application {
 
 object Version {
     const val ASSERTK = "0.25"
+    const val COROUTINES = "1.7.0-Beta"
     const val JUNIT = "5.9.1"
     const val KOTLIN_MATH = "1.0"
     const val LOGBACK = "1.2.3"
@@ -37,6 +38,8 @@ object Version {
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     testImplementation(kotlin("test-junit5"))
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Version.COROUTINES}")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Version.JUNIT}")
     testImplementation("org.junit.jupiter:junit-jupiter-params:${Version.JUNIT}")
@@ -58,6 +61,18 @@ dependencies {
     implementation("io.data2viz.d2v:d2v-scale:${Version.VIZ}")
     implementation("io.data2viz.d2v:d2v-shape:${Version.VIZ}")
     implementation("io.data2viz.d2v:d2v-viz:${Version.VIZ}")
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(19))
+    }
+}
+
+kotlin {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(19))
+    }
 }
 
 tasks {
