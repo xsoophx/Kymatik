@@ -57,19 +57,20 @@ class MainWindow : CoroutineScope {
         viz.render()
     }
 
-    private fun setup(canvas: Canvas, data: List<FrequencyDomainWindow>) =
+    private fun setup(canvas: Canvas, data: List<WindowWithIndex>) =
         launch(Dispatchers.JavaFx) {
             val start = System.currentTimeMillis()
-            repeat(data.size) { i ->
+            var i = 0
+            while (i < data.size) {
                 delay(20)
                 val timeSinceStart = System.currentTimeMillis() - start
-                logger.info { "Time since start: $timeSinceStart." }
+                val currentSample = data.last { it.window.startingTime * 1000 <= timeSinceStart }
 
-                if (timeSinceStart >= data[i].startingTime * 1000) {
-                    val viz = createBarChart(data[i].magnitudes)
-                    renderVizOnCanvas(viz, canvas)
-                    logger.info { "Done with sample $i at $timeSinceStart." }
-                }
+                val viz = createBarChart(currentSample.window.magnitudes)
+                renderVizOnCanvas(viz, canvas)
+
+                logger.info { "Done with sample $i at $timeSinceStart." }
+                i = currentSample.index + 1
             }
         }
 
@@ -81,7 +82,8 @@ class MainWindow : CoroutineScope {
             val canvas = Canvas(WIDTH, HEIGHT)
             root.children.add(canvas)
             show()
-            setup(canvas, data)
+            val dataWithIndices = data.mapIndexed { index, window -> WindowWithIndex(window, index) }
+            setup(canvas, dataWithIndices)
         }
     }
 
@@ -90,4 +92,9 @@ class MainWindow : CoroutineScope {
         private const val HEIGHT = 1500.0
         private const val PADDING = 1.0
     }
+
+    data class WindowWithIndex(
+        val window: FrequencyDomainWindow,
+        val index: Int
+    )
 }

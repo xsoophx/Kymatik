@@ -3,7 +3,9 @@ package cc.suffro.bpmanalyzer
 import cc.suffro.bpmanalyzer.fft.FFTProcessor
 import cc.suffro.bpmanalyzer.fft.data.FftSampleSize
 import cc.suffro.bpmanalyzer.fft.data.FrequencyDomainWindow
+import cc.suffro.bpmanalyzer.fft.data.blackmanFunction
 import cc.suffro.bpmanalyzer.fft.data.hammingFunction
+import cc.suffro.bpmanalyzer.fft.data.hanningFunction
 import cc.suffro.bpmanalyzer.ui.MainWindow
 import cc.suffro.bpmanalyzer.wav.WAVReader
 import cc.suffro.bpmanalyzer.wav.data.Wav
@@ -20,9 +22,7 @@ class Main : Application() {
         val path = this.parameters.raw.first()
         val wav = WAVReader.read(path)
 
-        // assuming 44100Hz sampling frequency, 2048Samples per fft -> 46.44 ms
-        // 40ms window steps -> two windows cover 86.44ms
-        val params = WindowProcessingParams(end = 10.0, interval = 0.04, numSamples = FftSampleSize.TWO_THOUSAND)
+        val params = WindowProcessingParams(end = 10.0, interval = 0.01, numSamples = FftSampleSize(256).size)
         val data = wav.getFrequencies(params)
 
         val root = Group()
