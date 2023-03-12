@@ -3,8 +3,6 @@ package cc.suffro.bpmanalyzer
 import cc.suffro.bpmanalyzer.fft.FFTProcessor
 import cc.suffro.bpmanalyzer.fft.data.FftSampleSize
 import cc.suffro.bpmanalyzer.fft.data.FrequencyDomainWindow
-import cc.suffro.bpmanalyzer.fft.data.blackmanFunction
-import cc.suffro.bpmanalyzer.fft.data.hammingFunction
 import cc.suffro.bpmanalyzer.fft.data.hanningFunction
 import cc.suffro.bpmanalyzer.ui.MainWindow
 import cc.suffro.bpmanalyzer.wav.WAVReader
@@ -22,15 +20,15 @@ class Main : Application() {
         val path = this.parameters.raw.first()
         val wav = WAVReader.read(path)
 
-        val params = WindowProcessingParams(end = 10.0, interval = 0.01, numSamples = FftSampleSize(256).size)
-        val data = wav.getFrequencies(params)
+        val params = WindowProcessingParams(end = 10.0, interval = 0.01, numSamples = FftSampleSize(4096).size)
+        val data = wav.getFrequencies(params).interpolate()
 
         val root = Group()
         MainWindow().show(root, stage, data)
     }
 
     private fun Wav.getFrequencies(params: WindowProcessingParams): List<FrequencyDomainWindow> {
-        val frequencyWindows = FFTProcessor().processWav(this, params, ::hammingFunction)
+        val frequencyWindows = FFTProcessor().processWav(this, params, ::hanningFunction)
         return frequencyWindows.toList()
     }
 

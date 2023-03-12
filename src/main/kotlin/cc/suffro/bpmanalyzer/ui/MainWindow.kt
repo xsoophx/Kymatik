@@ -62,7 +62,7 @@ class MainWindow : CoroutineScope {
             val start = System.currentTimeMillis()
             var i = 0
             while (i < data.size) {
-                delay(20)
+                delay(10)
                 val timeSinceStart = System.currentTimeMillis() - start
                 val currentSample = data.last { it.window.startingTime * 1000 <= timeSinceStart }
 

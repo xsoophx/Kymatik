@@ -1,5 +1,6 @@
 package cc.suffro.bpmanalyzer
 
+import cc.suffro.bpmanalyzer.fft.data.FrequencyDomainWindow
 import org.kotlinmath.Complex
 import org.kotlinmath.sqrt
 
@@ -13,3 +14,17 @@ fun getHighestPowerOfTwo(number: Int): Int {
 
     return result xor (result shr 1)
 }
+
+fun List<FrequencyDomainWindow>.interpolate(): List<FrequencyDomainWindow> {
+    val interpolated = asSequence().zipWithNext().map { (current, next) ->
+        FrequencyDomainWindow(
+            getAverageMagnitude(current.magnitudes, next.magnitudes),
+            (next.startingTime + current.startingTime) / 2
+        )
+    }.toList()
+
+    return (interpolated + this).sortedBy { it.startingTime }
+}
+
+private fun getAverageMagnitude(current: List<Double>, next: List<Double>): List<Double> =
+    current.zip(next).map { (c, n) -> (c + n) / 2 }
