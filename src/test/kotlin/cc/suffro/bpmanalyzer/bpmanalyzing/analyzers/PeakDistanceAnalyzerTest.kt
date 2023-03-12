@@ -17,7 +17,7 @@ class PeakDistanceAnalyzerTest {
 
     @Test
     fun `should detect correct BPM for plain kicks`() {
-        val wav = wavReader.read("src/test/resources/120bpmkick_60-140Hz.wav")
+        val wav = wavReader.read("src/test/resources/120bpm_140Hz.wav")
         val result = PeakDistanceAnalyzer().analyze(wav)
         assertEquals(expected = 120.0, actual = result)
     }

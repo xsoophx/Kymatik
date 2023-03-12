@@ -1,6 +1,6 @@
 package cc.suffro.bpmanalyzer.bpmanalyzing.filters
 
-import cc.suffro.bpmanalyzer.bpmanalyzing.data.Interval
+import cc.suffro.bpmanalyzer.Interval
 import cc.suffro.bpmanalyzer.bpmanalyzing.data.SeparatedSignals
 import cc.suffro.bpmanalyzer.fft.data.FFTData
 import org.kotlinmath.R
@@ -24,7 +24,7 @@ object Filterbank {
         return frequencies.mapIndexed { index, interval -> interval to output[index] }.toMap()
     }
 
-    private fun FFTData.getFrequencyBands(maximumFrequency: Int): List<Interval> {
+    private fun FFTData.getFrequencyBands(maximumFrequency: Int): List<Interval<Int>> {
         val limits = generateSequence(0 to 200) { it.second to it.second * 2 }
             .takeWhile { it.second <= maximumFrequency }
             .map { (lower, upper) ->

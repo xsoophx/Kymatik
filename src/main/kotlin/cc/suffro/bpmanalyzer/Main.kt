@@ -20,8 +20,8 @@ class Main : Application() {
         val path = this.parameters.raw.first()
         val wav = WAVReader.read(path)
 
-        val params = WindowProcessingParams(end = 10.0, interval = 0.01, numSamples = FftSampleSize(4096).size)
-        val data = wav.getFrequencies(params).interpolate()
+        val params = WindowProcessingParams(end = 10.0, interval = 0.01, numSamples = FftSampleSize.TWO_THOUSAND)
+        val data = wav.getFrequencies(params).scaleMagnitudes().interpolate()
 
         val root = Group()
         MainWindow().show(root, stage, data)

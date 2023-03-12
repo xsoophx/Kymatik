@@ -66,7 +66,7 @@ data class Wav(
         return dataChunk[channel].get(begin, numSamples)
     }
 
-    private fun samplesOf(number: Double): Int = (number * sampleRate).roundToInt()
+    private fun sampleIndexOf(number: Double): Int = (number * sampleRate).roundToInt()
 
     private fun checkOrCorrectEnd(end: Double): Double = if (end >= trackLength) timestampLastSample else end
 
@@ -74,7 +74,7 @@ data class Wav(
         with(params) {
             checkChannelRequirements(channel)
             val correctedEnd = checkOrCorrectEnd(end)
-            return getWindows(samplesOf(start), samplesOf(correctedEnd), interval, channel, numSamples)
+            return getWindows(sampleIndexOf(start), sampleIndexOf(correctedEnd), interval, channel, numSamples)
         }
     }
 
@@ -88,7 +88,7 @@ data class Wav(
         return getSamples(
             start,
             minOf(end, indexLastSample - numSamples),
-            samplesOf(interval),
+            sampleIndexOf(interval),
             channel,
             numSamples,
             interval
@@ -102,14 +102,14 @@ data class Wav(
     ): TimeDomainWindow {
         checkChannelRequirements(channel)
         val interval = numSamples.toDouble() / sampleRate
-        return getWindow(samplesOf(start), samplesOf(start) + numSamples, interval, channel)
+        return getWindow(sampleIndexOf(start), sampleIndexOf(start) + numSamples, interval, channel)
     }
 
     private fun getWindow(start: Int, end: Int, interval: Double, channel: Int): TimeDomainWindow {
         val numSamples = getHighestPowerOfTwo(end - start)
         val endSample = start + numSamples
 
-        return getSamples(start, endSample, samplesOf(interval), channel, numSamples, interval).first()
+        return getSamples(start, endSample, sampleIndexOf(interval), channel, numSamples, interval).first()
     }
 
     private fun getSamples(
