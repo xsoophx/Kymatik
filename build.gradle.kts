@@ -1,8 +1,8 @@
 plugins {
     application
-    kotlin("jvm") version "1.8.10"
+    kotlin("jvm") version "2.0.0-Beta3"
     id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
-    id("org.openjfx.javafxplugin") version "0.0.13"
+    id("org.openjfx.javafxplugin") version "0.1.0"
 }
 
 group = "cc.suffro"
@@ -15,8 +15,20 @@ repositories {
     }
 }
 
+buildscript {
+    repositories {
+        maven {
+            setUrl("https://plugins.gradle.org/m2/")
+        }
+    }
+    dependencies {
+        classpath("org.openjfx:javafx-plugin:0.1.0")
+    }
+}
+apply(plugin = "org.openjfx.javafxplugin")
+
 javafx {
-    version = "19"
+    version = "21"
     modules = listOf("javafx.controls", "javafx.graphics", "javafx.media")
 }
 
@@ -66,13 +78,13 @@ dependencies {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(19))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
 kotlin {
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(19))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
