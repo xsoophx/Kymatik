@@ -16,7 +16,7 @@ import kotlin.io.path.Path
 import kotlin.io.path.inputStream
 
 // TODO: needs refactoring
-interface FileReader<T> {
+fun interface FileReader<T> {
     fun read(path: Path): T
 }
 

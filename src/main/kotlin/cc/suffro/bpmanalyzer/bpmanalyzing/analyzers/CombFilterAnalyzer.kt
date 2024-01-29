@@ -13,23 +13,31 @@ import cc.suffro.bpmanalyzer.fft.data.WindowFunction
 import cc.suffro.bpmanalyzer.getHighestPowerOfTwo
 import cc.suffro.bpmanalyzer.wav.data.FmtChunk
 import cc.suffro.bpmanalyzer.wav.data.Wav
+import java.nio.file.Path
 
 class CombFilterAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) : BpmAnalyzer {
+
+    private val cache = mutableMapOf<Path, FFTData>()
 
     fun analyze(
         wav: Wav,
         start: Double = 0.0,
         windowFunction: WindowFunction? = null
     ): Bpm {
-        require(start + ANALYZING_DURATION < wav.trackLength) {
-            "Starting time of $start seconds is too close to track end."
-        }
-        val window = wav.getWindow(start = start, numSamples = MINIMUM_FFT_SIZE_BY_ENERGY_LEVELS)
-        val fftResult = fftProcessor.process(window, wav.sampleRate, windowFunction = windowFunction)
-
+        val fftResult = calculateFftResult(wav, start, windowFunction)
         return fftResult
             .getBassBand(fftResult.duration)
             .getBpm(LowPassFilter(fftProcessor), CombFilter(fftProcessor), wav.fmtChunk)
+    }
+
+    fun calculateFftResult(wav: Wav, start: Double = 0.0, windowFunction: WindowFunction? = null): FFTData {
+        require(start + ANALYZING_DURATION < wav.trackLength) {
+            "Starting time of $start seconds is too close to track end."
+        }
+        return cache.getOrPut(wav.filePath) {
+            val window = wav.getWindow(start = start, numSamples = MINIMUM_FFT_SIZE_BY_ENERGY_LEVELS)
+            fftProcessor.process(window, wav.sampleRate, windowFunction = windowFunction)
+        }
     }
 
     private fun FFTData.getBassBand(interval: Double): TimeDomainWindow =

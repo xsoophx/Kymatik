@@ -1,6 +1,7 @@
 // ktlint-disable filename
 package cc.suffro.bpmanalyzer
 
+import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.StartingPosition
 import org.kotlinmath.Complex
 import kotlin.math.abs
 import kotlin.test.assertTrue
@@ -13,8 +14,28 @@ fun assertNearlyEquals(expected: Complex, actual: Complex, e: Double = 2.0, mess
     assertTrue(actual.closeTo(expected, e), message ?: "Expected <$expected>, actual <$actual>.")
 }
 
+fun assertNearlyEquals(
+    expected: StartingPosition,
+    actual: StartingPosition,
+    sampleDistance: Int = 100,
+    secondDistance: Double = 0.01,
+    message: String? = null
+) {
+    assertTrue(
+        actual.firstSample.closeTo(expected.firstSample, sampleDistance),
+        message ?: "Expected <$expected>, actual <$actual>."
+    )
+    assertTrue(
+        actual.startInSec.closeTo(expected.startInSec, secondDistance),
+        message ?: "Expected <$expected>, actual <$actual>."
+    )
+}
+
 private fun Complex.closeTo(number: Complex, e: Double): Boolean =
     abs(re - number.re) < e && abs(im - number.im) < e
 
 private fun Double.closeTo(number: Double, e: Double): Boolean =
+    abs(this - number) < e
+
+private fun Int.closeTo(number: Int, e: Int): Boolean =
     abs(this - number) < e

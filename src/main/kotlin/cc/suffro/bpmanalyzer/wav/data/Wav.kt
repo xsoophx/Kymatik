@@ -31,6 +31,14 @@ data class Wav(
     val fmtChunk: FmtChunk,
     val dataChunk: DataChunk
 ) {
+    var defaultChannel = 0
+        set(channel) {
+            checkChannelRequirements(channel)
+            field = channel
+        }
+
+    fun defaultChannel() = dataChunk[defaultChannel]
+
     override fun toString(): String = "Filepath:$filePath, fmtChunk:$fmtChunk."
 
     val trackLength: Double
