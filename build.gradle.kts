@@ -41,6 +41,7 @@ object Version {
     const val COROUTINES = "1.7.0-Beta"
     const val JDBC = "3.45.1.0"
     const val JUNIT = "5.9.1"
+    const val KOIN = "3.5.3"
     const val KOTLIN_MATH = "1.0"
     const val KOTLINX_CLI = "0.3.6"
     const val LOGBACK = "1.2.3"
@@ -56,16 +57,16 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Version.COROUTINES}")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-javafx:${Version.COROUTINES}")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-cli:${Version.KOTLINX_CLI}")
+    implementation("org.xerial:sqlite-jdbc:${Version.JDBC}")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Version.JUNIT}")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:${Version.JUNIT}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Version.JUNIT}")
+    implementation("io.insert-koin:koin-core:${Version.KOIN}")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-cli:${Version.KOTLINX_CLI}")
 
     implementation("org.kotlinmath:complex-numbers:${Version.KOTLIN_MATH}")
 
     implementation("io.github.microutils:kotlin-logging-jvm:${Version.LOGGING}")
-    runtimeOnly("ch.qos.logback:logback-classic:${Version.LOGBACK}")
+
     implementation("org.slf4j:slf4j-simple:${Version.SLF4J}")
 
     implementation("io.data2viz.d2v:d2v-axis:${Version.VIZ}")
@@ -79,7 +80,11 @@ dependencies {
     implementation("io.data2viz.d2v:d2v-shape:${Version.VIZ}")
     implementation("io.data2viz.d2v:d2v-viz:${Version.VIZ}")
 
-    implementation("org.xerial:sqlite-jdbc:${Version.JDBC}")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${Version.JUNIT}")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:${Version.JUNIT}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${Version.JUNIT}")
+
+    runtimeOnly("ch.qos.logback:logback-classic:${Version.LOGBACK}")
 }
 
 java {

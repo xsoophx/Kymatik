@@ -10,7 +10,7 @@ private val logger = KotlinLogging.logger {}
 
 class SQLiteDatabase(private val databaseConnector: DatabaseConnector) : DatabaseOperations {
 
-    private val createTableSql = """
+    private val createTableSql = """sql
     CREATE TABLE $TABLE_NAME (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         track_name TEXT NOT NULL,
