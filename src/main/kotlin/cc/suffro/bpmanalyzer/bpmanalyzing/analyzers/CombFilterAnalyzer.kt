@@ -30,7 +30,7 @@ class CombFilterAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()
             .getBpm(LowPassFilter(fftProcessor), CombFilter(fftProcessor), wav.fmtChunk)
     }
 
-    fun calculateFftResult(wav: Wav, start: Double = 0.0, windowFunction: WindowFunction? = null): FFTData {
+    private fun calculateFftResult(wav: Wav, start: Double = 0.0, windowFunction: WindowFunction? = null): FFTData {
         require(start + ANALYZING_DURATION < wav.trackLength) {
             "Starting time of $start seconds is too close to track end."
         }
