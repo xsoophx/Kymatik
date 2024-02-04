@@ -39,8 +39,10 @@ application {
 object Version {
     const val ASSERTK = "0.25"
     const val COROUTINES = "1.7.0-Beta"
+    const val JDBC = "3.45.1.0"
     const val JUNIT = "5.9.1"
     const val KOTLIN_MATH = "1.0"
+    const val KOTLINX_CLI = "0.3.6"
     const val LOGBACK = "1.2.3"
     const val LOGGING = "3.0.2"
     const val SLF4J = "2.0.3"
@@ -53,6 +55,8 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Version.COROUTINES}")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-javafx:${Version.COROUTINES}")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-cli:${Version.KOTLINX_CLI}")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Version.JUNIT}")
     testImplementation("org.junit.jupiter:junit-jupiter-params:${Version.JUNIT}")
@@ -74,6 +78,8 @@ dependencies {
     implementation("io.data2viz.d2v:d2v-scale:${Version.VIZ}")
     implementation("io.data2viz.d2v:d2v-shape:${Version.VIZ}")
     implementation("io.data2viz.d2v:d2v-viz:${Version.VIZ}")
+
+    implementation("org.xerial:sqlite-jdbc:${Version.JDBC}")
 }
 
 java {
