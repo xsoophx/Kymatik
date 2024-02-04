@@ -3,12 +3,12 @@ package cc.suffro.bpmanalyzer.database
 import cc.suffro.bpmanalyzer.data.TrackInfo
 import mu.KotlinLogging
 import java.sql.Connection
-import java.sql.DriverManager
+import java.sql.ResultSet
 import java.sql.SQLException
 
 private val logger = KotlinLogging.logger {}
 
-class SQLiteDatabase(private val url: String) : DatabaseOperations {
+class SQLiteDatabase(private val databaseConnector: DatabaseConnector) : DatabaseOperations {
 
     private val createTableSql = """
     CREATE TABLE $TABLE_NAME (
@@ -23,7 +23,7 @@ class SQLiteDatabase(private val url: String) : DatabaseOperations {
 
     private fun initializeDatabase() {
         try {
-            DriverManager.getConnection(url).use { connection ->
+            databaseConnector.getConnection().use { connection ->
                 getTablesAndCreateStatement(connection)
             }
         } catch (e: SQLException) {
@@ -45,7 +45,7 @@ class SQLiteDatabase(private val url: String) : DatabaseOperations {
     override fun saveTrackInfo(trackName: String, bpm: Double) {
         logger.info("Trying to save $bpm for $trackName to database.")
         try {
-            DriverManager.getConnection(url).use { conn ->
+            databaseConnector.getConnection().use { conn ->
                 prepareStatement(conn, trackName, bpm)
             }
         } catch (e: SQLException) {
@@ -68,25 +68,34 @@ class SQLiteDatabase(private val url: String) : DatabaseOperations {
     override fun getTrackInfo(trackName: String): TrackInfo {
         logger.info("Trying to get $trackName from database.")
         return try {
-            DriverManager.getConnection(url).use { conn ->
-                val sql = "SELECT bpm FROM bpm_results WHERE track_name = ?"
-                conn.prepareStatement(sql).use { statement ->
-                    statement.setString(1, trackName)
-                    val resultSet = statement.executeQuery()
-                    if (resultSet.next()) {
-                        val bpm = resultSet.getDouble("bpm")
-                        logger.info("Getting $trackName from database successful.")
-                        TrackInfo(trackName, bpm)
-                    } else {
-                        logger.info("Getting $trackName from database failed.")
-                        TrackInfo(trackName, -1.0)
-                    }
-                }
+            databaseConnector.getConnection().use { conn ->
+                getResults(conn, trackName)
             }
         } catch (e: SQLException) {
             logger.error(e.message)
             return TrackInfo(trackName, -1.0)
         }
+    }
+
+    private fun getResults(conn: Connection, trackName: String): TrackInfo {
+        val sql = "SELECT bpm FROM bpm_results WHERE track_name = ?"
+        conn.prepareStatement(sql).use { statement ->
+            statement.setString(1, trackName)
+            val resultSet = statement.executeQuery()
+
+            if (!resultSet.next()) {
+                logger.info("Getting $trackName from database failed.")
+                return TrackInfo(trackName, -1.0)
+            }
+
+            return resultSet.getResult(trackName)
+        }
+    }
+
+    private fun ResultSet.getResult(trackName: String): TrackInfo {
+        val bpm = getDouble("bpm")
+        logger.info("Getting $trackName from database successful.")
+        return TrackInfo(trackName, bpm)
     }
 
     companion object {

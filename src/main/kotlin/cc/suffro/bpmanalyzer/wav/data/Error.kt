@@ -1,4 +1,4 @@
-package cc.suffro.bpmanalyzer.fft.data
+package cc.suffro.bpmanalyzer.wav.data
 
 enum class ErrorType {
     NOT_A_RIFF,

@@ -1,7 +1,7 @@
 package cc.suffro.bpmanalyzer.wav
 
-import cc.suffro.bpmanalyzer.fft.data.Error
-import cc.suffro.bpmanalyzer.fft.data.ErrorType
+import cc.suffro.bpmanalyzer.wav.data.Error
+import cc.suffro.bpmanalyzer.wav.data.ErrorType
 import cc.suffro.bpmanalyzer.wav.data.AudioFormat
 import cc.suffro.bpmanalyzer.wav.data.FmtChunk
 import cc.suffro.bpmanalyzer.wav.data.Wav

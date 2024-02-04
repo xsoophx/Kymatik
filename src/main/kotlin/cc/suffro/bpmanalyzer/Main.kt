@@ -2,6 +2,7 @@ package cc.suffro.bpmanalyzer
 
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CombFilterAnalyzer
 import cc.suffro.bpmanalyzer.data.TrackInfo
+import cc.suffro.bpmanalyzer.database.SQLDatabaseConnector
 import cc.suffro.bpmanalyzer.database.SQLiteDatabase
 import cc.suffro.bpmanalyzer.wav.WAVReader
 import kotlinx.cli.ArgParser
@@ -24,7 +25,9 @@ class Main {
             requireNotNull(trackName) { "Please provide a track name." }
             requireNotNull(checkedDatabaseURL) { "Please provide a database url." }
 
-            val database = SQLiteDatabase(checkedDatabaseURL)
+            val databaseConnector = SQLDatabaseConnector(checkedDatabaseURL)
+            val database = SQLiteDatabase(databaseConnector)
+
             val trackFromDatabase = (database.getTrackInfo(trackName!!)).let {
                 if (it.bpm == -1.0) database.saveAndReturnTrack(trackName!!) else it
             }

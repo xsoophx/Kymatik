@@ -31,7 +31,7 @@ data class Wav(
     val fmtChunk: FmtChunk,
     val dataChunk: DataChunk
 ) {
-    var defaultChannel = 0
+    private var defaultChannel = 0
         set(channel) {
             checkChannelRequirements(channel)
             field = channel
