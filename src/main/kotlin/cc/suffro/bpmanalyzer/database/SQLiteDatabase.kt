@@ -8,10 +8,13 @@ import java.sql.SQLException
 
 private val logger = KotlinLogging.logger {}
 
-class SQLiteDatabase(private val databaseConnector: DatabaseConnector) : DatabaseOperations {
+class SQLiteDatabase(databaseConnector: DatabaseConnector) : DatabaseOperations {
 
-    private val createTableSql = """sql
-    CREATE TABLE $TABLE_NAME (
+    private val tableName = databaseConnector.getDatabaseNameByUrl()
+    private val connection = databaseConnector.getConnection()
+
+    private val createTableSql = """
+    CREATE TABLE $tableName (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         track_name TEXT NOT NULL,
         bpm DOUBLE PRECISION NOT NULL
@@ -23,9 +26,7 @@ class SQLiteDatabase(private val databaseConnector: DatabaseConnector) : Databas
 
     private fun initializeDatabase() {
         try {
-            databaseConnector.getConnection().use { connection ->
-                getTablesAndCreateStatement(connection)
-            }
+            getTablesAndCreateStatement(connection)
         } catch (e: SQLException) {
             logger.error(e.message)
         }
@@ -33,7 +34,7 @@ class SQLiteDatabase(private val databaseConnector: DatabaseConnector) : Databas
 
     private fun getTablesAndCreateStatement(connection: Connection) {
         val metaData = connection.metaData
-        val tables = metaData.getTables(null, null, TABLE_NAME, null)
+        val tables = metaData.getTables(null, null, tableName, null)
 
         if (!tables.next()) {
             connection.createStatement().use { statement ->
@@ -42,20 +43,49 @@ class SQLiteDatabase(private val databaseConnector: DatabaseConnector) : Databas
         }
     }
 
-    override fun saveTrackInfo(trackName: String, bpm: Double) {
+    override fun saveTrackInfo(trackName: String, bpm: Double): Int {
         logger.info("Trying to save $bpm for $trackName to database.")
         try {
-            databaseConnector.getConnection().use { conn ->
-                prepareStatement(conn, trackName, bpm)
-            }
+            return prepareStatement(trackName, bpm)
         } catch (e: SQLException) {
             logger.error(e.message)
+            return -1
         }
     }
 
-    private fun prepareStatement(conn: Connection, trackName: String, bpm: Double): Int {
-        val sql = "INSERT INTO $TABLE_NAME (track_name, bpm) VALUES (?, ?)"
-        val status = conn.prepareStatement(sql).use { statement ->
+    override fun getTrackInfo(trackName: String): TrackInfo {
+        logger.info("Trying to get $trackName from database.")
+        return try {
+            getResults(trackName)
+        } catch (e: SQLException) {
+            logger.error(e.message)
+            return TrackInfo(trackName, -1.0)
+        }
+    }
+
+    override fun cleanUpDatabase(closeConnection: Boolean): Boolean {
+        val deleteSql = "DELETE FROM $tableName"
+
+        val status = connection.createStatement().use { statement ->
+            statement.execute(deleteSql)
+        }
+
+        when {
+            status -> logger.info("Database with name $tableName: cleanup successful.")
+            else -> logger.error("Database with name $tableName: cleanup failed.")
+        }
+
+        if (closeConnection) closeConnection()
+        return status
+    }
+
+    override fun closeConnection() {
+        return connection.close()
+    }
+
+    private fun prepareStatement(trackName: String, bpm: Double): Int {
+        val sql = "INSERT INTO $tableName (track_name, bpm) VALUES (?, ?)"
+        val status = connection.prepareStatement(sql).use { statement ->
             statement.setString(1, trackName)
             statement.setDouble(2, bpm)
             statement.executeUpdate()
@@ -65,21 +95,9 @@ class SQLiteDatabase(private val databaseConnector: DatabaseConnector) : Databas
         return status
     }
 
-    override fun getTrackInfo(trackName: String): TrackInfo {
-        logger.info("Trying to get $trackName from database.")
-        return try {
-            databaseConnector.getConnection().use { conn ->
-                getResults(conn, trackName)
-            }
-        } catch (e: SQLException) {
-            logger.error(e.message)
-            return TrackInfo(trackName, -1.0)
-        }
-    }
-
-    private fun getResults(conn: Connection, trackName: String): TrackInfo {
+    private fun getResults(trackName: String): TrackInfo {
         val sql = "SELECT bpm FROM bpm_results WHERE track_name = ?"
-        conn.prepareStatement(sql).use { statement ->
+        connection.prepareStatement(sql).use { statement ->
             statement.setString(1, trackName)
             val resultSet = statement.executeQuery()
 
@@ -96,9 +114,5 @@ class SQLiteDatabase(private val databaseConnector: DatabaseConnector) : Databas
         val bpm = getDouble("bpm")
         logger.info("Getting $trackName from database successful.")
         return TrackInfo(trackName, bpm)
-    }
-
-    companion object {
-        private const val TABLE_NAME = "bpm_results"
     }
 }

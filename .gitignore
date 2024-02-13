@@ -16,3 +16,4 @@ out/
 
 # resources
 src/test/resources/tracks/*
+src/test/resources/test.db

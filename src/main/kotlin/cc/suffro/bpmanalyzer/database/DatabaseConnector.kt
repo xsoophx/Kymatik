@@ -2,6 +2,8 @@ package cc.suffro.bpmanalyzer.database
 
 import java.sql.Connection
 
-fun interface DatabaseConnector {
+interface DatabaseConnector {
     fun getConnection(): Connection
+
+    fun getDatabaseNameByUrl(): String
 }

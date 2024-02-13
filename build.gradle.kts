@@ -40,8 +40,9 @@ object Version {
     const val ASSERTK = "0.25"
     const val COROUTINES = "1.7.0-Beta"
     const val JDBC = "3.45.1.0"
-    const val JUNIT = "5.9.1"
+    const val JUNIT = "5.10.1"
     const val KOIN = "3.5.3"
+    const val KOIN_TEST = "3.6.0-wasm-alpha2"
     const val KOTLIN_MATH = "1.0"
     const val KOTLINX_CLI = "0.3.6"
     const val LOGBACK = "1.2.3"
@@ -60,6 +61,7 @@ dependencies {
     implementation("org.xerial:sqlite-jdbc:${Version.JDBC}")
 
     implementation("io.insert-koin:koin-core:${Version.KOIN}")
+    implementation("io.insert-koin:koin-test:${Version.KOIN_TEST}")
 
     implementation("org.jetbrains.kotlinx:kotlinx-cli:${Version.KOTLINX_CLI}")
 

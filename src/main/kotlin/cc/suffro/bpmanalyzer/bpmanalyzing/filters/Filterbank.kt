@@ -36,15 +36,6 @@ object Filterbank {
         }
     }
 
-    fun squareAmplitudesIfGreaterThanThreshold(
-        separatedSignals: DoubleArray,
-        threshold: Double = 0.0
-    ): List<Double> {
-        return separatedSignals.map { value ->
-            if (value < threshold) 0.0 else value * value
-        }
-    }
-
     fun fullWaveRectify(signal: DoubleArray): List<Double> {
         return signal.map { value -> if (value < 0) 0.0 else value }
     }

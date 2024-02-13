@@ -7,4 +7,8 @@ class SQLDatabaseConnector(private val url: String) : DatabaseConnector {
     override fun getConnection(): Connection {
         return DriverManager.getConnection(url)
     }
+
+    override fun getDatabaseNameByUrl(): String {
+        return url.split("/").last().split(".").first()
+    }
 }

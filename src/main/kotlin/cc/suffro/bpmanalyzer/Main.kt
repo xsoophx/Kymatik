@@ -41,9 +41,11 @@ class Main : KoinApplication() {
     private fun getFromDbOrAnalyze(arguments: Arguments): TrackInfo {
         val database by inject<SQLiteDatabase> { parametersOf(arguments.databaseUrl) }
 
-        return (database.getTrackInfo(arguments.trackName)).let {
+        val trackInfo = (database.getTrackInfo(arguments.trackName)).let {
             if (it.bpm == -1.0) database.saveAndReturnTrack(arguments.trackName) else it
         }
+        database.closeConnection()
+        return trackInfo
     }
 
     private fun SQLiteDatabase.saveAndReturnTrack(trackName: String): TrackInfo {
