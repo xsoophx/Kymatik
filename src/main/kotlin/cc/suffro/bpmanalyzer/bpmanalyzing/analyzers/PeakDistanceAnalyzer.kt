@@ -15,6 +15,10 @@ import java.util.Locale
 
 class PeakDistanceAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) : BpmAnalyzer {
 
+    override fun analyze(wav: Wav, start: Double, windowFunction: WindowFunction?): Bpm {
+        return analyze(wav, start = start, windowFunction = windowFunction)
+    }
+
     fun analyze(
         wav: Wav,
         start: Double = 0.0,

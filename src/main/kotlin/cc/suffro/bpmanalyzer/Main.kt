@@ -3,8 +3,9 @@ package cc.suffro.bpmanalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CombFilterAnalyzer
 import cc.suffro.bpmanalyzer.data.Arguments
 import cc.suffro.bpmanalyzer.data.TrackInfo
-import cc.suffro.bpmanalyzer.database.SQLiteDatabase
-import cc.suffro.bpmanalyzer.wav.WAVReader
+import cc.suffro.bpmanalyzer.database.DatabaseOperations
+import cc.suffro.bpmanalyzer.wav.FileReader
+import cc.suffro.bpmanalyzer.wav.data.Wav
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import mu.KotlinLogging
@@ -39,7 +40,7 @@ class Main : KoinApplication() {
     }
 
     private fun getFromDbOrAnalyze(arguments: Arguments): TrackInfo {
-        val database by inject<SQLiteDatabase> { parametersOf(arguments.databaseUrl) }
+        val database by inject<DatabaseOperations> { parametersOf(arguments.databaseUrl) }
 
         val trackInfo = (database.getTrackInfo(arguments.trackName)).let {
             if (it.bpm == -1.0) database.saveAndReturnTrack(arguments.trackName) else it
@@ -48,7 +49,7 @@ class Main : KoinApplication() {
         return trackInfo
     }
 
-    private fun SQLiteDatabase.saveAndReturnTrack(trackName: String): TrackInfo {
+    private fun DatabaseOperations.saveAndReturnTrack(trackName: String): TrackInfo {
         val bpm = analyze(trackName)
         saveTrackInfo(trackName, bpm)
         return TrackInfo(trackName, bpm)
@@ -58,7 +59,9 @@ class Main : KoinApplication() {
         require(path.isNotEmpty()) { "Please provide a path to your audio file." }
         require(path.endsWith(".wav")) { "Please provide a .wav file." }
 
-        val wav = WAVReader.read(path)
+        val wavReader by inject<FileReader<Wav>>()
+
+        val wav = wavReader.read(path)
         val bpm = CombFilterAnalyzer().analyze(wav)
         logger.info { "BPM: $bpm" }
         return bpm

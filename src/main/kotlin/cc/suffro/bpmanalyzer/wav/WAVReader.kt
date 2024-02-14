@@ -16,8 +16,10 @@ import kotlin.io.path.Path
 import kotlin.io.path.inputStream
 
 // TODO: needs refactoring
-fun interface FileReader<T> {
+interface FileReader<T> {
     fun read(path: Path): T
+
+    fun read(path: String): T
 }
 
 object WAVReader : FileReader<Wav> {
@@ -29,7 +31,7 @@ object WAVReader : FileReader<Wav> {
 
     private const val MAX_VALUE_24BIT = 0x7FFFFF
 
-    fun read(path: String): Wav = read(Path(path))
+    override fun read(path: String): Wav = read(Path(path))
 
     override fun read(path: Path): Wav = path.inputStream().buffered().use { input ->
         val riffChunkSize = getRiffChunkSize(input)
