@@ -3,6 +3,7 @@ package cc.suffro.bpmanalyzer.wav
 import cc.suffro.bpmanalyzer.wav.data.AudioFormat
 import cc.suffro.bpmanalyzer.wav.data.Error
 import cc.suffro.bpmanalyzer.wav.data.ErrorType
+import cc.suffro.bpmanalyzer.wav.data.FileReader
 import cc.suffro.bpmanalyzer.wav.data.FmtChunk
 import cc.suffro.bpmanalyzer.wav.data.Wav
 import java.io.BufferedInputStream
@@ -16,21 +17,7 @@ import kotlin.io.path.Path
 import kotlin.io.path.inputStream
 
 // TODO: needs refactoring
-interface FileReader<T> {
-    fun read(path: Path): T
-
-    fun read(path: String): T
-}
-
 object WAVReader : FileReader<Wav> {
-    private const val RIFF_HEADER_CHUNK_SIZE = 4
-    private const val RIFF_SIGNATURE = "RIFF"
-    private const val WAVE_SIGNATURE = "WAVE"
-    private const val FMT_SIGNATURE = "fmt "
-    private const val DATA_SIGNATURE = "data"
-
-    private const val MAX_VALUE_24BIT = 0x7FFFFF
-
     override fun read(path: String): Wav = read(Path(path))
 
     override fun read(path: Path): Wav = path.inputStream().buffered().use { input ->

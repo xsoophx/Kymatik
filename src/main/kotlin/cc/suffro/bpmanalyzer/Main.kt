@@ -4,7 +4,7 @@ import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CombFilterAnalyzer
 import cc.suffro.bpmanalyzer.data.Arguments
 import cc.suffro.bpmanalyzer.data.TrackInfo
 import cc.suffro.bpmanalyzer.database.DatabaseOperations
-import cc.suffro.bpmanalyzer.wav.FileReader
+import cc.suffro.bpmanalyzer.wav.data.FileReader
 import cc.suffro.bpmanalyzer.wav.data.Wav
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
