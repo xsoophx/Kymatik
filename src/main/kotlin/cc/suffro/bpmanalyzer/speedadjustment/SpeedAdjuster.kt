@@ -8,15 +8,15 @@ class SpeedAdjuster(private val bpmAnalyzer: BpmAnalyzer) {
 
     fun changeTo(wav: Wav, targetBpm: Double): List<Double> {
         val currentBpm = bpmAnalyzer.analyze(wav)
-        val stretchFactor = currentBpm / targetBpm
+        val inverseStretchFactor = targetBpm / currentBpm
 
         val data = wav.defaultChannel()
-        val newLength = (data.size * stretchFactor).toInt()
+        val newLength = ((data.size - 1) / inverseStretchFactor).toInt() + 1
         val stretchedData = DoubleArray(newLength)
 
         for (i in 0 until newLength) {
             // get old values for new position
-            val pos = i / stretchFactor
+            val pos = i * inverseStretchFactor
 
             val lowerIndex = pos.toInt()
             val upperIndex = min(lowerIndex + 1, data.size - 1)

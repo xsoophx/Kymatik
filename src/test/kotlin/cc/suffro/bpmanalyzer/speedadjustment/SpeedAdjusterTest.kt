@@ -17,7 +17,7 @@ class SpeedAdjusterTest : BaseTest() {
 
     @Test
     fun `should create correct number of samples`() {
-        val data = doubleArrayOf(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0)
+        val data = doubleArrayOf(0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0)
         val wav = Wav(
             filePath = Path.of("dummy.wav"),
             fmtChunk = FmtChunk(1, 1, AudioFormat.PCM, 1, 1, 1, 1, 1, 1),
@@ -25,6 +25,6 @@ class SpeedAdjusterTest : BaseTest() {
         )
 
         val result = speedAdjuster.changeTo(wav, 120.0)
-        assertEquals(8, result.size)
+        assertEquals(11, result.size)
     }
 }
