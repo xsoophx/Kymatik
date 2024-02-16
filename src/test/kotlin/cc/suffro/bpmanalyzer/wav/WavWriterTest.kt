@@ -39,7 +39,7 @@ class WavWriterTest : BaseTest() {
         assertEquals(wav.timestampLastSample, actual.timestampLastSample)
 
         for (i in 0 until wav.fmtChunk.numChannels) {
-            assertTrue(wav.dataChunk[i].contentEquals(actual.dataChunk[i]))
+            assertTrue(wav.dataChunk.data[i].contentEquals(actual.dataChunk.data[i]))
         }
 
         logger.info { "expected : ${wav.dataChunk}" }
@@ -53,9 +53,9 @@ class WavWriterTest : BaseTest() {
         @JvmStatic
         fun getWavData(): Stream<Arguments> {
             return Stream.of(
-                Arguments.of("src/test/resources/120bpm_140Hz"),
-                Arguments.of("src/test/resources/220"),
-                Arguments.of("src/test/resources/440")
+                Arguments.of("src/test/resources/tracks/120bpm_140Hz"),
+                Arguments.of("src/test/resources/tracks/220"),
+                Arguments.of("src/test/resources/tracks/440")
             )
         }
     }

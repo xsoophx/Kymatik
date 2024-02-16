@@ -6,7 +6,26 @@ import cc.suffro.bpmanalyzer.getHighestPowerOfTwo
 import java.nio.file.Path
 import kotlin.math.roundToInt
 
-typealias DataChunk = Array<DoubleArray>
+data class DataChunk(
+    val dataChunkSize: Int,
+    val data: Array<DoubleArray>
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is DataChunk) return false
+
+        if (dataChunkSize != other.dataChunkSize) return false
+        if (!data.contentDeepEquals(other.data)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = dataChunkSize
+        result = 31 * result + data.contentDeepHashCode()
+        return result
+    }
+}
 
 data class FmtChunk(
     val riffChunkSize: Int,
@@ -16,42 +35,45 @@ data class FmtChunk(
     val sampleRate: Int,
     val byteRate: Int,
     val blockAlign: Short,
-    val bitsPerSample: Short,
-    val dataChunkSize: Int
-) {
-    val trackLength: Double
-        get() = dataChunkSize.toDouble() / (sampleRate * blockAlign)
-
-    val indexLastSample: Int
-        get() = ((dataChunkSize - blockAlign) / blockAlign)
-}
+    val bitsPerSample: Short
+)
 
 data class Wav(
     val filePath: Path,
     val fmtChunk: FmtChunk,
     val dataChunk: DataChunk
 ) {
+    constructor(
+        filePath: Path,
+        fmtChunk: FmtChunk,
+        dataChunks: Array<DoubleArray>
+    ) : this(
+        filePath,
+        fmtChunk,
+        DataChunk(dataChunks.first().size * fmtChunk.numChannels * fmtChunk.bitsPerSample / 8, dataChunks)
+    )
+
     private var defaultChannel = 0
         set(channel) {
             checkChannelRequirements(channel)
             field = channel
         }
 
-    fun defaultChannel() = dataChunk[defaultChannel]
+    fun defaultChannel() = dataChunk.data[defaultChannel]
 
     override fun toString(): String = "Filepath:$filePath, fmtChunk:$fmtChunk."
 
+    val sampleRate: Int
+        get() = fmtChunk.sampleRate
+
     val trackLength: Double
-        get() = fmtChunk.trackLength
+        get() = dataChunk.dataChunkSize.toDouble() / (sampleRate * fmtChunk.blockAlign)
 
     private val indexLastSample: Int
-        get() = fmtChunk.indexLastSample
+        get() = ((dataChunk.dataChunkSize - fmtChunk.blockAlign) / fmtChunk.blockAlign)
 
     val timestampLastSample: Double
         get() = indexLastSample.toDouble() / sampleRate
-
-    val sampleRate: Int
-        get() = fmtChunk.sampleRate
 
     private fun DoubleArray.get(begin: Int, length: Int): Sequence<Double> {
         if (begin < 0 || begin > begin + length || begin + length > this.size) {
@@ -62,7 +84,7 @@ data class Wav(
 
     private fun checkChannelRequirements(channel: Int) {
         require(channel >= 0) { "Selected Channel has to be greater than or equal to zero." }
-        require(channel < dataChunk.size) { "Selected Channel has to be smaller than available channels (${dataChunk.size})." }
+        require(channel < dataChunk.dataChunkSize) { "Selected Channel has to be smaller than available channels (${dataChunk.dataChunkSize})." }
     }
 
     fun getWindowContent(
@@ -71,7 +93,7 @@ data class Wav(
         numSamples: Int = FftSampleSize.DEFAULT
     ): Sequence<Double> {
         checkChannelRequirements(channel)
-        return dataChunk[channel].get(begin, numSamples)
+        return dataChunk.data[channel].get(begin, numSamples)
     }
 
     private fun sampleIndexOf(number: Double): Int = (number * sampleRate).roundToInt()
@@ -132,7 +154,7 @@ data class Wav(
             .step(sampleInterval)
             .asSequence()
             .takeWhile { it < endSample }
-            .map { index -> dataChunk[channel].get(index, numSamples) }
+            .map { index -> dataChunk.data[channel].get(index, numSamples) }
 
         return samples.mapIndexed { index, sample -> TimeDomainWindow(sample, interval, index * interval) }
     }

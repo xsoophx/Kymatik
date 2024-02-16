@@ -6,7 +6,7 @@ import kotlin.math.min
 
 class SpeedAdjuster(private val bpmAnalyzer: BpmAnalyzer) {
 
-    fun changeTo(wav: Wav, targetBpm: Double): List<Double> {
+    fun changeTo(wav: Wav, targetBpm: Double): DoubleArray {
         val currentBpm = bpmAnalyzer.analyze(wav)
         val inverseStretchFactor = targetBpm / currentBpm
 
@@ -26,6 +26,6 @@ class SpeedAdjuster(private val bpmAnalyzer: BpmAnalyzer) {
                 data[lowerIndex] + interpolation * (data[upperIndex] - data[lowerIndex])
         }
 
-        return stretchedData.toList()
+        return stretchedData
     }
 }

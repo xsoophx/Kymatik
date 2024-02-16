@@ -4,6 +4,7 @@ import cc.suffro.bpmanalyzer.FFT
 import cc.suffro.bpmanalyzer.fft.FFTProcessor
 import cc.suffro.bpmanalyzer.fft.data.FftSampleSize
 import cc.suffro.bpmanalyzer.wav.data.AudioFormat
+import cc.suffro.bpmanalyzer.wav.data.DataChunk
 import cc.suffro.bpmanalyzer.wav.data.FmtChunk
 import cc.suffro.bpmanalyzer.wav.data.Wav
 import cc.suffro.bpmanalyzer.wav.data.WindowProcessingParams
@@ -26,14 +27,14 @@ class WAVReaderTest {
 
     @ParameterizedTest
     @MethodSource("getWavDataWithFmt")
-    fun `should read correct header and data`(path: String, fmtChunk: FmtChunk) {
+    fun `should read correct header and data`(path: String, fmtChunk: FmtChunk, dataChunkSize: Int) {
         val actual = wavReader.read(path)
 
         assertEquals(
             expected = Wav(
                 filePath = Path(path),
                 fmtChunk = fmtChunk,
-                dataChunk = actual.dataChunk
+                dataChunk = DataChunk(dataChunkSize, actual.dataChunk.data)
             ),
             actual = actual
         )
@@ -75,7 +76,7 @@ class WAVReaderTest {
         interval: Double,
         expectedWindows: Int
     ) {
-        val wav = wavReader.read("src/test/resources/440.wav")
+        val wav = wavReader.read("src/test/resources/tracks/440.wav")
         val params = WindowProcessingParams(start = start, end = end, interval = interval)
         val actual = wav.getWindows(params)
 
@@ -84,7 +85,7 @@ class WAVReaderTest {
 
     @Test
     fun `should handle track length as end correctly`() {
-        val wav = wavReader.read("src/test/resources/440.wav")
+        val wav = wavReader.read("src/test/resources/tracks/440.wav")
         val windowTime = FftSampleSize.DEFAULT.toDouble() / wav.sampleRate
         val params =
             WindowProcessingParams(start = wav.trackLength - windowTime, end = wav.trackLength, interval = windowTime)
@@ -97,7 +98,7 @@ class WAVReaderTest {
         @JvmStatic
         private fun getWavDataWithFmt() = Stream.of(
             Arguments.of(
-                "src/test/resources/220.wav",
+                "src/test/resources/tracks/220.wav",
                 FmtChunk(
                     riffChunkSize = 654006,
                     fmtChunkSize = 16,
@@ -106,12 +107,11 @@ class WAVReaderTest {
                     sampleRate = 44100,
                     byteRate = 176400,
                     blockAlign = 4,
-                    bitsPerSample = 16,
-                    dataChunkSize = 653868
-                )
+                    bitsPerSample = 16
+                ), 653868
             ),
             Arguments.of(
-                "src/test/resources/440.wav",
+                "src/test/resources/tracks/440.wav",
                 FmtChunk(
                     riffChunkSize = 880110,
                     fmtChunkSize = 16,
@@ -120,16 +120,15 @@ class WAVReaderTest {
                     sampleRate = 44000,
                     byteRate = 88000,
                     blockAlign = 2,
-                    bitsPerSample = 16,
-                    dataChunkSize = 880000
-                )
+                    bitsPerSample = 16
+                ), 880000
             )
         )
 
         @JvmStatic
         private fun getWavDataWithFrequency() = Stream.of(
-            Arguments.of("src/test/resources/440.wav", 440.0),
-            Arguments.of("src/test/resources/220.wav", 220.0)
+            Arguments.of("src/test/resources/tracks/440.wav", 440.0),
+            Arguments.of("src/test/resources/tracks/220.wav", 220.0)
         )
     }
 }

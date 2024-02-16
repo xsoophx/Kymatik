@@ -1,5 +1,6 @@
 package cc.suffro.bpmanalyzer.wav
 
+import cc.suffro.bpmanalyzer.wav.data.DataChunk
 import cc.suffro.bpmanalyzer.wav.data.FileWriter
 import cc.suffro.bpmanalyzer.wav.data.FmtChunk
 import cc.suffro.bpmanalyzer.wav.data.Wav
@@ -42,16 +43,16 @@ object WavWriter : FileWriter<Wav> {
         output.write(shortToByteArray(fmtChunk.bitsPerSample))
     }
 
-    private fun writeDataChunk(output: OutputStream, fmtChunk: FmtChunk, dataChunk: Array<DoubleArray>) {
+    private fun writeDataChunk(output: OutputStream, fmtChunk: FmtChunk, dataChunk: DataChunk) {
         output.write(DATA_SIGNATURE.toByteArray(Charsets.US_ASCII))
-        output.write(intToByteArray(dataChunk.size * dataChunk[0].size * (fmtChunk.bitsPerSample / 8)))
-        val sampleCount = fmtChunk.dataChunkSize / fmtChunk.blockAlign
+        output.write(intToByteArray(dataChunk.dataChunkSize))
+        val sampleCount = dataChunk.dataChunkSize / fmtChunk.blockAlign
 
         when (fmtChunk.bitsPerSample.toInt()) {
             16 -> {
                 for (sampleIndex in 0 until sampleCount) {
                     for (channel in 0 until fmtChunk.numChannels) {
-                        val shortValue = (dataChunk[channel][sampleIndex] * Short.MAX_VALUE).toInt().toShort()
+                        val shortValue = (dataChunk.data[channel][sampleIndex] * Short.MAX_VALUE).toInt().toShort()
                         val sampleBytes = ByteBuffer.allocate(Short.SIZE_BYTES).apply {
                             order(ByteOrder.LITTLE_ENDIAN)
                             putShort(shortValue)

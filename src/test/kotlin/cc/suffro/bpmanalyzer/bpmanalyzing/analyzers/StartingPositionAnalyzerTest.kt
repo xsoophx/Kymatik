@@ -10,7 +10,7 @@ class StartingPositionAnalyzerTest {
 
     @Test
     fun `should detect correct start position for plain kicks`() {
-        val wav = wavReader.read("src/test/resources/120bpm_140Hz.wav")
+        val wav = wavReader.read("src/test/resources/tracks/120bpm_140Hz.wav")
         val result = StartingPositionAnalyzer().analyze(wav)
         assertNearlyEquals(
             expected = StartingPosition(firstSample = 1014, startInSec = 0.023),

@@ -1,6 +1,7 @@
 package cc.suffro.bpmanalyzer.wav
 
 import cc.suffro.bpmanalyzer.wav.data.AudioFormat
+import cc.suffro.bpmanalyzer.wav.data.DataChunk
 import cc.suffro.bpmanalyzer.wav.data.Error
 import cc.suffro.bpmanalyzer.wav.data.ErrorType
 import cc.suffro.bpmanalyzer.wav.data.FileReader
@@ -50,14 +51,13 @@ object WAVReader : FileReader<Wav> {
             sampleRate = sampleRate,
             byteRate = byteRate,
             blockAlign = blockAlign,
-            bitsPerSample = bitsPerSample,
-            dataChunkSize = dataChunkSize
+            bitsPerSample = bitsPerSample
         )
 
         Wav(
             filePath = path,
             fmtChunk = fmtChunk,
-            dataChunk = data.readSamples(fmtChunk)
+            dataChunk = DataChunk(dataChunkSize, data.readSamples(fmtChunk))
         )
     }
 

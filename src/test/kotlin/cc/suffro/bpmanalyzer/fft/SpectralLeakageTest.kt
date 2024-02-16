@@ -56,6 +56,6 @@ class SpectralLeakageTest {
 
     companion object {
         // 60s / 130bpm = 0.46153846...s/bpm
-        private const val sineOnOff = "src/test/resources/C5_on_off.wav"
+        private const val sineOnOff = "src/test/resources/tracks/C5_on_off.wav"
     }
 }
