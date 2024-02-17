@@ -89,6 +89,8 @@ class SQLiteDatabase(databaseConnector: DatabaseConnector) : DatabaseOperations 
     }
 
     private fun prepareStatement(trackName: String, bpm: Double): Int {
+        ensureConnectionIsOpen()
+
         val sql = "INSERT INTO $tableName (track_name, bpm) VALUES (?, ?)"
         val status = connection.prepareStatement(sql).use { statement ->
             statement.setString(1, trackName)
@@ -98,6 +100,14 @@ class SQLiteDatabase(databaseConnector: DatabaseConnector) : DatabaseOperations 
 
         logger.info("Saving $trackName to database successful.")
         return status
+    }
+
+    private fun ensureConnectionIsOpen() {
+        if (connection.isClosed) {
+            // Log error or throw exception
+            logger.error("Database connection is closed.")
+            throw SQLException("Attempted to operate on a closed database connection.")
+        }
     }
 
     private fun getResults(trackName: String): TrackInfo {
