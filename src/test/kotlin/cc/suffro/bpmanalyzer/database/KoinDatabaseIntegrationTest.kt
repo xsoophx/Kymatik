@@ -1,5 +1,6 @@
 package cc.suffro.bpmanalyzer.database
 
+import cc.suffro.bpmanalyzer.BaseTest
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
@@ -10,7 +11,7 @@ import org.koin.test.KoinTest
 import org.koin.test.inject
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-open class KoinDatabaseIntegrationTest : KoinTest {
+open class KoinDatabaseIntegrationTest : BaseTest() {
 
     val database by inject<DatabaseOperations>()
 

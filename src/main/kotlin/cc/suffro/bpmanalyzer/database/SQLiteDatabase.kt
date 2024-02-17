@@ -2,6 +2,7 @@ package cc.suffro.bpmanalyzer.database
 
 import cc.suffro.bpmanalyzer.data.TrackInfo
 import mu.KotlinLogging
+import java.nio.file.Path
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
@@ -54,13 +55,17 @@ class SQLiteDatabase(databaseConnector: DatabaseConnector) : DatabaseOperations 
     }
 
     override fun getTrackInfo(trackName: String): TrackInfo {
-        logger.info("Trying to get $trackName from database.")
+        logger.info("Searching for $trackName in database...")
         return try {
             getResults(trackName)
         } catch (e: SQLException) {
             logger.error(e.message)
             return TrackInfo(trackName, -1.0)
         }
+    }
+
+    override fun getTrackInfo(trackName: Path): TrackInfo {
+        return getTrackInfo(trackName.toString())
     }
 
     override fun cleanUpDatabase(closeConnection: Boolean): Boolean {

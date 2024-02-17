@@ -9,6 +9,7 @@ import cc.suffro.bpmanalyzer.wav.data.FmtChunk
 import cc.suffro.bpmanalyzer.wav.data.Wav
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.koin.core.qualifier.named
 import org.koin.test.inject
 import java.nio.file.Path
 import kotlin.test.assertEquals
@@ -16,7 +17,9 @@ import kotlin.test.assertEquals
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SpeedAdjusterTest : BaseTest() {
 
-    private val speedAdjuster by inject<SpeedAdjuster>()
+    private val prodSpeedAdjuster by inject<SpeedAdjuster>(named("ProdSpeedAdjuster"))
+
+    private val testSpeedAdjuster by inject<SpeedAdjuster>(named("TestSpeedAdjuster"))
 
     private val wavReader by inject<FileReader<Wav>>()
 
@@ -31,8 +34,23 @@ class SpeedAdjusterTest : BaseTest() {
             dataChunk = DataChunk(0, arrayOf(data))
         )
 
-        val result = speedAdjuster.changeTo(wav, 120.0)
-        assertEquals(11, result.size)
+        val result = testSpeedAdjuster.changeTo(wav, 120.0)
+        assertEquals(11, result.first().size)
+    }
+
+    @Test
+    fun `should create correct number of samples for bigger number`() {
+        val content = DoubleArray(1000) { it.toDouble() }
+        val data = arrayOf(content, content)
+
+        val wav = Wav(
+            filePath = Path.of("dummy.wav"),
+            fmtChunk = FmtChunk(1, 1, AudioFormat.PCM, 2, 1, 1, 1, 1),
+            dataChunk = DataChunk(0, data)
+        )
+
+        val result = testSpeedAdjuster.changeTo(wav, 120.0)
+        assertEquals((content.size * (100.0 / 120.0)).toInt(), result.first().size)
     }
 
     @Test
@@ -40,17 +58,15 @@ class SpeedAdjusterTest : BaseTest() {
         val wav = wavReader.read("src/test/resources/tracks/120bpm_140Hz.wav")
 
         val targetBpm = 100.0
-        val result = speedAdjuster.changeTo(wav, targetBpm)
-        assertEquals((wav.dataChunk.dataChunkSize * (targetBpm / 120.0)).toInt(), result.size)
+        val result = prodSpeedAdjuster.changeTo(wav, targetBpm)
+        assertEquals(
+            (wav.dataChunk.dataChunkSize * (targetBpm / 120.0)).toInt(),
+            result.first().size * wav.fmtChunk.numChannels * wav.fmtChunk.bitsPerSample / 8
+        )
 
         wavWriter.write(
             Path.of("src/test/resources/tracks/120bpm_140Hz_copy_test.wav"),
-            wav.copy(
-                dataChunk = DataChunk(
-                    (result.first() * wav.fmtChunk.numChannels * wav.fmtChunk.bitsPerSample / 8).toInt(),
-                    arrayOf(result, doubleArrayOf())
-                )
-            )
+            Wav(wav, result)
         )
     }
 }

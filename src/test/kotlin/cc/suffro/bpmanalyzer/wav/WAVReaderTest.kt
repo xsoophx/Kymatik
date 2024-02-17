@@ -108,7 +108,8 @@ class WAVReaderTest {
                     byteRate = 176400,
                     blockAlign = 4,
                     bitsPerSample = 16
-                ), 653868
+                ),
+                653868
             ),
             Arguments.of(
                 "src/test/resources/tracks/440.wav",
@@ -121,7 +122,8 @@ class WAVReaderTest {
                     byteRate = 88000,
                     blockAlign = 2,
                     bitsPerSample = 16
-                ), 880000
+                ),
+                880000
             )
         )
 

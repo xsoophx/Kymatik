@@ -1,16 +1,19 @@
 package cc.suffro.bpmanalyzer.speedadjustment
 
-import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.BpmAnalyzer
+import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CacheAnalyzer
 import cc.suffro.bpmanalyzer.wav.data.Wav
 import kotlin.math.min
 
-class SpeedAdjuster(private val bpmAnalyzer: BpmAnalyzer) {
+class SpeedAdjuster(private val cacheAnalyzer: CacheAnalyzer) {
 
-    fun changeTo(wav: Wav, targetBpm: Double): DoubleArray {
-        val currentBpm = bpmAnalyzer.analyze(wav)
-        val inverseStretchFactor = targetBpm / currentBpm
+    fun changeTo(wav: Wav, targetBpm: Double): Array<DoubleArray> {
+        val trackInfo = cacheAnalyzer.analyze(wav)
+        val inverseStretchFactor = targetBpm / trackInfo.bpm
 
-        val data = wav.defaultChannel()
+        return wav.dataChunk.data.map { interpolate(it, inverseStretchFactor) }.toTypedArray()
+    }
+
+    private fun interpolate(data: DoubleArray, inverseStretchFactor: Double): DoubleArray {
         val newLength = ((data.size - 1) / inverseStretchFactor).toInt() + 1
         val stretchedData = DoubleArray(newLength)
 

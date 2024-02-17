@@ -43,14 +43,17 @@ data class Wav(
     val fmtChunk: FmtChunk,
     val dataChunk: DataChunk
 ) {
+    /**
+     * Takes the header of the original wav file and new data to
+     * overwrite the original with the same header information.
+     */
     constructor(
-        filePath: Path,
-        fmtChunk: FmtChunk,
+        wav: Wav,
         dataChunks: Array<DoubleArray>
     ) : this(
-        filePath,
-        fmtChunk,
-        DataChunk(dataChunks.first().size * fmtChunk.numChannels * fmtChunk.bitsPerSample / 8, dataChunks)
+        wav.filePath,
+        wav.fmtChunk,
+        DataChunk(dataChunks.first().size * wav.fmtChunk.numChannels * wav.fmtChunk.bitsPerSample / 8, dataChunks)
     )
 
     private var defaultChannel = 0

@@ -29,16 +29,6 @@ fun List<FrequencyDomainWindow>.interpolate(): List<FrequencyDomainWindow> {
 private fun getAverageMagnitude(current: List<Double>, next: List<Double>): List<Double> =
     current.zip(next).map { (c, n) -> (c + n) / 2 }
 
-fun List<FrequencyDomainWindow>.scaleMagnitudes(): List<FrequencyDomainWindow> {
-    val maximumMagnitudes = map { it.magnitudes.max() }
-    val maximum = maximumMagnitudes.max()
-
-    return map { window ->
-        val scaledMagnitudes = window.magnitudes.map { it / maximum }
-        FrequencyDomainWindow(scaledMagnitudes, window.startingTime)
-    }
-}
-
 data class Interval<T>(
     val lowerBound: T,
     val upperBound: T

@@ -15,5 +15,4 @@ val databaseTestModule = module {
             System.getenv("DATABASE_TEST_URL") ?: "jdbc:sqlite:src/test/resources/$DATABASE_TEST_NAME.db"
         )
     }
-    singleOf(::SQLiteDatabaseTest)
 }

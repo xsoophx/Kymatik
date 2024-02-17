@@ -19,11 +19,7 @@ class CombFilterAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()
 
     private val cache = mutableMapOf<Path, FFTData>()
 
-    override fun analyze(
-        wav: Wav,
-        start: Double,
-        windowFunction: WindowFunction?
-    ): Bpm {
+    override fun analyze(wav: Wav, start: Double, windowFunction: WindowFunction?): Bpm {
         val fftResult = calculateFftResult(wav, start, windowFunction)
         return fftResult
             .getBassBand(fftResult.duration)
