@@ -111,7 +111,7 @@ class SQLiteDatabase(databaseConnector: DatabaseConnector) : DatabaseOperations 
     }
 
     private fun getResults(trackName: String): TrackInfo {
-        val sql = "SELECT bpm FROM bpm_results WHERE track_name = ?"
+        val sql = "SELECT bpm FROM $tableName WHERE track_name = ?"
         connection.prepareStatement(sql).use { statement ->
             statement.setString(1, trackName)
             val resultSet = statement.executeQuery()

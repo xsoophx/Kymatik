@@ -16,7 +16,6 @@ class CombFilterCacheAnalyzer(
         val trackInfo = (database.getTrackInfo(wav.filePath)).let {
             if (it.bpm == -1.0) database.saveAndReturnTrack(wav.filePath, wav, start, windowFunction) else it
         }
-        database.closeConnection()
         return trackInfo
     }
 

@@ -17,21 +17,6 @@ open class KoinDatabaseIntegrationTest : BaseTest() {
     @AfterEach
     fun cleanUp() {
         database.cleanUpDatabase()
-    }
-
-    companion object {
-        @JvmStatic
-        @BeforeAll
-        fun setUp() {
-            startKoin {
-                modules(databaseTestModule)
-            }
-        }
-
-        @JvmStatic
-        @AfterAll
-        fun tearDown() {
-            stopKoin()
-        }
+        database.closeConnection()
     }
 }
