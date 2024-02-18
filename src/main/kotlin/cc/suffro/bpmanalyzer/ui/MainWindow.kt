@@ -23,12 +23,16 @@ private val logger = KotlinLogging.logger {}
 class MainWindow : CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.JavaFx
 
-    private fun xScale(value: Double, data: List<Double>) = xPosition(data)(value)
+    private fun xScale(
+        value: Double,
+        data: List<Double>,
+    ) = xPosition(data)(value)
 
-    private fun xPosition(data: List<Double>) = Scales.Continuous.linear {
-        domain = listOf(.0, data.max())
-        range = listOf(.0, WIDTH - 2 * PADDING)
-    }
+    private fun xPosition(data: List<Double>) =
+        Scales.Continuous.linear {
+            domain = listOf(.0, data.max())
+            range = listOf(.0, WIDTH - 2 * PADDING)
+        }
 
     private fun createBarChart(data: List<Double>): Viz {
         val barHeight = HEIGHT / data.size.toDouble()
@@ -39,7 +43,7 @@ class MainWindow : CoroutineScope {
                     transform {
                         translate(
                             x = PADDING,
-                            y = PADDING + index * (PADDING + barHeight)
+                            y = PADDING + index * (PADDING + barHeight),
                         )
                     }
                     rect {
@@ -52,29 +56,38 @@ class MainWindow : CoroutineScope {
         }
     }
 
-    private fun renderVizOnCanvas(viz: Viz, canvas: Canvas) {
+    private fun renderVizOnCanvas(
+        viz: Viz,
+        canvas: Canvas,
+    ) {
         JFxVizRenderer(canvas, viz)
         viz.render()
     }
 
-    private fun setup(canvas: Canvas, data: List<WindowWithIndex>) =
-        launch(Dispatchers.JavaFx) {
-            val start = System.currentTimeMillis()
-            var i = 0
-            while (i < data.size) {
-                delay(10)
-                val timeSinceStart = System.currentTimeMillis() - start
-                val currentSample = data.last { it.window.startingTime * 1000 <= timeSinceStart }
+    private fun setup(
+        canvas: Canvas,
+        data: List<WindowWithIndex>,
+    ) = launch(Dispatchers.JavaFx) {
+        val start = System.currentTimeMillis()
+        var i = 0
+        while (i < data.size) {
+            delay(10)
+            val timeSinceStart = System.currentTimeMillis() - start
+            val currentSample = data.last { it.window.startingTime * 1000 <= timeSinceStart }
 
-                val viz = createBarChart(currentSample.window.magnitudes)
-                renderVizOnCanvas(viz, canvas)
+            val viz = createBarChart(currentSample.window.magnitudes)
+            renderVizOnCanvas(viz, canvas)
 
-                logger.info { "Done with sample $i at $timeSinceStart." }
-                i = currentSample.index + 1
-            }
+            logger.info { "Done with sample $i at $timeSinceStart." }
+            i = currentSample.index + 1
         }
+    }
 
-    fun show(root: Group, stage: Stage?, data: List<FrequencyDomainWindow>) {
+    fun show(
+        root: Group,
+        stage: Stage?,
+        data: List<FrequencyDomainWindow>,
+    ) {
         stage?.apply {
             title = "BPM Analyzer"
             scene = Scene(root, WIDTH, HEIGHT)
@@ -95,6 +108,6 @@ class MainWindow : CoroutineScope {
 
     data class WindowWithIndex(
         val window: FrequencyDomainWindow,
-        val index: Int
+        val index: Int,
     )
 }

@@ -16,20 +16,23 @@ fun getHighestPowerOfTwo(number: Int): Int {
 }
 
 fun List<FrequencyDomainWindow>.interpolate(): List<FrequencyDomainWindow> {
-    val interpolated = asSequence().zipWithNext().map { (current, next) ->
-        FrequencyDomainWindow(
-            getAverageMagnitude(current.magnitudes, next.magnitudes),
-            (next.startingTime + current.startingTime) / 2
-        )
-    }.toList()
+    val interpolated =
+        asSequence().zipWithNext().map { (current, next) ->
+            FrequencyDomainWindow(
+                getAverageMagnitude(current.magnitudes, next.magnitudes),
+                (next.startingTime + current.startingTime) / 2,
+            )
+        }.toList()
 
     return (interpolated + this).sortedBy { it.startingTime }
 }
 
-private fun getAverageMagnitude(current: List<Double>, next: List<Double>): List<Double> =
-    current.zip(next).map { (c, n) -> (c + n) / 2 }
+private fun getAverageMagnitude(
+    current: List<Double>,
+    next: List<Double>,
+): List<Double> = current.zip(next).map { (c, n) -> (c + n) / 2 }
 
 data class Interval<T>(
     val lowerBound: T,
-    val upperBound: T
+    val upperBound: T,
 )

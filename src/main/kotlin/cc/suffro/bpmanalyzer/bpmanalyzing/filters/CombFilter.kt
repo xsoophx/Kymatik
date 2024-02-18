@@ -10,7 +10,10 @@ private val logger = KotlinLogging.logger {}
 
 // TODO: let's refactor this
 class CombFilter(private val fftProcessor: FFTProcessor) {
-    fun process(bassSignal: Signal, samplingRate: Int): Double {
+    fun process(
+        bassSignal: Signal,
+        samplingRate: Int,
+    ): Double {
         val fftResult = fftProcessor.process(bassSignal, samplingRate)
         var maxEnergy = 0.0
         var estimatedBpm = 0
@@ -33,7 +36,11 @@ class CombFilter(private val fftProcessor: FFTProcessor) {
         return estimatedBpm.toDouble()
     }
 
-    private fun fillPulses(bpm: Int, pulses: MutableList<Double>, samplingRate: Int) {
+    private fun fillPulses(
+        bpm: Int,
+        pulses: MutableList<Double>,
+        samplingRate: Int,
+    ) {
         val step = (1.0 / bpm * 60 * samplingRate).toInt()
         for (i in 0 until PULSES) {
             pulses[i * step] = 1.0

@@ -8,7 +8,7 @@ import kotlin.math.roundToInt
 
 data class DataChunk(
     val dataChunkSize: Int,
-    val data: Array<DoubleArray>
+    val data: Array<DoubleArray>,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -35,13 +35,13 @@ data class FmtChunk(
     val sampleRate: Int,
     val byteRate: Int,
     val blockAlign: Short,
-    val bitsPerSample: Short
+    val bitsPerSample: Short,
 )
 
 data class Wav(
     val filePath: Path,
     val fmtChunk: FmtChunk,
-    val dataChunk: DataChunk
+    val dataChunk: DataChunk,
 ) {
     /**
      * Takes the header of the original wav file and new data to
@@ -49,11 +49,11 @@ data class Wav(
      */
     constructor(
         wav: Wav,
-        dataChunks: Array<DoubleArray>
+        dataChunks: Array<DoubleArray>,
     ) : this(
         wav.filePath,
         wav.fmtChunk,
-        DataChunk(dataChunks.first().size * wav.fmtChunk.numChannels * wav.fmtChunk.bitsPerSample / 8, dataChunks)
+        DataChunk(dataChunks.first().size * wav.fmtChunk.numChannels * wav.fmtChunk.bitsPerSample / 8, dataChunks),
     )
 
     private var defaultChannel = 0
@@ -78,7 +78,10 @@ data class Wav(
     val timestampLastSample: Double
         get() = indexLastSample.toDouble() / sampleRate
 
-    private fun DoubleArray.get(begin: Int, length: Int): Sequence<Double> {
+    private fun DoubleArray.get(
+        begin: Int,
+        length: Int,
+    ): Sequence<Double> {
         if (begin < 0 || begin > begin + length || begin + length > this.size) {
             throw IndexOutOfBoundsException("begin $begin, end ${begin + length}, length ${this.size}")
         }
@@ -87,13 +90,15 @@ data class Wav(
 
     private fun checkChannelRequirements(channel: Int) {
         require(channel >= 0) { "Selected Channel has to be greater than or equal to zero." }
-        require(channel < dataChunk.dataChunkSize) { "Selected Channel has to be smaller than available channels (${dataChunk.dataChunkSize})." }
+        require(
+            channel < dataChunk.dataChunkSize,
+        ) { "Selected Channel has to be smaller than available channels (${dataChunk.dataChunkSize})." }
     }
 
     fun getWindowContent(
         channel: Int,
         begin: Int,
-        numSamples: Int = FftSampleSize.DEFAULT
+        numSamples: Int = FftSampleSize.DEFAULT,
     ): Sequence<Double> {
         checkChannelRequirements(channel)
         return dataChunk.data[channel].get(begin, numSamples)
@@ -116,7 +121,7 @@ data class Wav(
         end: Int,
         interval: Double,
         channel: Int,
-        numSamples: Int
+        numSamples: Int,
     ): Sequence<TimeDomainWindow> {
         return getSamples(
             start,
@@ -124,21 +129,26 @@ data class Wav(
             sampleIndexOf(interval),
             channel,
             numSamples,
-            interval
+            interval,
         )
     }
 
     fun getWindow(
         start: Double = 0.0,
         numSamples: Int,
-        channel: Int = 0
+        channel: Int = 0,
     ): TimeDomainWindow {
         checkChannelRequirements(channel)
         val interval = numSamples.toDouble() / sampleRate
         return getWindow(sampleIndexOf(start), sampleIndexOf(start) + numSamples, interval, channel)
     }
 
-    private fun getWindow(start: Int, end: Int, interval: Double, channel: Int): TimeDomainWindow {
+    private fun getWindow(
+        start: Int,
+        end: Int,
+        interval: Double,
+        channel: Int,
+    ): TimeDomainWindow {
         val numSamples = getHighestPowerOfTwo(end - start)
         val endSample = start + numSamples
 
@@ -151,13 +161,14 @@ data class Wav(
         sampleInterval: Int,
         channel: Int,
         numSamples: Int,
-        interval: Double
+        interval: Double,
     ): Sequence<TimeDomainWindow> {
-        val samples = (startSample until endSample)
-            .step(sampleInterval)
-            .asSequence()
-            .takeWhile { it < endSample }
-            .map { index -> dataChunk.data[channel].get(index, numSamples) }
+        val samples =
+            (startSample until endSample)
+                .step(sampleInterval)
+                .asSequence()
+                .takeWhile { it < endSample }
+                .map { index -> dataChunk.data[channel].get(index, numSamples) }
 
         return samples.mapIndexed { index, sample -> TimeDomainWindow(sample, interval, index * interval) }
     }

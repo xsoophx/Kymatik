@@ -5,7 +5,6 @@ import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CombFilterTest {
-
     @Test
     fun `should process signal correctly`() {
     }

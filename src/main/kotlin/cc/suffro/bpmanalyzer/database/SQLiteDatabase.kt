@@ -10,7 +10,6 @@ import java.sql.SQLException
 private val logger = KotlinLogging.logger {}
 
 class SQLiteDatabase(databaseConnector: DatabaseConnector) : DatabaseOperations {
-
     private val tableName = databaseConnector.getDatabaseNameByUrl()
     private val connection = databaseConnector.getConnection()
 
@@ -44,7 +43,10 @@ class SQLiteDatabase(databaseConnector: DatabaseConnector) : DatabaseOperations 
         }
     }
 
-    override fun saveTrackInfo(trackName: String, bpm: Double): Int {
+    override fun saveTrackInfo(
+        trackName: String,
+        bpm: Double,
+    ): Int {
         logger.info("Trying to save $bpm for $trackName to database.")
         try {
             return prepareStatement(trackName, bpm)
@@ -54,26 +56,27 @@ class SQLiteDatabase(databaseConnector: DatabaseConnector) : DatabaseOperations 
         }
     }
 
-    override fun getTrackInfo(trackName: String): TrackInfo {
+    override fun getTrackInfo(trackName: String): TrackInfo? {
         logger.info("Searching for $trackName in database...")
         return try {
             getResults(trackName)
         } catch (e: SQLException) {
             logger.error(e.message)
-            return TrackInfo(trackName, -1.0)
+            return null
         }
     }
 
-    override fun getTrackInfo(trackName: Path): TrackInfo {
+    override fun getTrackInfo(trackName: Path): TrackInfo? {
         return getTrackInfo(trackName.toString())
     }
 
     override fun cleanUpDatabase(closeConnection: Boolean): Boolean {
         val deleteSql = "DELETE FROM $tableName"
 
-        val status = connection.createStatement().use { statement ->
-            statement.execute(deleteSql)
-        }
+        val status =
+            connection.createStatement().use { statement ->
+                statement.execute(deleteSql)
+            }
 
         when {
             status -> logger.info("Database with name $tableName: cleanup successful.")
@@ -88,15 +91,19 @@ class SQLiteDatabase(databaseConnector: DatabaseConnector) : DatabaseOperations 
         return connection.close()
     }
 
-    private fun prepareStatement(trackName: String, bpm: Double): Int {
+    private fun prepareStatement(
+        trackName: String,
+        bpm: Double,
+    ): Int {
         ensureConnectionIsOpen()
 
         val sql = "INSERT INTO $tableName (track_name, bpm) VALUES (?, ?)"
-        val status = connection.prepareStatement(sql).use { statement ->
-            statement.setString(1, trackName)
-            statement.setDouble(2, bpm)
-            statement.executeUpdate()
-        }
+        val status =
+            connection.prepareStatement(sql).use { statement ->
+                statement.setString(1, trackName)
+                statement.setDouble(2, bpm)
+                statement.executeUpdate()
+            }
 
         logger.info("Saving $trackName to database successful.")
         return status

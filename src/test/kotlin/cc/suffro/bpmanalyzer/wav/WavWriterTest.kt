@@ -14,7 +14,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class WavWriterTest : BaseTest() {
-
     private val wavReader by inject<FileReader<Wav>>()
 
     @AfterEach
@@ -47,7 +46,6 @@ class WavWriterTest : BaseTest() {
     }
 
     companion object {
-
         val logger = mu.KotlinLogging.logger {}
 
         @JvmStatic
@@ -55,7 +53,7 @@ class WavWriterTest : BaseTest() {
             return Stream.of(
                 Arguments.of("src/test/resources/tracks/120bpm_140Hz"),
                 Arguments.of("src/test/resources/tracks/220"),
-                Arguments.of("src/test/resources/tracks/440")
+                Arguments.of("src/test/resources/tracks/440"),
             )
         }
     }

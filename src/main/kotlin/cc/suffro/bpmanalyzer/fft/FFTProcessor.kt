@@ -19,7 +19,7 @@ class FFTProcessor {
         inputSamples: Sequence<Sequence<Double>>,
         samplingRate: Int,
         method: Method = Method.FFT_IN_PLACE,
-        windowFunction: WindowFunction? = null
+        windowFunction: WindowFunction? = null,
     ): Sequence<FFTData> {
         val complexSamples =
             (windowFunction?.let { inputSamples.map { window -> window.applyWindowFunction(it) } } ?: inputSamples)
@@ -35,7 +35,7 @@ class FFTProcessor {
                 bins = Bins(sampleSize / 2),
                 sampleSize = sampleSize,
                 samplingRate = samplingRate,
-                output = it.toList()
+                output = it.toList(),
             )
         }
     }
@@ -44,18 +44,18 @@ class FFTProcessor {
         inputSample: Sequence<Double>,
         samplingRate: Int,
         method: Method = Method.FFT_IN_PLACE,
-        windowFunction: WindowFunction? = null
+        windowFunction: WindowFunction? = null,
     ): FFTData = process(sequenceOf(inputSample), samplingRate, method, windowFunction).first()
 
     fun processWav(
         wav: Wav,
         params: WindowProcessingParams,
-        windowFunction: WindowFunction? = null
+        windowFunction: WindowFunction? = null,
     ): Sequence<FrequencyDomainWindow> =
         process(
             wav.getWindows(params),
             samplingRate = wav.sampleRate,
-            windowFunction = windowFunction
+            windowFunction = windowFunction,
         ).mapIndexed { index, fftData -> FrequencyDomainWindow(fftData.magnitudes, index * params.interval) }
 
     fun processInverse(inputSamples: Sequence<Sequence<Complex>>): Sequence<Sequence<Double>> {
@@ -77,7 +77,10 @@ class FFTProcessor {
     private fun log2(number: Int) = if (number == 0) 0 else 31 - Integer.numberOfLeadingZeros(number)
 
     // https://en.wikipedia.org/w/index.php?title=Cooley%E2%80%93Tukey_FFT_algorithm#Data_reordering,_bit_reversal,_and_in-place_algorithms
-    private fun fftInPlace(x: Sequence<Complex>, inverse: Boolean = false): Sequence<Complex> {
+    private fun fftInPlace(
+        x: Sequence<Complex>,
+        inverse: Boolean = false,
+    ): Sequence<Complex> {
         val length = x.count()
         require(length and (length - 1) == 0) { "Length of samples has to be power of two, but was $length!" }
 
@@ -114,7 +117,7 @@ class FFTProcessor {
     private inline fun bitReverseCopy(
         input: Array<Complex>,
         result: Array<Complex>,
-        swapFn: (Array<Complex>, Array<Complex>, Int, Int) -> Unit
+        swapFn: (Array<Complex>, Array<Complex>, Int, Int) -> Unit,
     ) {
         var target = 0
         val length = input.size
@@ -133,7 +136,12 @@ class FFTProcessor {
         }
     }
 
-    private fun swap(a: Array<Complex>, result: Array<Complex>, rev: Int, i: Int) {
+    private fun swap(
+        a: Array<Complex>,
+        result: Array<Complex>,
+        rev: Int,
+        i: Int,
+    ) {
         val temp = result[rev]
         result[rev] = a[i]
         result[i] = temp

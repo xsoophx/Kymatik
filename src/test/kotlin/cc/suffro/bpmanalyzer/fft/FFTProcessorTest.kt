@@ -29,24 +29,29 @@ import kotlin.test.assertEquals
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Tag(FFT)
 class FFTProcessorTest {
-
     @ParameterizedTest
     @MethodSource("getFFTValues")
-    fun `fft should yield correct results`(input: Sequence<Sample>, expected: List<Complex>) {
+    fun `fft should yield correct results`(
+        input: Sequence<Sample>,
+        expected: List<Complex>,
+    ) {
         val actual = processWindow(input, DEFAULT_SAMPLING_RATE)
 
         actual.output.forEachIndexed { index, complex ->
             assertNearlyEquals(
                 expected = complex,
                 actual = expected[index],
-                message = "Expected ${expected[index]} at index $index, but was $complex."
+                message = "Expected ${expected[index]} at index $index, but was $complex.",
             )
         }
     }
 
     @ParameterizedTest
     @MethodSource("getFFTValues")
-    fun `fft and dft should return same results`(input: Sequence<Sample>, expected: List<Complex>) {
+    fun `fft and dft should return same results`(
+        input: Sequence<Sample>,
+        expected: List<Complex>,
+    ) {
         val fftResults = processWindow(input, samplingRate = DEFAULT_SAMPLING_RATE)
         val dftResults = processWindow(input, DEFAULT_SAMPLING_RATE, Method.R2C_DFT)
 
@@ -54,7 +59,7 @@ class FFTProcessorTest {
             assertNearlyEquals(
                 expected = fft,
                 actual = dftResults.output.toList()[index],
-                message = "Value $fft at index $index is not the same as ${dftResults.output.toList()[index]}."
+                message = "Value $fft at index $index is not the same as ${dftResults.output.toList()[index]}.",
             )
         }
     }
@@ -94,7 +99,7 @@ class FFTProcessorTest {
                 expected = magnitudes[it],
                 actual = amplitude / 2,
                 e = 20.0,
-                message = "Expected index $it with magnitude ${magnitudes[it]} to be close to ${amplitude / 2}."
+                message = "Expected index $it with magnitude ${magnitudes[it]} to be close to ${amplitude / 2}.",
             )
         }
     }
@@ -103,7 +108,7 @@ class FFTProcessorTest {
     @MethodSource("getFFTValues")
     fun `should yield correct results for different window functions`(
         input: Sequence<Sample>,
-        expected: List<Complex>
+        expected: List<Complex>,
     ) {
         val frequency = 430
         val signal = getSignalByFrequency(frequency)
@@ -135,7 +140,7 @@ class FFTProcessorTest {
             assertNearlyEquals(
                 expected = value,
                 actual = firstResult[index],
-                message = "Expected index $value to be close to ${firstResult[index]}."
+                message = "Expected index $value to be close to ${firstResult[index]}.",
             )
         }
     }
@@ -144,14 +149,14 @@ class FFTProcessorTest {
         input: Sequence<Double>,
         samplingRate: Int,
         method: Method = Method.FFT_IN_PLACE,
-        windowFunction: WindowFunction? = null
+        windowFunction: WindowFunction? = null,
     ): FFTData {
         val fftProcessor = FFTProcessor()
         return fftProcessor.process(
             inputSamples = sequenceOf(input),
             samplingRate = samplingRate,
             method = method,
-            windowFunction = windowFunction
+            windowFunction = windowFunction,
         ).first()
     }
 
@@ -159,38 +164,44 @@ class FFTProcessorTest {
         private const val DEFAULT_SAMPLING_RATE = 44100
 
         @JvmStatic
-        fun getFFTValues(): Stream<Arguments> = Stream.of(
-            Arguments.of(sequenceOf(1.0, 2.0, 3.0, 4.0), listOf(10.R, (-2).R + 2.I, (-2).R, (-2).R + (-2).I)),
-            Arguments.of(
-                sequenceOf(0.0, -12539.770711739264, 23170.47500592079, -30273.684521329826),
-                listOf(
-                    (-19642.980227).R,
-                    (-23170.475006).R - 17733.913810.I,
-                    65983.930239.R,
-                    (-23170.475006).R + 17733.913810.I
-                )
-            ),
-            Arguments.of(
-                sequenceOf(2.0, 1.0, -1.0, 5.0, 0.0, 3.0, 0.0, -4.0),
-                listOf(
-                    6.R,
-                    (-5.778175).R - 3.949747.I,
-                    3.R - 3.I,
-                    9.778175.R - 5.949747.I,
-                    (-4).R,
-                    9.778175.R + 5.949747.I,
-                    3.R + 3.I,
-                    (-5.778175).R + 3.949747.I
-                )
+        fun getFFTValues(): Stream<Arguments> =
+            Stream.of(
+                Arguments.of(sequenceOf(1.0, 2.0, 3.0, 4.0), listOf(10.R, (-2).R + 2.I, (-2).R, (-2).R + (-2).I)),
+                Arguments.of(
+                    sequenceOf(0.0, -12539.770711739264, 23170.47500592079, -30273.684521329826),
+                    listOf(
+                        (-19642.980227).R,
+                        (-23170.475006).R - 17733.913810.I,
+                        65983.930239.R,
+                        (-23170.475006).R + 17733.913810.I,
+                    ),
+                ),
+                Arguments.of(
+                    sequenceOf(2.0, 1.0, -1.0, 5.0, 0.0, 3.0, 0.0, -4.0),
+                    listOf(
+                        6.R,
+                        (-5.778175).R - 3.949747.I,
+                        3.R - 3.I,
+                        9.778175.R - 5.949747.I,
+                        (-4).R,
+                        9.778175.R + 5.949747.I,
+                        3.R + 3.I,
+                        (-5.778175).R + 3.949747.I,
+                    ),
+                ),
             )
-        )
 
         private val cache = mutableMapOf<Int, Sequence<Sample>>()
 
-        fun getSignalByFrequency(frequency: Int, amplitude: Double = 2.0.pow(15)) =
-            cache.getOrPut(frequency) { signal(frequency.toDouble(), amplitude) }
+        fun getSignalByFrequency(
+            frequency: Int,
+            amplitude: Double = 2.0.pow(15),
+        ) = cache.getOrPut(frequency) { signal(frequency.toDouble(), amplitude) }
 
-        private fun signal(frequency: Double, amplitude: Double): Sequence<Sample> {
+        private fun signal(
+            frequency: Double,
+            amplitude: Double,
+        ): Sequence<Sample> {
             return (0 until DEFAULT_SAMPLING_RATE).take(FftSampleSize.DEFAULT).asSequence()
                 .map { index -> index.toDouble() / DEFAULT_SAMPLING_RATE }
                 .map { t -> amplitude * sin(PI * 2.0 * frequency * t) }

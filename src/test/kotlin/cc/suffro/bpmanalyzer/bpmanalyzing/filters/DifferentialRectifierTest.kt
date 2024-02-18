@@ -8,7 +8,6 @@ import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DifferentialRectifierTest {
-
     @Test
     fun `should set negatives of sequence to zero`() {
         val signal = (0 until 10).asSequence().map { k -> (-1.0).pow(k) / (2 * k + 1) }

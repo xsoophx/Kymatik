@@ -1,9 +1,12 @@
 package cc.suffro.bpmanalyzer.bpmanalyzing.analyzers
 
-import cc.suffro.bpmanalyzer.data.TrackInfo
-import cc.suffro.bpmanalyzer.fft.data.WindowFunction
-import cc.suffro.bpmanalyzer.wav.data.Wav
+import java.io.Closeable
+import java.nio.file.Path
 
-interface CacheAnalyzer {
-    fun analyze(wav: Wav, start: Double = 0.0, windowFunction: WindowFunction? = null): TrackInfo
+interface CacheAnalyzer<T, R> : Closeable {
+    fun analyze(data: T): R
+
+    fun getAndAnalyze(path: String): R
+
+    fun getAndAnalyze(path: Path): R
 }

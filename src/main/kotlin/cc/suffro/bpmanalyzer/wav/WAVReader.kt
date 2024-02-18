@@ -21,45 +21,47 @@ import kotlin.io.path.inputStream
 object WAVReader : FileReader<Wav> {
     override fun read(path: String): Wav = read(Path(path))
 
-    override fun read(path: Path): Wav = path.inputStream().buffered().use { input ->
-        val riffChunkSize = getRiffChunkSize(input)
+    override fun read(path: Path): Wav =
+        path.inputStream().buffered().use { input ->
+            val riffChunkSize = getRiffChunkSize(input)
 
-        val fmtSignature = String(input.readNBytes(4), Charsets.US_ASCII)
-        check(fmtSignature == FMT_SIGNATURE, ErrorType.UNEXPECTED_FMT_SIGNATURE)
+            val fmtSignature = String(input.readNBytes(4), Charsets.US_ASCII)
+            check(fmtSignature == FMT_SIGNATURE, ErrorType.UNEXPECTED_FMT_SIGNATURE)
 
-        // fmt
-        val fmtChunkSize = input.readAsInt()
-        val audioFormat = AudioFormat.fromShort(input.readAsShort().toUShort())
-        val numChannels = input.readAsShort()
-        val sampleRate = input.readAsInt()
-        val byteRate = input.readAsInt()
-        val blockAlign = input.readAsShort()
-        val bitsPerSample = input.readAsShort()
+            // fmt
+            val fmtChunkSize = input.readAsInt()
+            val audioFormat = AudioFormat.fromShort(input.readAsShort().toUShort())
+            val numChannels = input.readAsShort()
+            val sampleRate = input.readAsInt()
+            val byteRate = input.readAsInt()
+            val blockAlign = input.readAsShort()
+            val bitsPerSample = input.readAsShort()
 
-        // data
-        val dataSignature = String(input.readNBytes(4), Charsets.US_ASCII)
-        check(dataSignature == DATA_SIGNATURE, ErrorType.UNEXPECTED_DATA_SIGNATURE)
-        val dataChunkSize = input.readAsInt()
-        val data = input.readNBytes(dataChunkSize)
-        check(data.size == dataChunkSize, ErrorType.WRONG_DATA_SIZE)
+            // data
+            val dataSignature = String(input.readNBytes(4), Charsets.US_ASCII)
+            check(dataSignature == DATA_SIGNATURE, ErrorType.UNEXPECTED_DATA_SIGNATURE)
+            val dataChunkSize = input.readAsInt()
+            val data = input.readNBytes(dataChunkSize)
+            check(data.size == dataChunkSize, ErrorType.WRONG_DATA_SIZE)
 
-        val fmtChunk = FmtChunk(
-            riffChunkSize = riffChunkSize,
-            fmtChunkSize = fmtChunkSize,
-            audioFormat = audioFormat,
-            numChannels = numChannels,
-            sampleRate = sampleRate,
-            byteRate = byteRate,
-            blockAlign = blockAlign,
-            bitsPerSample = bitsPerSample
-        )
+            val fmtChunk =
+                FmtChunk(
+                    riffChunkSize = riffChunkSize,
+                    fmtChunkSize = fmtChunkSize,
+                    audioFormat = audioFormat,
+                    numChannels = numChannels,
+                    sampleRate = sampleRate,
+                    byteRate = byteRate,
+                    blockAlign = blockAlign,
+                    bitsPerSample = bitsPerSample,
+                )
 
-        Wav(
-            filePath = path,
-            fmtChunk = fmtChunk,
-            dataChunk = DataChunk(dataChunkSize, data.readSamples(fmtChunk))
-        )
-    }
+            Wav(
+                filePath = path,
+                fmtChunk = fmtChunk,
+                dataChunk = DataChunk(dataChunkSize, data.readSamples(fmtChunk)),
+            )
+        }
 
     private fun ByteArray.readSamples(fmtChunk: FmtChunk): Array<DoubleArray> {
         val dataChunkSize = size
@@ -84,7 +86,7 @@ object WAVReader : FileReader<Wav> {
                 for (sampleIndex in 0 until sampleCount) {
                     for (channel in 0 until fmtChunk.numChannels) {
                         samples[channel][sampleIndex] = byteBuffer.getShort(
-                            sampleIndex * fmtChunk.blockAlign + channel * bytesPerChannel
+                            sampleIndex * fmtChunk.blockAlign + channel * bytesPerChannel,
                         ).toDouble() / Short.MAX_VALUE
                     }
                 }
@@ -99,11 +101,12 @@ object WAVReader : FileReader<Wav> {
                         val b3 = byteBuffer[sampleIndex * fmtChunk.blockAlign + channel * bytesPerChannel + 2].toUByte()
                         val sample = b1.toUInt() or (b2.toUInt() shl 8) or (b3.toUInt() shl 16)
 
-                        samples[channel][sampleIndex] = if (sample and 0x00800000U == 0x00800000U) {
-                            (sample or 0xFF000000U).toDouble() / MAX_VALUE_24BIT
-                        } else {
-                            sample.toDouble() / MAX_VALUE_24BIT
-                        }
+                        samples[channel][sampleIndex] =
+                            if (sample and 0x00800000U == 0x00800000U) {
+                                (sample or 0xFF000000U).toDouble() / MAX_VALUE_24BIT
+                            } else {
+                                sample.toDouble() / MAX_VALUE_24BIT
+                            }
                     }
                 }
                 samples
@@ -148,7 +151,11 @@ object WAVReader : FileReader<Wav> {
     private class ParsingException(error: Error) : RuntimeException(error.message)
 
     @OptIn(ExperimentalContracts::class)
-    private inline fun check(value: Boolean, error: ErrorType, lazyMessage: () -> String = { "" }) {
+    private inline fun check(
+        value: Boolean,
+        error: ErrorType,
+        lazyMessage: () -> String = { "" },
+    ) {
         contract {
             returns() implies value
         }

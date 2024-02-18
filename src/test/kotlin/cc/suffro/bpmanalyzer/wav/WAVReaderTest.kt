@@ -22,21 +22,25 @@ import kotlin.test.assertEquals
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Tag(FFT)
 class WAVReaderTest {
-
     private val wavReader = WAVReader
 
     @ParameterizedTest
     @MethodSource("getWavDataWithFmt")
-    fun `should read correct header and data`(path: String, fmtChunk: FmtChunk, dataChunkSize: Int) {
+    fun `should read correct header and data`(
+        path: String,
+        fmtChunk: FmtChunk,
+        dataChunkSize: Int,
+    ) {
         val actual = wavReader.read(path)
 
         assertEquals(
-            expected = Wav(
-                filePath = Path(path),
-                fmtChunk = fmtChunk,
-                dataChunk = DataChunk(dataChunkSize, actual.dataChunk.data)
-            ),
-            actual = actual
+            expected =
+                Wav(
+                    filePath = Path(path),
+                    fmtChunk = fmtChunk,
+                    dataChunk = DataChunk(dataChunkSize, actual.dataChunk.data),
+                ),
+            actual = actual,
         )
     }
 
@@ -52,7 +56,10 @@ class WAVReaderTest {
 
     @ParameterizedTest
     @MethodSource("getWavDataWithFrequency")
-    fun `should read correct Samples from wav file`(path: String, frequency: Double) {
+    fun `should read correct Samples from wav file`(
+        path: String,
+        frequency: Double,
+    ) {
         val wav = wavReader.read(path)
         val samples = wav.getWindowContent(channel = 0, begin = 0)
         val fftData = FFTProcessor().process(sequenceOf(samples), samplingRate = wav.sampleRate)
@@ -60,7 +67,7 @@ class WAVReaderTest {
 
         assertEquals(
             expected = fftData.first().binIndexOf(frequency),
-            actual = magnitudes.indexOf(magnitudes.maxOf { it })
+            actual = magnitudes.indexOf(magnitudes.maxOf { it }),
         )
     }
 
@@ -68,13 +75,13 @@ class WAVReaderTest {
     @CsvSource(
         "0.0, 1.0, 0.01, 100",
         "0.0, 4.0, 0.01, 400",
-        "1.2, 3.9, 0.15, 18"
+        "1.2, 3.9, 0.15, 18",
     )
     fun `should return correct amount of windows of samples`(
         start: Double,
         end: Double,
         interval: Double,
-        expectedWindows: Int
+        expectedWindows: Int,
     ) {
         val wav = wavReader.read("src/test/resources/tracks/440.wav")
         val params = WindowProcessingParams(start = start, end = end, interval = interval)
@@ -96,41 +103,43 @@ class WAVReaderTest {
 
     companion object {
         @JvmStatic
-        private fun getWavDataWithFmt() = Stream.of(
-            Arguments.of(
-                "src/test/resources/tracks/220.wav",
-                FmtChunk(
-                    riffChunkSize = 654006,
-                    fmtChunkSize = 16,
-                    audioFormat = AudioFormat.PCM,
-                    numChannels = 2,
-                    sampleRate = 44100,
-                    byteRate = 176400,
-                    blockAlign = 4,
-                    bitsPerSample = 16
+        private fun getWavDataWithFmt() =
+            Stream.of(
+                Arguments.of(
+                    "src/test/resources/tracks/220.wav",
+                    FmtChunk(
+                        riffChunkSize = 654006,
+                        fmtChunkSize = 16,
+                        audioFormat = AudioFormat.PCM,
+                        numChannels = 2,
+                        sampleRate = 44100,
+                        byteRate = 176400,
+                        blockAlign = 4,
+                        bitsPerSample = 16,
+                    ),
+                    653868,
                 ),
-                653868
-            ),
-            Arguments.of(
-                "src/test/resources/tracks/440.wav",
-                FmtChunk(
-                    riffChunkSize = 880110,
-                    fmtChunkSize = 16,
-                    audioFormat = AudioFormat.PCM,
-                    numChannels = 1,
-                    sampleRate = 44000,
-                    byteRate = 88000,
-                    blockAlign = 2,
-                    bitsPerSample = 16
+                Arguments.of(
+                    "src/test/resources/tracks/440.wav",
+                    FmtChunk(
+                        riffChunkSize = 880110,
+                        fmtChunkSize = 16,
+                        audioFormat = AudioFormat.PCM,
+                        numChannels = 1,
+                        sampleRate = 44000,
+                        byteRate = 88000,
+                        blockAlign = 2,
+                        bitsPerSample = 16,
+                    ),
+                    880000,
                 ),
-                880000
             )
-        )
 
         @JvmStatic
-        private fun getWavDataWithFrequency() = Stream.of(
-            Arguments.of("src/test/resources/tracks/440.wav", 440.0),
-            Arguments.of("src/test/resources/tracks/220.wav", 220.0)
-        )
+        private fun getWavDataWithFrequency() =
+            Stream.of(
+                Arguments.of("src/test/resources/tracks/440.wav", 440.0),
+                Arguments.of("src/test/resources/tracks/220.wav", 220.0),
+            )
     }
 }

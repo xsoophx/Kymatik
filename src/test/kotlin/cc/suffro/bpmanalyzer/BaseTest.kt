@@ -13,7 +13,6 @@ import org.koin.core.logger.Level
 import org.koin.test.KoinTest
 
 open class BaseTest : KoinTest {
-
     companion object {
         @JvmStatic
         @BeforeAll

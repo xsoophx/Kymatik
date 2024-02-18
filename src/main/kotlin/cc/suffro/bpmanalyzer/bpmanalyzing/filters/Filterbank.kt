@@ -6,7 +6,10 @@ import cc.suffro.bpmanalyzer.fft.data.FFTData
 import org.kotlinmath.R
 
 object Filterbank {
-    fun separateSignals(fftData: FFTData, maximumFrequency: Int): SeparatedSignals {
+    fun separateSignals(
+        fftData: FFTData,
+        maximumFrequency: Int,
+    ): SeparatedSignals {
         val frequencies = fftData.getFrequencyBands(maximumFrequency)
         val output = MutableList(frequencies.size) { MutableList(fftData.output.size) { 0.R } }
 
@@ -25,11 +28,12 @@ object Filterbank {
     }
 
     private fun FFTData.getFrequencyBands(maximumFrequency: Int): List<Interval<Int>> {
-        val limits = generateSequence(0 to 200) { it.second to it.second * 2 }
-            .takeWhile { it.second <= maximumFrequency }
-            .map { (lower, upper) ->
-                Interval(binIndexOf(lower), binIndexOf(upper))
-            }
+        val limits =
+            generateSequence(0 to 200) { it.second to it.second * 2 }
+                .takeWhile { it.second <= maximumFrequency }
+                .map { (lower, upper) ->
+                    Interval(binIndexOf(lower), binIndexOf(upper))
+                }
 
         return limits.toMutableList().apply {
             this += Interval(limits.last().upperBound, binIndexOf(maximumFrequency) - 1)

@@ -7,7 +7,6 @@ import org.koin.test.inject
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 open class KoinDatabaseIntegrationTest : BaseTest() {
-
     val database by inject<DatabaseOperations>()
 
     @AfterEach

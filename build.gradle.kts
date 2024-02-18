@@ -1,7 +1,7 @@
 plugins {
     application
     kotlin("jvm") version "2.0.0-Beta3"
-    id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
     id("org.openjfx.javafxplugin") version "0.1.0"
 }
 
@@ -42,7 +42,7 @@ object Version {
     const val JDBC = "3.45.1.0"
     const val JUNIT = "5.10.1"
     const val KOIN = "3.5.3"
-    const val KOIN_TEST = "3.6.0-wasm-alpha2"
+    const val KOIN_TEST = "3.5.3"
     const val KOTLIN_MATH = "1.0"
     const val KOTLINX_CLI = "0.3.6"
     const val LOGBACK = "1.2.3"

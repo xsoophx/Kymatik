@@ -1,10 +1,8 @@
 package cc.suffro.bpmanalyzer
 
-import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CombFilterAnalyzer
+import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.ParameterizedCacheAnalyzer
 import cc.suffro.bpmanalyzer.data.Arguments
 import cc.suffro.bpmanalyzer.data.TrackInfo
-import cc.suffro.bpmanalyzer.database.DatabaseOperations
-import cc.suffro.bpmanalyzer.wav.data.FileReader
 import cc.suffro.bpmanalyzer.wav.data.Wav
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
@@ -16,7 +14,6 @@ import org.koin.core.parameter.parametersOf
 private val logger = KotlinLogging.logger {}
 
 class Main : KoinApplication() {
-
     fun run(args: Array<String>) {
         val arguments = parseArguments(args)
         val result = getFromDbOrAnalyze(arguments)
@@ -40,31 +37,15 @@ class Main : KoinApplication() {
     }
 
     private fun getFromDbOrAnalyze(arguments: Arguments): TrackInfo {
-        val database by inject<DatabaseOperations> { parametersOf(arguments.databaseUrl) }
+        require(arguments.trackName.isNotEmpty()) { "Please provide a path to your audio file." }
+        require(arguments.trackName.endsWith(".wav")) { "Please provide a .wav file." }
 
-        val trackInfo = (database.getTrackInfo(arguments.trackName)).let {
-            if (it.bpm == -1.0) database.saveAndReturnTrack(arguments.trackName) else it
+        val cacheAnalyzer by inject<ParameterizedCacheAnalyzer<Wav, TrackInfo>> { parametersOf(arguments.databaseUrl) }
+        logger.info { "Using cache analyzer for searching ${arguments.trackName} with DB url ${arguments.databaseUrl}." }
+
+        return cacheAnalyzer.use { analyzer ->
+            analyzer.getAndAnalyze(arguments.trackName)
         }
-        database.closeConnection()
-        return trackInfo
-    }
-
-    private fun DatabaseOperations.saveAndReturnTrack(trackName: String): TrackInfo {
-        val bpm = analyze(trackName)
-        saveTrackInfo(trackName, bpm)
-        return TrackInfo(trackName, bpm)
-    }
-
-    private fun analyze(path: String): Double {
-        require(path.isNotEmpty()) { "Please provide a path to your audio file." }
-        require(path.endsWith(".wav")) { "Please provide a .wav file." }
-
-        val wavReader by inject<FileReader<Wav>>()
-
-        val wav = wavReader.read(path)
-        val bpm = CombFilterAnalyzer().analyze(wav)
-        logger.info { "BPM: $bpm" }
-        return bpm
     }
 
     companion object {

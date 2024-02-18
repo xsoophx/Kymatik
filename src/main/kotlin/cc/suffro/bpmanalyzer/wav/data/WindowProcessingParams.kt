@@ -7,5 +7,5 @@ data class WindowProcessingParams(
     val end: Double,
     val interval: Double,
     val channel: Int = 0,
-    val numSamples: Int = FftSampleSize.DEFAULT
+    val numSamples: Int = FftSampleSize.DEFAULT,
 )

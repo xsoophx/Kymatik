@@ -1,5 +1,6 @@
-package cc.suffro.bpmanalyzer.bpmanalyzing.analyzers
+package cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.peakdistance
 
+import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.BpmAnalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.data.Bpm
 import cc.suffro.bpmanalyzer.fft.FFTProcessor
 import cc.suffro.bpmanalyzer.fft.data.FFTData
@@ -14,8 +15,11 @@ import java.text.DecimalFormatSymbols
 import java.util.Locale
 
 class PeakDistanceAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) : BpmAnalyzer {
-
-    override fun analyze(wav: Wav, start: Double, windowFunction: WindowFunction?): Bpm {
+    override fun analyze(
+        wav: Wav,
+        start: Double,
+        windowFunction: WindowFunction?,
+    ): Bpm {
         return analyze(wav, start = start, windowFunction = windowFunction)
     }
 
@@ -24,16 +28,17 @@ class PeakDistanceAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor
         start: Double = 0.0,
         end: Double = 10.0,
         interval: Double = 0.01,
-        windowFunction: WindowFunction? = null
+        windowFunction: WindowFunction? = null,
     ): Bpm {
         val params = WindowProcessingParams(start = start, end = min(wav.timestampLastSample, end), interval = interval)
         val windows = wav.getWindows(params)
 
-        val averagePeakTimes = fftProcessor
-            .process(windows, samplingRate = wav.sampleRate, windowFunction = windowFunction)
-            .getBassFrequencyBins(interval)
-            .getIntervalsOverTime()
-            .getAveragePeakTimes()
+        val averagePeakTimes =
+            fftProcessor
+                .process(windows, samplingRate = wav.sampleRate, windowFunction = windowFunction)
+                .getBassFrequencyBins(interval)
+                .getIntervalsOverTime()
+                .getAveragePeakTimes()
 
         val averagePeakDistance = averagePeakTimes.map { it.sorted().getAveragePeakDistance() }.average()
         return (60 / averagePeakDistance).round()
@@ -48,7 +53,7 @@ class PeakDistanceAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor
             Peak(
                 midPoint = index * interval,
                 interval = interval,
-                values = fftData.magnitudes.subList(lowerFrequencyBin, higherFrequencyBin + 1)
+                values = fftData.magnitudes.subList(lowerFrequencyBin, higherFrequencyBin + 1),
             )
         }
     }
@@ -75,7 +80,10 @@ class PeakDistanceAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor
         return averagePeaks
     }
 
-    private fun addPeakTime(peakTimes: MutableList<Double>, time: Double) {
+    private fun addPeakTime(
+        peakTimes: MutableList<Double>,
+        time: Double,
+    ) {
         val e = 0.05
         val index = peakTimes.indexOfFirst { (abs(it - time)) < e }
 
@@ -100,12 +108,12 @@ class PeakDistanceAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor
     private data class Peak(
         val midPoint: Double,
         val interval: Double,
-        val values: List<Double>
+        val values: List<Double>,
     )
 
     private data class PeakInterval(
         val midPoint: Double,
-        val magnitude: Double
+        val magnitude: Double,
     )
 
     companion object {

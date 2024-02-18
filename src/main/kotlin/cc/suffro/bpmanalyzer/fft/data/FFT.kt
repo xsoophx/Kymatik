@@ -20,7 +20,7 @@ data class FFTData(
     val bins: Bins,
     val sampleSize: Int,
     val samplingRate: Int,
-    val output: List<Complex>
+    val output: List<Complex>,
 ) {
     val magnitudes: List<Double>
         get() = output.take(bins.count).map { abs(it) / sampleSize }
@@ -37,17 +37,17 @@ data class FFTData(
 enum class Method {
     FFT,
     FFT_IN_PLACE,
-    R2C_DFT
+    R2C_DFT,
 }
 
 // TODO: think about better solution
 data class TimeDomainWindow(
     val samples: Sequence<Sample>,
     val duration: Double,
-    val startingTime: Double
+    val startingTime: Double,
 ) : Sequence<Sample> by samples
 
 data class FrequencyDomainWindow(
     val magnitudes: List<Double>,
-    val startingTime: Double
+    val startingTime: Double,
 )

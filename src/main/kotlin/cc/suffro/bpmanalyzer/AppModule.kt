@@ -8,8 +8,9 @@ import cc.suffro.bpmanalyzer.wav.data.Wav
 import kotlinx.cli.ArgParser
 import org.koin.dsl.module
 
-val appModule = module {
-    single { ArgParser("BPMAnalyzer") }
-    single<FileReader<Wav>> { WAVReader }
-    single<FileWriter<Wav>> { WavWriter }
-}
+val appModule =
+    module {
+        single { ArgParser("BPMAnalyzer") }
+        single<FileReader<Wav>> { WAVReader }
+        single<FileWriter<Wav>> { WavWriter }
+    }

@@ -1,5 +1,6 @@
-package cc.suffro.bpmanalyzer.bpmanalyzing.analyzers
+package cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter
 
+import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.BpmAnalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.data.Bpm
 import cc.suffro.bpmanalyzer.bpmanalyzing.data.SeparatedSignals
 import cc.suffro.bpmanalyzer.bpmanalyzing.filters.CombFilter
@@ -16,17 +17,24 @@ import cc.suffro.bpmanalyzer.wav.data.Wav
 import java.nio.file.Path
 
 class CombFilterAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) : BpmAnalyzer {
-
     private val cache = mutableMapOf<Path, FFTData>()
 
-    override fun analyze(wav: Wav, start: Double, windowFunction: WindowFunction?): Bpm {
+    override fun analyze(
+        wav: Wav,
+        start: Double,
+        windowFunction: WindowFunction?,
+    ): Bpm {
         val fftResult = calculateFftResult(wav, start, windowFunction)
         return fftResult
             .getBassBand(fftResult.duration)
             .getBpm(LowPassFilter(fftProcessor), CombFilter(fftProcessor), wav.fmtChunk)
     }
 
-    private fun calculateFftResult(wav: Wav, start: Double = 0.0, windowFunction: WindowFunction? = null): FFTData {
+    private fun calculateFftResult(
+        wav: Wav,
+        start: Double = 0.0,
+        windowFunction: WindowFunction? = null,
+    ): FFTData {
         require(start + ANALYZING_DURATION < wav.trackLength) {
             "Starting time of $start seconds is too close to track end."
         }
@@ -45,7 +53,7 @@ class CombFilterAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()
     private fun TimeDomainWindow.getBpm(
         lowPassFilter: LowPassFilter,
         combFilter: CombFilter,
-        fmtChunk: FmtChunk
+        fmtChunk: FmtChunk,
     ): Bpm {
         val lowPassFiltered = lowPassFilter.process(this, fmtChunk)
         val differentials = DifferentialRectifier.process(lowPassFiltered)
@@ -60,7 +68,7 @@ class CombFilterAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()
                 values.asSequence().map {
                     val powerOfTwo = getHighestPowerOfTwo(it.size)
                     it.asSequence().take(powerOfTwo)
-                }
+                },
             )
 
         return signalInTimeDomain.mapIndexed { index, samples -> TimeDomainWindow(samples, interval, index * interval) }

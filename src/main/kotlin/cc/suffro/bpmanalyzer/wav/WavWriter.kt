@@ -12,11 +12,17 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 object WavWriter : FileWriter<Wav> {
-    override fun write(path: String, data: Wav): Boolean {
+    override fun write(
+        path: String,
+        data: Wav,
+    ): Boolean {
         return write(Path.of(path), data)
     }
 
-    override fun write(path: Path, data: Wav): Boolean {
+    override fun write(
+        path: Path,
+        data: Wav,
+    ): Boolean {
         BufferedOutputStream(Files.newOutputStream(path)).use { output ->
             writeRiffHeader(output, data)
             writeFmtChunk(output, data.fmtChunk)
@@ -25,14 +31,20 @@ object WavWriter : FileWriter<Wav> {
         return true
     }
 
-    private fun writeRiffHeader(output: OutputStream, wav: Wav) {
+    private fun writeRiffHeader(
+        output: OutputStream,
+        wav: Wav,
+    ) {
         val fileSize = wav.fmtChunk.riffChunkSize
         output.write(RIFF_SIGNATURE.toByteArray(Charsets.US_ASCII))
         output.write(intToByteArray(fileSize))
         output.write(WAVE_SIGNATURE.toByteArray(Charsets.US_ASCII))
     }
 
-    private fun writeFmtChunk(output: OutputStream, fmtChunk: FmtChunk) {
+    private fun writeFmtChunk(
+        output: OutputStream,
+        fmtChunk: FmtChunk,
+    ) {
         output.write(FMT_SIGNATURE.toByteArray(Charsets.US_ASCII))
         output.write(intToByteArray(fmtChunk.fmtChunkSize))
         output.write(shortToByteArray(fmtChunk.audioFormat.value.toShort()))
@@ -43,7 +55,11 @@ object WavWriter : FileWriter<Wav> {
         output.write(shortToByteArray(fmtChunk.bitsPerSample))
     }
 
-    private fun writeDataChunk(output: OutputStream, fmtChunk: FmtChunk, dataChunk: DataChunk) {
+    private fun writeDataChunk(
+        output: OutputStream,
+        fmtChunk: FmtChunk,
+        dataChunk: DataChunk,
+    ) {
         output.write(DATA_SIGNATURE.toByteArray(Charsets.US_ASCII))
         output.write(intToByteArray(dataChunk.dataChunkSize))
         val sampleCount = dataChunk.dataChunkSize / fmtChunk.blockAlign
@@ -53,10 +69,11 @@ object WavWriter : FileWriter<Wav> {
                 for (sampleIndex in 0 until sampleCount) {
                     for (channel in 0 until fmtChunk.numChannels) {
                         val shortValue = (dataChunk.data[channel][sampleIndex] * Short.MAX_VALUE).toInt().toShort()
-                        val sampleBytes = ByteBuffer.allocate(Short.SIZE_BYTES).apply {
-                            order(ByteOrder.LITTLE_ENDIAN)
-                            putShort(shortValue)
-                        }.array()
+                        val sampleBytes =
+                            ByteBuffer.allocate(Short.SIZE_BYTES).apply {
+                                order(ByteOrder.LITTLE_ENDIAN)
+                                putShort(shortValue)
+                            }.array()
                         output.write(sampleBytes)
                     }
                 }
@@ -78,7 +95,10 @@ object WavWriter : FileWriter<Wav> {
             putShort(value)
         }.array()
 
-    private fun sampleToBytes(sample: Double, bitsPerSample: Int): ByteArray {
+    private fun sampleToBytes(
+        sample: Double,
+        bitsPerSample: Int,
+    ): ByteArray {
         return when (bitsPerSample) {
             8 -> {
                 val byteValue = ((sample + 1.0) * 127.5).toInt().coerceIn(0, 255).toByte()
@@ -98,7 +118,7 @@ object WavWriter : FileWriter<Wav> {
                 byteArrayOf(
                     (intValue and 0xFF).toByte(),
                     (intValue shr 8 and 0xFF).toByte(),
-                    (intValue shr 16 and 0xFF).toByte()
+                    (intValue shr 16 and 0xFF).toByte(),
                 )
             }
 
