@@ -14,7 +14,7 @@ class SpeedAdjuster(private val cacheAnalyzer: CacheAnalyzer) {
     }
 
     private fun interpolate(data: DoubleArray, inverseStretchFactor: Double): DoubleArray {
-        val newLength = ((data.size - 1) / inverseStretchFactor).toInt() + 1
+        val newLength = (data.size / inverseStretchFactor).toInt()
         val stretchedData = DoubleArray(newLength)
 
         for (i in 0 until newLength) {
