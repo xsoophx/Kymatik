@@ -3,6 +3,7 @@ package cc.suffro.bpmanalyzer.speedadjustment
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.ParameterizedCacheAnalyzer
 import cc.suffro.bpmanalyzer.data.TrackInfo
 import cc.suffro.bpmanalyzer.wav.data.Wav
+import mu.KotlinLogging
 import kotlin.math.min
 
 class SpeedAdjuster(private val cacheAnalyzer: ParameterizedCacheAnalyzer<Wav, TrackInfo>) {
@@ -16,12 +17,23 @@ class SpeedAdjuster(private val cacheAnalyzer: ParameterizedCacheAnalyzer<Wav, T
         return wav.dataChunk.data.map { interpolate(it, inverseStretchFactor) }.toTypedArray()
     }
 
+    fun changeTo(
+        wav: Wav,
+        currentBpm: Double,
+        targetBpm: Double,
+    ): Array<DoubleArray> {
+        val inverseStretchFactor = targetBpm / currentBpm
+        return wav.dataChunk.data.map { interpolate(it, inverseStretchFactor) }.toTypedArray()
+    }
+
     private fun interpolate(
         data: DoubleArray,
         inverseStretchFactor: Double,
     ): DoubleArray {
         val newLength = (data.size / inverseStretchFactor).toInt()
+        logger.info("New length: $newLength")
         val stretchedData = DoubleArray(newLength)
+        logger.info("Array created successfully")
 
         for (i in 0 until newLength) {
             // get old values for new position
@@ -36,5 +48,9 @@ class SpeedAdjuster(private val cacheAnalyzer: ParameterizedCacheAnalyzer<Wav, T
         }
 
         return stretchedData
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger { }
     }
 }

@@ -1,6 +1,7 @@
 package cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.startingposition
 
-import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CacheAnalyzer
+import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CacheAnalyzerParams
+import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.ParameterizedCacheAnalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter.CombFilterAnalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.filters.Filterbank
 import cc.suffro.bpmanalyzer.database.DatabaseOperations
@@ -12,10 +13,18 @@ class StartingPositionAnalyzer(
     private val combFilterAnalyzer: CombFilterAnalyzer,
     private val database: DatabaseOperations,
     private val wavReader: FileReader<Wav>,
-) : CacheAnalyzer<Wav, StartingPosition> {
+) : ParameterizedCacheAnalyzer<Wav, StartingPosition> {
     override fun analyze(data: Wav): StartingPosition {
-        val fullWaveRectified = Filterbank.fullWaveRectify(data.defaultChannel())
         val bpm = combFilterAnalyzer.analyze(data)
+
+        return analyzeByBpm(bpm, data)
+    }
+
+    private fun analyzeByBpm(
+        bpm: Double,
+        data: Wav,
+    ): StartingPosition {
+        val fullWaveRectified = Filterbank.fullWaveRectify(data.defaultChannel())
 
         val intervalSize = ((60 / bpm) * data.sampleRate)
         // 120 bpm -> 22050 samples per interval
@@ -49,6 +58,14 @@ class StartingPositionAnalyzer(
             val max = samples.max()
             index to max
         }.maxBy { it.second }
+    }
+
+    override fun analyze(
+        data: Wav,
+        params: CacheAnalyzerParams<StartingPosition>,
+    ): StartingPosition {
+        val startingPositionParams = params as StartingPositionCacheAnalyzerParams
+        return analyzeByBpm(startingPositionParams.bpm, data)
     }
 
     override fun getAndAnalyze(path: String): StartingPosition {

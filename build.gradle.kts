@@ -42,7 +42,7 @@ object Version {
     const val JDBC = "3.45.1.0"
     const val JUNIT = "5.10.1"
     const val KOIN = "3.5.3"
-    const val KOIN_TEST = "3.5.3"
+    const val KOIN_TEST = "3.6.0-wasm-alpha2"
     const val KOTLIN_MATH = "1.0"
     const val KOTLINX_CLI = "0.3.6"
     const val LOGBACK = "1.2.3"
@@ -105,6 +105,6 @@ tasks {
     withType<Test> {
         useJUnitPlatform()
         minHeapSize = "512m"
-        maxHeapSize = "1024m"
+        maxHeapSize = "4096m"
     }
 }

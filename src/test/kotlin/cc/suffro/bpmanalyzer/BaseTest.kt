@@ -4,6 +4,7 @@ import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.analyzerTestModule
 import cc.suffro.bpmanalyzer.database.databaseTestModule
 import cc.suffro.bpmanalyzer.fft.fftTestModule
 import cc.suffro.bpmanalyzer.speedadjustment.speedAdjusterTestModule
+import cc.suffro.bpmanalyzer.trackmerge.trackMergerModule
 import cc.suffro.bpmanalyzer.wav.wavTestModule
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -19,7 +20,14 @@ open class BaseTest : KoinTest {
         fun setup() {
             startKoin {
                 printLogger(Level.DEBUG)
-                modules(databaseTestModule, speedAdjusterTestModule, wavTestModule, fftTestModule, analyzerTestModule)
+                modules(
+                    databaseTestModule,
+                    speedAdjusterTestModule,
+                    wavTestModule,
+                    fftTestModule,
+                    analyzerTestModule,
+                    trackMergerModule,
+                )
             }
         }
 
