@@ -36,7 +36,7 @@ class StartingPositionAnalyzerTest : BaseTest() {
         @JvmStatic
         private fun getTracksWithBpm() =
             Stream.of(
-                Arguments.of("src/test/resources/tracks/120bpm_140Hz.wav", 1014, 0.023),
+                Arguments.of("src/test/resources/samples/120bpm_140Hz.wav", 1014, 0.023),
                 Arguments.of("src/test/resources/tracks/Jan Vercauteren - Dysfunction.wav", 200, 0.0045351473922902496),
                 Arguments.of("src/test/resources/tracks/Mark Terre - Gravity Zero.wav", 500, 0.011337868480725623),
             )

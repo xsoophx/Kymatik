@@ -15,8 +15,9 @@ build/
 out/
 
 # resources
-src/test/resources/tracks/*
+src/test/resources/tracks/
 src/test/resources/test.db
+!src/test/resources/samples
 
 # env
 .env

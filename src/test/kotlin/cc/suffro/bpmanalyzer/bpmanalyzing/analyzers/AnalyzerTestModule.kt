@@ -1,10 +1,12 @@
 package cc.suffro.bpmanalyzer.bpmanalyzing.analyzers
 
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter.CombFilterAnalyzer
-import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter.CombFilterAnalyzerTestImpl
+import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter.CombFilterCacheAnalyzer
+import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter.CombFilterCacheAnalyzerTestImpl
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.startingposition.StartingPosition
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.startingposition.StartingPositionAnalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.filters.CombFilter
+import cc.suffro.bpmanalyzer.data.TrackInfo
 import cc.suffro.bpmanalyzer.wav.data.Wav
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.named
@@ -16,13 +18,17 @@ val analyzerTestModule =
         singleOf(::CombFilterAnalyzer) {
             bind<BpmAnalyzer<CombFilter>>()
         }
-        singleOf(::CombFilterAnalyzerTestImpl) {
-            bind<BpmAnalyzer<CombFilter>>()
+
+        singleOf(::CombFilterCacheAnalyzerTestImpl) {
+            bind<ParameterizedCacheAnalyzer<Wav, TrackInfo>>()
             named("TestImpl")
         }
 
         singleOf(::StartingPositionAnalyzer) {
             bind<ParameterizedCacheAnalyzer<Wav, StartingPosition>>()
+        }
+        singleOf(::CombFilterCacheAnalyzer) {
+            bind<ParameterizedCacheAnalyzer<Wav, TrackInfo>>()
         }
 
         singleOf(::StartingPositionAnalyzer)

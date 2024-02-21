@@ -83,7 +83,7 @@ class WAVReaderTest {
         interval: Double,
         expectedWindows: Int,
     ) {
-        val wav = wavReader.read("src/test/resources/tracks/440.wav")
+        val wav = wavReader.read("src/test/resources/samples/440.wav")
         val params = WindowProcessingParams(start = start, end = end, interval = interval)
         val actual = wav.getWindows(params)
 
@@ -92,7 +92,7 @@ class WAVReaderTest {
 
     @Test
     fun `should handle track length as end correctly`() {
-        val wav = wavReader.read("src/test/resources/tracks/440.wav")
+        val wav = wavReader.read("src/test/resources/samples/440.wav")
         val windowTime = FftSampleSize.DEFAULT.toDouble() / wav.sampleRate
         val params =
             WindowProcessingParams(start = wav.trackLength - windowTime, end = wav.trackLength, interval = windowTime)
@@ -106,7 +106,7 @@ class WAVReaderTest {
         private fun getWavDataWithFmt() =
             Stream.of(
                 Arguments.of(
-                    "src/test/resources/tracks/220.wav",
+                    "src/test/resources/samples/220.wav",
                     FmtChunk(
                         riffChunkSize = 654006,
                         fmtChunkSize = 16,
@@ -120,7 +120,7 @@ class WAVReaderTest {
                     653868,
                 ),
                 Arguments.of(
-                    "src/test/resources/tracks/440.wav",
+                    "src/test/resources/samples/440.wav",
                     FmtChunk(
                         riffChunkSize = 880110,
                         fmtChunkSize = 16,
@@ -138,8 +138,8 @@ class WAVReaderTest {
         @JvmStatic
         private fun getWavDataWithFrequency() =
             Stream.of(
-                Arguments.of("src/test/resources/tracks/440.wav", 440.0),
-                Arguments.of("src/test/resources/tracks/220.wav", 220.0),
+                Arguments.of("src/test/resources/samples/440.wav", 440.0),
+                Arguments.of("src/test/resources/samples/220.wav", 220.0),
             )
     }
 }

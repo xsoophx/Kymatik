@@ -51,9 +51,9 @@ class WavWriterTest : BaseTest() {
         @JvmStatic
         fun getWavData(): Stream<Arguments> {
             return Stream.of(
-                Arguments.of("src/test/resources/tracks/120bpm_140Hz"),
-                Arguments.of("src/test/resources/tracks/220"),
-                Arguments.of("src/test/resources/tracks/440"),
+                Arguments.of("src/test/resources/samples/120bpm_140Hz"),
+                Arguments.of("src/test/resources/samples/220"),
+                Arguments.of("src/test/resources/samples/440"),
             )
         }
     }
