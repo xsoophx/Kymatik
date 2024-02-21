@@ -1,7 +1,7 @@
 package cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.startingposition
 
-import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CacheAnalyzerParams
+import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.AnalyzerParams
 
 data class StartingPositionCacheAnalyzerParams(
     val bpm: Double,
-) : CacheAnalyzerParams<StartingPosition>
+) : AnalyzerParams<StartingPosition>

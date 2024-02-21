@@ -1,24 +1,47 @@
 package cc.suffro.bpmanalyzer.bpmanalyzing.filters
 
 import cc.suffro.bpmanalyzer.abs
+import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter.CombFilterAnalyzerParams
 import cc.suffro.bpmanalyzer.bpmanalyzing.data.Signal
 import cc.suffro.bpmanalyzer.fft.FFTProcessor
+import cc.suffro.bpmanalyzer.fft.data.FFTData
+import cc.suffro.bpmanalyzer.round
 import mu.KotlinLogging
 import kotlin.math.pow
 
 private val logger = KotlinLogging.logger {}
 
-// TODO: let's refactor this
 class CombFilter(private val fftProcessor: FFTProcessor) {
     fun process(
         bassSignal: Signal,
         samplingRate: Int,
+        params: CombFilterAnalyzerParams,
     ): Double {
         val fftResult = fftProcessor.process(bassSignal, samplingRate)
-        var maxEnergy = 0.0
-        var estimatedBpm = 0
+        val result = process(params.minimumBpm, params.maximumBpm, params.stepSize, bassSignal, samplingRate, fftResult)
 
-        for (bpm in MINIMUM_BPM..MAXIMUM_BPM step STEP_SIZE) {
+        return if (params.refinementParams == null) {
+            result
+        } else {
+            val newMinimumBpm = result - params.refinementParams.deviationBpm
+            val newMaximumBpm = result + params.refinementParams.deviationBpm
+            process(newMinimumBpm, newMaximumBpm, params.refinementParams.stepSize, bassSignal, samplingRate, fftResult)
+        }
+    }
+
+    private fun process(
+        minimumBpm: Double,
+        maximumBpm: Double,
+        stepSize: Double,
+        bassSignal: Signal,
+        samplingRate: Int,
+        fftResult: FFTData,
+    ): Double {
+        var maxEnergy = 0.0
+        var estimatedBpm = 0.0
+        var bpm: Double = minimumBpm
+
+        while (bpm <= maximumBpm) {
             var energy = 0.0
             val pulses = MutableList(bassSignal.count()) { 0.0 }
             fillPulses(bpm, pulses, samplingRate)
@@ -32,12 +55,13 @@ class CombFilter(private val fftProcessor: FFTProcessor) {
                 estimatedBpm = bpm
                 maxEnergy = energy
             }
+            bpm += stepSize
         }
-        return estimatedBpm.toDouble()
+        return estimatedBpm.round()
     }
 
     private fun fillPulses(
-        bpm: Int,
+        bpm: Double,
         pulses: MutableList<Double>,
         samplingRate: Int,
     ) {
@@ -48,10 +72,6 @@ class CombFilter(private val fftProcessor: FFTProcessor) {
     }
 
     companion object {
-        const val MINIMUM_BPM = 60
-        const val MAXIMUM_BPM = 220
-
         const val PULSES = 3
-        const val STEP_SIZE = 1
     }
 }

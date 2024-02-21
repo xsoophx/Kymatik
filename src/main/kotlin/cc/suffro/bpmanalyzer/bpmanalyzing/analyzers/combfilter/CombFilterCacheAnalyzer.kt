@@ -1,8 +1,9 @@
 package cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter
 
+import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.AnalyzerParams
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.BpmAnalyzer
-import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CacheAnalyzerParams
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.ParameterizedCacheAnalyzer
+import cc.suffro.bpmanalyzer.bpmanalyzing.filters.CombFilter
 import cc.suffro.bpmanalyzer.data.TrackInfo
 import cc.suffro.bpmanalyzer.database.DatabaseOperations
 import cc.suffro.bpmanalyzer.fft.data.WindowFunction
@@ -12,7 +13,7 @@ import mu.KotlinLogging
 import java.nio.file.Path
 
 class CombFilterCacheAnalyzer(
-    private val analyzer: BpmAnalyzer,
+    private val analyzer: BpmAnalyzer<CombFilter>,
     private val database: DatabaseOperations,
     private val wavReader: FileReader<Wav>,
 ) : ParameterizedCacheAnalyzer<Wav, TrackInfo> {
@@ -36,7 +37,7 @@ class CombFilterCacheAnalyzer(
 
     override fun analyze(
         data: Wav,
-        params: CacheAnalyzerParams<TrackInfo>,
+        params: AnalyzerParams<TrackInfo>,
     ): TrackInfo {
         val start = (params as CombFilterCacheAnalyzerParams).start
         val windowFunction = params.windowFunction
@@ -74,7 +75,7 @@ class CombFilterCacheAnalyzer(
         require(path.isNotEmpty()) { "Please provide a path to your audio file." }
         require(path.endsWith(".wav")) { "Please provide a .wav file." }
 
-        val bpm = analyzer.analyze(wav, start, windowFunction)
+        val bpm = analyzer.analyze(wav, CombFilterAnalyzerParams(start, windowFunction))
         logger.info { "BPM: $bpm" }
         return bpm
     }

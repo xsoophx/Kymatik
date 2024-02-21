@@ -79,6 +79,24 @@ class SpeedAdjusterTest : BaseTest() {
         )
     }
 
+    @Test
+    fun `should create correct pitched track for Double value`() {
+        val wav = wavReader.read("src/test/resources/tracks/120bpm_140Hz.wav")
+        val targetBpm = 120.5
+        val currentBpm = 120.0
+        val result = prodSpeedAdjuster.changeTo(wav, targetBpm)
+
+        assertEquals(
+            expected = (wav.dataChunk.dataChunkSize * (currentBpm / targetBpm)).toInt(),
+            actual = result.first().size * wav.fmtChunk.numChannels * wav.fmtChunk.bitsPerSample / 8,
+        )
+
+        wavWriter.write(
+            Path.of("src/test/resources/tracks/120.5bpm_140Hz.wav"),
+            Wav(wav, result),
+        )
+    }
+
     companion object {
         @JvmStatic
         private fun getTracksWithBpm() =

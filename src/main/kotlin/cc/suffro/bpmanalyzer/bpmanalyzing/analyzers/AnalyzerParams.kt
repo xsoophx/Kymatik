@@ -1,3 +1,3 @@
 package cc.suffro.bpmanalyzer.bpmanalyzing.analyzers
 
-interface CacheAnalyzerParams<T>
+interface AnalyzerParams<T>

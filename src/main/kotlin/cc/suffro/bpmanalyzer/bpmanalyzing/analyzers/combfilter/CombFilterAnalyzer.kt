@@ -1,5 +1,6 @@
 package cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter
 
+import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.AnalyzerParams
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.BpmAnalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.data.Bpm
 import cc.suffro.bpmanalyzer.bpmanalyzing.data.SeparatedSignals
@@ -16,18 +17,22 @@ import cc.suffro.bpmanalyzer.wav.data.FmtChunk
 import cc.suffro.bpmanalyzer.wav.data.Wav
 import java.nio.file.Path
 
-class CombFilterAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) : BpmAnalyzer {
+class CombFilterAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()) : BpmAnalyzer<CombFilter> {
     private val cache = mutableMapOf<Path, FFTData>()
+
+    override fun analyze(wav: Wav): Bpm {
+        return analyze(wav, CombFilterAnalyzerParams())
+    }
 
     override fun analyze(
         wav: Wav,
-        start: Double,
-        windowFunction: WindowFunction?,
+        analyzerParams: AnalyzerParams<CombFilter>,
     ): Bpm {
-        val fftResult = calculateFftResult(wav, start, windowFunction)
+        val params = analyzerParams as CombFilterAnalyzerParams
+        val fftResult = calculateFftResult(wav, analyzerParams.start, params.windowFunction)
         return fftResult
             .getBassBand(fftResult.duration)
-            .getBpm(LowPassFilter(fftProcessor), CombFilter(fftProcessor), wav.fmtChunk)
+            .getBpm(LowPassFilter(fftProcessor), CombFilter(fftProcessor), wav.fmtChunk, params)
     }
 
     private fun calculateFftResult(
@@ -54,11 +59,12 @@ class CombFilterAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()
         lowPassFilter: LowPassFilter,
         combFilter: CombFilter,
         fmtChunk: FmtChunk,
+        analyzerParams: CombFilterAnalyzerParams,
     ): Bpm {
         val lowPassFiltered = lowPassFilter.process(this, fmtChunk)
         val differentials = DifferentialRectifier.process(lowPassFiltered)
 
-        return combFilter.process(differentials, fmtChunk.sampleRate)
+        return combFilter.process(differentials, fmtChunk.sampleRate, analyzerParams)
     }
 
     private fun SeparatedSignals.transformToTimeDomain(interval: Double): Sequence<TimeDomainWindow> {

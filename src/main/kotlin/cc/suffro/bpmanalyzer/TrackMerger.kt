@@ -5,6 +5,7 @@ import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.startingposition.StartingPos
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.startingposition.StartingPositionCacheAnalyzerParams
 import cc.suffro.bpmanalyzer.data.TrackInfo
 import cc.suffro.bpmanalyzer.speedadjustment.SpeedAdjuster
+import cc.suffro.bpmanalyzer.wav.WavWriter
 import cc.suffro.bpmanalyzer.wav.data.Wav
 import java.nio.file.Path
 
@@ -41,6 +42,10 @@ class TrackMerger(
                 trackOne.copy(filePath = Path.of("src/test/resources/tracks/merged.wav")),
                 dataChunks = mergedSamples,
             )
+
+        // just for quick testing
+        val wavWriter = WavWriter
+        wavWriter.write("src/test/resources/tracks/merged3.wav", mergedWav)
 
         closeConnections()
         return mergedWav

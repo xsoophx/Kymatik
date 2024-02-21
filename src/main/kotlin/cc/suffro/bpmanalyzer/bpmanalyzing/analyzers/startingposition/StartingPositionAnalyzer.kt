@@ -1,6 +1,6 @@
 package cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.startingposition
 
-import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CacheAnalyzerParams
+import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.AnalyzerParams
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.ParameterizedCacheAnalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter.CombFilterAnalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.filters.Filterbank
@@ -62,7 +62,7 @@ class StartingPositionAnalyzer(
 
     override fun analyze(
         data: Wav,
-        params: CacheAnalyzerParams<StartingPosition>,
+        params: AnalyzerParams<StartingPosition>,
     ): StartingPosition {
         val startingPositionParams = params as StartingPositionCacheAnalyzerParams
         return analyzeByBpm(startingPositionParams.bpm, data)
