@@ -1,4 +1,3 @@
-
 @file:Suppress("ktlint:standard:filename")
 
 package cc.suffro.bpmanalyzer
@@ -27,6 +26,16 @@ fun assertNearlyEquals(
 }
 
 fun assertNearlyEquals(
+    expected: Int,
+    actual: Int,
+    e: Int = 2,
+    exclusive: Boolean = true,
+    message: String? = null,
+) {
+    assertTrue(actual.closeTo(expected, e, exclusive), message ?: "Expected <$expected>, actual <$actual>.")
+}
+
+fun assertNearlyEquals(
     expected: StartingPosition,
     actual: StartingPosition,
     sampleDistance: Int = 100,
@@ -34,7 +43,7 @@ fun assertNearlyEquals(
     message: String? = null,
 ) {
     assertTrue(
-        actual.firstSample.closeTo(expected.firstSample, sampleDistance),
+        actual.firstSample.closeTo(expected.firstSample, sampleDistance, true),
         message ?: "Expected <$expected>, actual <$actual>.",
     )
     assertTrue(
@@ -56,4 +65,5 @@ private fun Double.closeTo(
 private fun Int.closeTo(
     number: Int,
     e: Int,
-): Boolean = abs(this - number) < e
+    exclusive: Boolean,
+): Boolean = if (exclusive) abs(this - number) < e else abs(this - number) <= e

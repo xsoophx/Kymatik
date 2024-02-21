@@ -15,9 +15,11 @@ class TrackMergerTest : BaseTest() {
 
     @Test
     fun `should merge two tracks correctly`() {
-        val trackOne = wavReader.read("src/test/resources/tracks/LEE ft. Anivalence - Waves (Scove Remix).wav")
-        val trackTwo = wavReader.read("src/test/resources/tracks/Mark Terre - Gravity Zero.wav")
+        val trackOne = wavReader.read(tracksWithBpm.keys.first())
+        val trackTwo = wavReader.read(tracksWithBpm.keys.last())
         val result = trackMerger.merge(trackOne, trackTwo, 130.0)
-        wavWriter.write("src/test/resources/tracks/merged.wav", result)
+
+        // enable for listening to the result
+        // wavWriter.write("src/test/resources/copies/merged.wav", result)
     }
 }

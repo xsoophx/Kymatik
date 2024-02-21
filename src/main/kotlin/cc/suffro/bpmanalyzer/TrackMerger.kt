@@ -7,6 +7,7 @@ import cc.suffro.bpmanalyzer.data.TrackInfo
 import cc.suffro.bpmanalyzer.speedadjustment.SpeedAdjuster
 import cc.suffro.bpmanalyzer.wav.WavWriter
 import cc.suffro.bpmanalyzer.wav.data.Wav
+import java.io.File
 import java.nio.file.Path
 
 class TrackMerger(
@@ -39,16 +40,32 @@ class TrackMerger(
 
         val mergedWav =
             Wav(
-                trackOne.copy(filePath = Path.of("src/test/resources/tracks/merged.wav")),
+                trackOne.copy(filePath = Path.of("src/test/resources/copies/merged.wav")),
                 dataChunks = mergedSamples,
             )
 
         // just for quick testing
         val wavWriter = WavWriter
-        wavWriter.write("src/test/resources/tracks/merged3.wav", mergedWav)
+        wavWriter.write("src/test/resources/copies/merged3.wav", mergedWav)
 
         closeConnections()
         return mergedWav
+    }
+
+    fun merge(directoryPath: String) {
+        val wavTracks = getWavTracksOfDirectory(directoryPath)
+    }
+
+    private fun getWavTracksOfDirectory(directoryPath: String): List<String> {
+        val directory = File(directoryPath)
+        require(directory.exists() && directory.isDirectory) {
+            throw IllegalArgumentException("Directory with path $directoryPath does not exist or is not a directory.")
+        }
+
+        return directory.walk()
+            .filter { it.isFile && it.extension.equals("wav", ignoreCase = true) }
+            .map { it.absolutePath }
+            .toList()
     }
 
     private fun Wav.stretchAndWrite(

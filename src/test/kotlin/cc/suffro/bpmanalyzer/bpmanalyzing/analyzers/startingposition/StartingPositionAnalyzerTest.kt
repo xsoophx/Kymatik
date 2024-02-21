@@ -37,8 +37,8 @@ class StartingPositionAnalyzerTest : BaseTest() {
         private fun getTracksWithBpm() =
             Stream.of(
                 Arguments.of("src/test/resources/samples/120bpm_140Hz.wav", 1014, 0.023),
-                Arguments.of("src/test/resources/tracks/Jan Vercauteren - Dysfunction.wav", 200, 0.0045351473922902496),
-                Arguments.of("src/test/resources/tracks/Mark Terre - Gravity Zero.wav", 500, 0.011337868480725623),
+                Arguments.of("src/test/resources/samples/120.5bpm_140Hz.wav", 200, 0.0045351473922902496),
+                Arguments.of("src/test/resources/samples/kick_140_24PCM.wav", 500, 0.011337868480725623),
             )
     }
 }

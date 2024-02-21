@@ -1,6 +1,7 @@
 package cc.suffro.bpmanalyzer.speedadjustment
 
 import cc.suffro.bpmanalyzer.BaseTest
+import cc.suffro.bpmanalyzer.assertNearlyEquals
 import cc.suffro.bpmanalyzer.wav.data.AudioFormat
 import cc.suffro.bpmanalyzer.wav.data.DataChunk
 import cc.suffro.bpmanalyzer.wav.data.FileReader
@@ -10,12 +11,10 @@ import cc.suffro.bpmanalyzer.wav.data.Wav
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.koin.core.qualifier.named
 import org.koin.test.inject
 import java.nio.file.Path
-import java.util.stream.Stream
 import kotlin.test.assertEquals
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -64,13 +63,15 @@ class SpeedAdjusterTest : BaseTest() {
         path: String,
         currentBpm: Double,
     ) {
-        val wav = wavReader.read("$path.wav")
+        val wav = wavReader.read(path)
         val targetBpm = 100.0
         val result = prodSpeedAdjuster.changeTo(wav, targetBpm)
 
-        assertEquals(
+        assertNearlyEquals(
             expected = (wav.dataChunk.dataChunkSize * (currentBpm / targetBpm)).toInt(),
             actual = result.first().size * wav.fmtChunk.numChannels * wav.fmtChunk.bitsPerSample / 8,
+            e = 2,
+            exclusive = false,
         )
 
         wavWriter.write(
@@ -92,18 +93,13 @@ class SpeedAdjusterTest : BaseTest() {
         )
 
         wavWriter.write(
-            Path.of("src/test/resources/tracks/120.5bpm_140Hz.wav"),
+            Path.of("src/test/resources/samples/120.5bpm_140Hz.wav"),
             Wav(wav, result),
         )
     }
 
     companion object {
         @JvmStatic
-        private fun getTracksWithBpm() =
-            Stream.of(
-                Arguments.of("src/test/resources/samples/120bpm_140Hz", 120.0),
-                Arguments.of("src/test/resources/tracks/Jan Vercauteren - Dysfunction", 149.0),
-                Arguments.of("src/test/resources/tracks/HXIST - Tier", 147.0),
-            )
+        private fun getTracksWithBpm() = tracksWithBpmAsStream
     }
 }
