@@ -29,7 +29,7 @@ class CombFilterAnalyzerTest : BaseTest() {
     }
 
     @ParameterizedTest
-    @MethodSource("getTracks")
+    @MethodSource("getTracksWithBpm")
     fun `should detect correct BPM for test tracks seconds`(
         trackPath: String,
         bpm: Double,
@@ -37,10 +37,5 @@ class CombFilterAnalyzerTest : BaseTest() {
         val wav = wavReader.read(trackPath)
         val result = CombFilterAnalyzer().analyze(wav)
         assertNearlyEquals(expected = bpm, actual = result)
-    }
-
-    companion object {
-        @JvmStatic
-        private fun getTracks() = tracksWithBpmAsStream
     }
 }

@@ -97,9 +97,4 @@ class SpeedAdjusterTest : BaseTest() {
             Wav(wav, result),
         )
     }
-
-    companion object {
-        @JvmStatic
-        private fun getTracksWithBpm() = tracksWithBpmAsStream
-    }
 }

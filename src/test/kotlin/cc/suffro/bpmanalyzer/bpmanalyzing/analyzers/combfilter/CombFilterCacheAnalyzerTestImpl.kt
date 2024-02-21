@@ -27,6 +27,6 @@ class CombFilterCacheAnalyzerTestImpl : ParameterizedCacheAnalyzer<Wav, TrackInf
     }
 
     override fun close() {
-        TODO("Not yet implemented")
+        return
     }
 }

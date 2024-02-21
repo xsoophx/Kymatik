@@ -4,9 +4,10 @@ import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.ParameterizedCacheAnalyzer
 import cc.suffro.bpmanalyzer.data.TrackInfo
 import cc.suffro.bpmanalyzer.wav.data.Wav
 import mu.KotlinLogging
+import java.io.Closeable
 import kotlin.math.min
 
-class SpeedAdjuster(private val cacheAnalyzer: ParameterizedCacheAnalyzer<Wav, TrackInfo>) {
+class SpeedAdjuster(private val cacheAnalyzer: ParameterizedCacheAnalyzer<Wav, TrackInfo>) : Closeable {
     fun changeTo(
         wav: Wav,
         targetBpm: Double,
@@ -52,5 +53,9 @@ class SpeedAdjuster(private val cacheAnalyzer: ParameterizedCacheAnalyzer<Wav, T
 
     companion object {
         private val logger = KotlinLogging.logger { }
+    }
+
+    override fun close() {
+        cacheAnalyzer.close()
     }
 }

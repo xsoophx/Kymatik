@@ -40,7 +40,8 @@ open class BaseTest : KoinTest {
 
         val tracksWithBpm = if (System.getenv("USE_CUSTOM_TRACKS") == "true") customTracks else predefinedSamples
 
-        val tracksWithBpmAsStream = tracksWithBpm.asSequence().map { Arguments.of(it.key, it.value) }.asStream()
+        @JvmStatic
+        fun getTracksWithBpm() = tracksWithBpm.asSequence().map { Arguments.of(it.key, it.value) }.asStream()
 
         @JvmStatic
         @BeforeAll
