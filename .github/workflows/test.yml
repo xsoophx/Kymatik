@@ -1,4 +1,4 @@
-name: Build
+name: Test
 
 on:
   push:
@@ -17,7 +17,7 @@ jobs:
         distribution: 'temurin'
         java-version: '21'
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
     - name: Build with Gradle
-      run: ./gradlew build -xtest
+      run: ./gradlew build
+    - name: Run tests
+      run: ./gradlew test
