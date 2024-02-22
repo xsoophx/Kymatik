@@ -25,7 +25,6 @@ buildscript {
         classpath("org.openjfx:javafx-plugin:0.1.0")
     }
 }
-apply(plugin = "org.openjfx.javafxplugin")
 
 javafx {
     version = "21"
@@ -42,7 +41,7 @@ object Version {
     const val JDBC = "3.45.1.0"
     const val JUNIT = "5.10.1"
     const val KOIN = "3.5.3"
-    const val KOIN_TEST = "3.6.0-wasm-alpha2"
+    const val KOIN_TEST = "3.5.3"
     const val KOTLIN_MATH = "1.0"
     const val KOTLINX_CLI = "0.3.6"
     const val LOGBACK = "1.2.3"
@@ -61,7 +60,9 @@ dependencies {
     implementation("org.xerial:sqlite-jdbc:${Version.JDBC}")
 
     implementation("io.insert-koin:koin-core:${Version.KOIN}")
-    implementation("io.insert-koin:koin-test:${Version.KOIN_TEST}")
+    implementation("io.insert-koin:koin-test:${Version.KOIN_TEST}") {
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-test-junit")
+    }
 
     implementation("org.jetbrains.kotlinx:kotlinx-cli:${Version.KOTLINX_CLI}")
 

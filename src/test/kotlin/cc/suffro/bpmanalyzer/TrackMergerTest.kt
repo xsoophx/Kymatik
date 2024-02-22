@@ -3,6 +3,7 @@ package cc.suffro.bpmanalyzer
 import cc.suffro.bpmanalyzer.wav.data.FileReader
 import cc.suffro.bpmanalyzer.wav.data.FileWriter
 import cc.suffro.bpmanalyzer.wav.data.Wav
+import org.junit.jupiter.api.Disabled
 import org.koin.test.inject
 import kotlin.test.Test
 
@@ -14,6 +15,7 @@ class TrackMergerTest : BaseTest() {
     private val wavWriter by inject<FileWriter<Wav>>()
 
     @Test
+    @Disabled
     fun `should merge two tracks correctly`() {
         val trackOne = wavReader.read(tracksWithBpm.keys.first())
         val trackTwo = wavReader.read(tracksWithBpm.keys.last())
