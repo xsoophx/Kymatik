@@ -75,11 +75,6 @@ class SpeedAdjusterTest : BaseTest() {
             e = 2,
             exclusive = false,
         )
-
-        wavWriter.write(
-            Path.of("${path}_${targetBpm.toInt()}bpm.wav"),
-            Wav(wav, result),
-        )
     }
 
     @Test
