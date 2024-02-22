@@ -21,7 +21,7 @@ class CombFilterAnalyzer(private val fftProcessor: FFTProcessor = FFTProcessor()
     private val cache = mutableMapOf<Path, FFTData>()
 
     override fun analyze(wav: Wav): Bpm {
-        return analyze(wav, CombFilterAnalyzerParams(refinementParams = RefinementParams()))
+        return analyze(wav, CombFilterAnalyzerParams())
     }
 
     override fun analyze(

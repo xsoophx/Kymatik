@@ -1,6 +1,7 @@
 package cc.suffro.bpmanalyzer
 
-import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.ParameterizedCacheAnalyzer
+import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CacheAnalyzer
+import cc.suffro.bpmanalyzer.bpmanalyzing.filters.CombFilter
 import cc.suffro.bpmanalyzer.data.Arguments
 import cc.suffro.bpmanalyzer.data.TrackInfo
 import cc.suffro.bpmanalyzer.wav.data.Wav
@@ -10,6 +11,7 @@ import mu.KotlinLogging
 import org.koin.core.component.inject
 import org.koin.core.context.stopKoin
 import org.koin.core.parameter.parametersOf
+import org.koin.core.qualifier.named
 
 private val logger = KotlinLogging.logger {}
 
@@ -40,12 +42,14 @@ class Main : KoinApplication() {
         require(arguments.trackName.isNotEmpty()) { "Please provide a path to your audio file." }
         require(arguments.trackName.endsWith(".wav")) { "Please provide a .wav file." }
 
-        val cacheAnalyzer by inject<ParameterizedCacheAnalyzer<Wav, TrackInfo>> { parametersOf(arguments.databaseUrl) }
+        val cacheAnalyzer by inject<CacheAnalyzer<Wav, TrackInfo, CombFilter>>(named("ProdImpl")) {
+            parametersOf(
+                arguments.databaseUrl,
+            )
+        }
         logger.info { "Using cache analyzer for searching ${arguments.trackName} with DB url ${arguments.databaseUrl}." }
 
-        return cacheAnalyzer.use { analyzer ->
-            analyzer.getAndAnalyze(arguments.trackName)
-        }
+        return cacheAnalyzer.getPathAndAnalyze(arguments.trackName)
     }
 
     companion object {

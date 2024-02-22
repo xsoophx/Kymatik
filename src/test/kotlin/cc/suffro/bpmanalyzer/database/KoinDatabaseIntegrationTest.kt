@@ -12,6 +12,5 @@ open class KoinDatabaseIntegrationTest : BaseTest() {
     @AfterEach
     fun cleanUp() {
         database.cleanUpDatabase()
-        database.closeConnection()
     }
 }

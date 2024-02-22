@@ -66,10 +66,12 @@ class SpeedAdjusterTest : BaseTest() {
         val wav = wavReader.read(path)
         val targetBpm = 100.0
         val result = prodSpeedAdjuster.changeTo(wav, targetBpm)
+        val bytesPerSample = wav.fmtChunk.bitsPerSample / 8.0
 
         assertNearlyEquals(
-            expected = (wav.dataChunk.dataChunkSize * (currentBpm / targetBpm)).toInt(),
-            actual = result.first().size * wav.fmtChunk.numChannels * wav.fmtChunk.bitsPerSample / 8,
+            expected =
+                (wav.dataChunk.dataChunkSize / ((bytesPerSample) * wav.fmtChunk.numChannels)) * (currentBpm / targetBpm),
+            actual = result.first().size.toDouble(),
             e = 2,
             exclusive = false,
         )

@@ -1,8 +1,9 @@
 package cc.suffro.bpmanalyzer
 
-import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.ParameterizedCacheAnalyzer
+import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CacheAnalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.startingposition.StartingPosition
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.startingposition.StartingPositionCacheAnalyzerParams
+import cc.suffro.bpmanalyzer.bpmanalyzing.filters.CombFilter
 import cc.suffro.bpmanalyzer.data.TrackInfo
 import cc.suffro.bpmanalyzer.speedadjustment.SpeedAdjuster
 import cc.suffro.bpmanalyzer.wav.WavWriter
@@ -11,9 +12,9 @@ import java.io.File
 import java.nio.file.Path
 
 class TrackMerger(
-    private val cacheAnalyzer: ParameterizedCacheAnalyzer<Wav, TrackInfo>,
+    private val cacheAnalyzer: CacheAnalyzer<Wav, TrackInfo, CombFilter>,
     private val speedAdjuster: SpeedAdjuster,
-    private val startingPositionAnalyzer: ParameterizedCacheAnalyzer<Wav, StartingPosition>,
+    private val startingPositionAnalyzer: CacheAnalyzer<Wav, StartingPosition, StartingPosition>,
 ) {
     fun merge(
         trackOne: Wav,
@@ -48,7 +49,6 @@ class TrackMerger(
         val wavWriter = WavWriter
         wavWriter.write("src/test/resources/copies/merged3.wav", mergedWav)
 
-        closeConnections()
         return mergedWav
     }
 
@@ -81,10 +81,5 @@ class TrackMerger(
                 }
             }
         }
-    }
-
-    private fun closeConnections() {
-        cacheAnalyzer.close()
-        startingPositionAnalyzer.close()
     }
 }

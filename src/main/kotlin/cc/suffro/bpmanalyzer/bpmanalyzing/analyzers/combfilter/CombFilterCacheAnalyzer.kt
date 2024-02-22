@@ -2,7 +2,7 @@ package cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter
 
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.AnalyzerParams
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.BpmAnalyzer
-import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.ParameterizedCacheAnalyzer
+import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CacheAnalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.filters.CombFilter
 import cc.suffro.bpmanalyzer.data.TrackInfo
 import cc.suffro.bpmanalyzer.database.DatabaseOperations
@@ -16,30 +16,26 @@ class CombFilterCacheAnalyzer(
     private val analyzer: BpmAnalyzer<CombFilter>,
     private val database: DatabaseOperations,
     private val wavReader: FileReader<Wav>,
-) : ParameterizedCacheAnalyzer<Wav, TrackInfo> {
+) : CacheAnalyzer<Wav, TrackInfo, CombFilter> {
     override fun analyze(data: Wav): TrackInfo {
-        return analyze(data, CombFilterCacheAnalyzerParams(0.0, null))
+        return analyze(data, CombFilterAnalyzerParams())
     }
 
-    override fun getAndAnalyze(path: String): TrackInfo {
+    override fun getPathAndAnalyze(path: String): TrackInfo {
         val wav = wavReader.read(path)
         return analyze(wav)
     }
 
-    override fun getAndAnalyze(path: Path): TrackInfo {
+    override fun getPathAndAnalyze(path: Path): TrackInfo {
         val wav = wavReader.read(path)
         return analyze(wav)
-    }
-
-    override fun close() {
-        database.closeConnection()
     }
 
     override fun analyze(
         data: Wav,
-        params: AnalyzerParams<TrackInfo>,
+        params: AnalyzerParams<CombFilter>,
     ): TrackInfo {
-        val start = (params as CombFilterCacheAnalyzerParams).start
+        val start = (params as CombFilterAnalyzerParams).start
         val windowFunction = params.windowFunction
 
         val trackInfoFromDb = database.getTrackInfo(data.filePath)

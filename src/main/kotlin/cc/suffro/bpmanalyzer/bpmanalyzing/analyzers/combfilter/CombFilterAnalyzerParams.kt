@@ -10,7 +10,7 @@ data class CombFilterAnalyzerParams(
     val minimumBpm: Double = MINIMUM_BPM,
     val maximumBpm: Double = MAXIMUM_BPM,
     val stepSize: Double = STEP_SIZE,
-    val refinementParams: RefinementParams? = null,
+    val refinementParams: RefinementParams? = RefinementParams(),
 ) : AnalyzerParams<CombFilter> {
     companion object {
         const val MINIMUM_BPM = 60.0

@@ -13,7 +13,5 @@ interface DatabaseOperations {
 
     fun getTrackInfo(trackName: Path): TrackInfo?
 
-    fun cleanUpDatabase(closeConnection: Boolean = false): Boolean
-
-    fun closeConnection()
+    fun cleanUpDatabase(): Boolean
 }

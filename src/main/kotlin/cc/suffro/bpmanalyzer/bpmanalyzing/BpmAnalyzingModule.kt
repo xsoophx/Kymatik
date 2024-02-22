@@ -1,7 +1,7 @@
 package cc.suffro.bpmanalyzer.bpmanalyzing
 
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.BpmAnalyzer
-import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.ParameterizedCacheAnalyzer
+import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CacheAnalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter.CombFilterAnalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter.CombFilterCacheAnalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.startingposition.StartingPosition
@@ -17,13 +17,13 @@ import org.koin.dsl.module
 val bpmAnalyzingModule =
     module {
         singleOf(::CombFilterCacheAnalyzer) {
-            bind<ParameterizedCacheAnalyzer<Wav, TrackInfo>>()
+            bind<CacheAnalyzer<Wav, TrackInfo, CombFilter>>()
             named("ProdImpl")
         }
         singleOf(::CombFilterAnalyzer) {
             bind<BpmAnalyzer<CombFilter>>()
         }
         singleOf(::StartingPositionAnalyzer) {
-            bind<ParameterizedCacheAnalyzer<Wav, StartingPosition>>()
+            bind<CacheAnalyzer<Wav, StartingPosition, CombFilter>>()
         }
     }

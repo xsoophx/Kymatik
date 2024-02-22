@@ -4,7 +4,6 @@ import cc.suffro.bpmanalyzer.BaseTest
 import cc.suffro.bpmanalyzer.assertNearlyEquals
 import cc.suffro.bpmanalyzer.wav.data.FileReader
 import cc.suffro.bpmanalyzer.wav.data.Wav
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -14,11 +13,6 @@ import java.util.stream.Stream
 class StartingPositionAnalyzerTest : BaseTest() {
     private val wavReader by inject<FileReader<Wav>>()
     private val startingPositionAnalyzer by inject<StartingPositionAnalyzer>()
-
-    @AfterEach
-    fun cleanUp() {
-        startingPositionAnalyzer.close()
-    }
 
     @ParameterizedTest
     @MethodSource("getTracksWithBpm")

@@ -1,21 +1,20 @@
 package cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.startingposition
 
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.AnalyzerParams
-import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.ParameterizedCacheAnalyzer
-import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter.CombFilterAnalyzer
+import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.BpmAnalyzer
+import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CacheAnalyzer
+import cc.suffro.bpmanalyzer.bpmanalyzing.filters.CombFilter
 import cc.suffro.bpmanalyzer.bpmanalyzing.filters.Filterbank
-import cc.suffro.bpmanalyzer.database.DatabaseOperations
 import cc.suffro.bpmanalyzer.wav.data.FileReader
 import cc.suffro.bpmanalyzer.wav.data.Wav
 import java.nio.file.Path
 
 class StartingPositionAnalyzer(
-    private val combFilterAnalyzer: CombFilterAnalyzer,
-    private val database: DatabaseOperations,
+    private val analyzer: BpmAnalyzer<CombFilter>,
     private val wavReader: FileReader<Wav>,
-) : ParameterizedCacheAnalyzer<Wav, StartingPosition> {
+) : CacheAnalyzer<Wav, StartingPosition, CombFilter> {
     override fun analyze(data: Wav): StartingPosition {
-        val bpm = combFilterAnalyzer.analyze(data)
+        val bpm = analyzer.analyze(data)
 
         return analyzeByBpm(bpm, data)
     }
@@ -62,23 +61,19 @@ class StartingPositionAnalyzer(
 
     override fun analyze(
         data: Wav,
-        params: AnalyzerParams<StartingPosition>,
+        params: AnalyzerParams<CombFilter>,
     ): StartingPosition {
         val startingPositionParams = params as StartingPositionCacheAnalyzerParams
         return analyzeByBpm(startingPositionParams.bpm, data)
     }
 
-    override fun getAndAnalyze(path: String): StartingPosition {
+    override fun getPathAndAnalyze(path: String): StartingPosition {
         val wav = wavReader.read(path)
         return analyze(wav)
     }
 
-    override fun getAndAnalyze(path: Path): StartingPosition {
+    override fun getPathAndAnalyze(path: Path): StartingPosition {
         val wav = wavReader.read(path)
         return analyze(wav)
-    }
-
-    override fun close() {
-        database.closeConnection()
     }
 }

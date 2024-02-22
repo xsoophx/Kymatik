@@ -26,8 +26,8 @@ fun assertNearlyEquals(
 }
 
 fun assertNearlyEquals(
-    expected: Int,
-    actual: Int,
+    expected: Double,
+    actual: Double,
     e: Int = 2,
     exclusive: Boolean = true,
     message: String? = null,
@@ -64,6 +64,12 @@ private fun Double.closeTo(
 
 private fun Int.closeTo(
     number: Int,
+    e: Int,
+    exclusive: Boolean,
+): Boolean = if (exclusive) abs(this - number) < e else abs(this - number) <= e
+
+private fun Double.closeTo(
+    number: Double,
     e: Int,
     exclusive: Boolean,
 ): Boolean = if (exclusive) abs(this - number) < e else abs(this - number) <= e

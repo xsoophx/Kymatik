@@ -20,15 +20,15 @@ val analyzerTestModule =
         }
 
         singleOf(::CombFilterCacheAnalyzerTestImpl) {
-            bind<ParameterizedCacheAnalyzer<Wav, TrackInfo>>()
+            bind<CacheAnalyzer<Wav, TrackInfo, CombFilter>>()
             named("TestImpl")
         }
 
         singleOf(::StartingPositionAnalyzer) {
-            bind<ParameterizedCacheAnalyzer<Wav, StartingPosition>>()
+            bind<CacheAnalyzer<Wav, StartingPosition, CombFilter>>()
         }
         singleOf(::CombFilterCacheAnalyzer) {
-            bind<ParameterizedCacheAnalyzer<Wav, TrackInfo>>()
+            bind<CacheAnalyzer<Wav, TrackInfo, CombFilter>>()
             named("ProdImpl")
         }
 
