@@ -9,4 +9,6 @@ interface CacheAnalyzer<T, R> : Closeable {
     fun getAndAnalyze(path: String): R
 
     fun getAndAnalyze(path: Path): R
+
+    fun getDatabaseConnection(): String
 }
