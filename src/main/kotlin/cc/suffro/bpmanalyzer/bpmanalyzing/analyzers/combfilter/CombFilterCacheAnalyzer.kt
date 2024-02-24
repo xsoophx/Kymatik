@@ -3,7 +3,6 @@ package cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.AnalyzerParams
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.BpmAnalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CacheAnalyzer
-import cc.suffro.bpmanalyzer.bpmanalyzing.filters.CombFilter
 import cc.suffro.bpmanalyzer.data.TrackInfo
 import cc.suffro.bpmanalyzer.database.DatabaseOperations
 import cc.suffro.bpmanalyzer.fft.data.WindowFunction
@@ -13,10 +12,10 @@ import mu.KotlinLogging
 import java.nio.file.Path
 
 class CombFilterCacheAnalyzer(
-    private val analyzer: BpmAnalyzer<CombFilter>,
+    private val analyzer: BpmAnalyzer,
     private val database: DatabaseOperations,
     private val wavReader: FileReader<Wav>,
-) : CacheAnalyzer<Wav, TrackInfo, CombFilter> {
+) : CacheAnalyzer<Wav, TrackInfo> {
     override fun analyze(data: Wav): TrackInfo {
         return analyze(data, CombFilterAnalyzerParams())
     }
@@ -33,7 +32,7 @@ class CombFilterCacheAnalyzer(
 
     override fun analyze(
         data: Wav,
-        params: AnalyzerParams<CombFilter>,
+        params: AnalyzerParams,
     ): TrackInfo {
         val start = (params as CombFilterAnalyzerParams).start
         val windowFunction = params.windowFunction

@@ -3,7 +3,6 @@ package cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.AnalyzerParams
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.BpmAnalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.data.Bpm
-import cc.suffro.bpmanalyzer.bpmanalyzing.filters.CombFilter
 import cc.suffro.bpmanalyzer.bpmanalyzing.filters.CombFilterOperationsImpl
 import cc.suffro.bpmanalyzer.bpmanalyzing.filters.DifferentialRectifier
 import cc.suffro.bpmanalyzer.bpmanalyzing.filters.LowPassFilter
@@ -18,7 +17,7 @@ import java.nio.file.Path
 class CombFilterAnalyzer(
     private val fftProcessor: FFTProcessor = FFTProcessor(),
     private val combFilterOperations: CombFilterOperationsImpl,
-) : BpmAnalyzer<CombFilter> {
+) : BpmAnalyzer {
     private val cache = mutableMapOf<Path, FFTData>()
 
     override fun analyze(wav: Wav): Bpm {
@@ -27,7 +26,7 @@ class CombFilterAnalyzer(
 
     override fun analyze(
         wav: Wav,
-        analyzerParams: AnalyzerParams<CombFilter>,
+        analyzerParams: AnalyzerParams,
     ): Bpm {
         val params = analyzerParams as CombFilterAnalyzerParams
         val fftResult = calculateFftResult(wav, analyzerParams.start, params.windowFunction)

@@ -1,7 +1,6 @@
 package cc.suffro.bpmanalyzer
 
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CacheAnalyzer
-import cc.suffro.bpmanalyzer.bpmanalyzing.filters.CombFilter
 import cc.suffro.bpmanalyzer.data.Arguments
 import cc.suffro.bpmanalyzer.data.TrackInfo
 import cc.suffro.bpmanalyzer.wav.data.Wav
@@ -42,7 +41,7 @@ class Main : KoinApplication() {
         require(arguments.trackName.isNotEmpty()) { "Please provide a path to your audio file." }
         require(arguments.trackName.endsWith(".wav")) { "Please provide a .wav file." }
 
-        val cacheAnalyzer by inject<CacheAnalyzer<Wav, TrackInfo, CombFilter>>(named("ProdImpl")) {
+        val cacheAnalyzer by inject<CacheAnalyzer<Wav, TrackInfo>>(named("ProdImpl")) {
             parametersOf(
                 arguments.databaseUrl,
             )

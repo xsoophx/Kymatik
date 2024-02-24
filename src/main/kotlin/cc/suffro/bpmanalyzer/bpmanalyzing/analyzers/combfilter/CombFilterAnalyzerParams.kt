@@ -1,7 +1,6 @@
 package cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter
 
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.AnalyzerParams
-import cc.suffro.bpmanalyzer.bpmanalyzing.filters.CombFilter
 import cc.suffro.bpmanalyzer.fft.data.WindowFunction
 
 data class CombFilterAnalyzerParams(
@@ -11,7 +10,7 @@ data class CombFilterAnalyzerParams(
     val maximumBpm: Double = MAXIMUM_BPM,
     val stepSize: Double = STEP_SIZE,
     val refinementParams: RefinementParams? = RefinementParams(),
-) : AnalyzerParams<CombFilter> {
+) : AnalyzerParams {
     companion object {
         const val MINIMUM_BPM = 60.0
         const val MAXIMUM_BPM = 220.0

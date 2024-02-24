@@ -3,7 +3,6 @@ package cc.suffro.bpmanalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CacheAnalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.startingposition.StartingPosition
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.startingposition.StartingPositionCacheAnalyzerParams
-import cc.suffro.bpmanalyzer.bpmanalyzing.filters.CombFilter
 import cc.suffro.bpmanalyzer.data.TrackInfo
 import cc.suffro.bpmanalyzer.speedadjustment.SpeedAdjuster
 import cc.suffro.bpmanalyzer.wav.WavWriter
@@ -12,9 +11,9 @@ import java.io.File
 import java.nio.file.Path
 
 class TrackMerger(
-    private val cacheAnalyzer: CacheAnalyzer<Wav, TrackInfo, CombFilter>,
+    private val cacheAnalyzer: CacheAnalyzer<Wav, TrackInfo>,
     private val speedAdjuster: SpeedAdjuster,
-    private val startingPositionAnalyzer: CacheAnalyzer<Wav, StartingPosition, StartingPosition>,
+    private val startingPositionAnalyzer: CacheAnalyzer<Wav, StartingPosition>,
 ) {
     fun merge(
         trackOne: Wav,

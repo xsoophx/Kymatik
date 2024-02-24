@@ -14,7 +14,7 @@ import java.util.stream.Stream
 
 class StartingPositionAnalyzerTest : BaseTest() {
     private val wavReader by inject<FileReader<Wav>>()
-    private val startingPositionAnalyzer by inject<CacheAnalyzer<Wav, StartingPosition, StartingPosition>>()
+    private val startingPositionAnalyzer by inject<CacheAnalyzer<Wav, StartingPosition>>()
 
     @ParameterizedTest
     @MethodSource("getTracksWithBpm")

@@ -1,13 +1,12 @@
 package cc.suffro.bpmanalyzer.speedadjustment
 
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CacheAnalyzer
-import cc.suffro.bpmanalyzer.bpmanalyzing.filters.CombFilter
 import cc.suffro.bpmanalyzer.data.TrackInfo
 import cc.suffro.bpmanalyzer.wav.data.Wav
 import mu.KotlinLogging
 import kotlin.math.min
 
-class SpeedAdjuster(private val cacheAnalyzer: CacheAnalyzer<Wav, TrackInfo, CombFilter>) {
+class SpeedAdjuster(private val cacheAnalyzer: CacheAnalyzer<Wav, TrackInfo>) {
     fun changeTo(
         wav: Wav,
         targetBpm: Double,

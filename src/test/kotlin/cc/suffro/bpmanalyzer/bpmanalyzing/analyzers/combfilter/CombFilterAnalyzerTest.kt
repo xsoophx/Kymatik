@@ -2,7 +2,8 @@ package cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter
 
 import cc.suffro.bpmanalyzer.BaseTest
 import cc.suffro.bpmanalyzer.assertNearlyEquals
-import cc.suffro.bpmanalyzer.wav.WAVReader
+import cc.suffro.bpmanalyzer.wav.data.FileReader
+import cc.suffro.bpmanalyzer.wav.data.Wav
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
@@ -12,7 +13,7 @@ import kotlin.test.assertEquals
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CombFilterAnalyzerTest : BaseTest() {
-    private val wavReader by inject<WAVReader>()
+    private val wavReader by inject<FileReader<Wav>>()
 
     private val combFilterAnalyzer by inject<CombFilterAnalyzer>()
 

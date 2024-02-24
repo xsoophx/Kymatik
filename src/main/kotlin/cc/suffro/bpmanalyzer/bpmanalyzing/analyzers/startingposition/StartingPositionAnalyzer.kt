@@ -4,7 +4,6 @@ import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.AnalyzerParams
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.BpmAnalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CacheAnalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.data.Bpm
-import cc.suffro.bpmanalyzer.bpmanalyzing.filters.CombFilter
 import cc.suffro.bpmanalyzer.bpmanalyzing.filters.CombFilterOperations
 import cc.suffro.bpmanalyzer.bpmanalyzing.filters.DifferentialRectifier
 import cc.suffro.bpmanalyzer.bpmanalyzing.filters.LowPassFilter
@@ -16,11 +15,11 @@ import cc.suffro.bpmanalyzer.wav.data.Wav
 import java.nio.file.Path
 
 class StartingPositionAnalyzer(
-    private val analyzer: BpmAnalyzer<CombFilter>,
+    private val analyzer: BpmAnalyzer,
     private val wavReader: FileReader<Wav>,
     private val combFilterOperations: CombFilterOperations,
     private val fftProcessor: FFTProcessor,
-) : CacheAnalyzer<Wav, StartingPosition, StartingPosition> {
+) : CacheAnalyzer<Wav, StartingPosition> {
     override fun analyze(data: Wav): StartingPosition {
         val bpm = analyzer.analyze(data)
         return analyze(data, bpm)
@@ -38,7 +37,7 @@ class StartingPositionAnalyzer(
 
     override fun analyze(
         data: Wav,
-        params: AnalyzerParams<StartingPosition>,
+        params: AnalyzerParams,
     ): StartingPosition {
         val bpm = (params as StartingPositionCacheAnalyzerParams).bpm
         return analyze(data, bpm)
