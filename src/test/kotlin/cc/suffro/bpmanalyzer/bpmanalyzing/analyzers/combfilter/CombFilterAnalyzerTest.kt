@@ -7,16 +7,19 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import org.koin.test.inject
 import kotlin.test.assertEquals
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CombFilterAnalyzerTest : BaseTest() {
-    private val wavReader = WAVReader
+    private val wavReader by inject<WAVReader>()
+
+    private val combFilterAnalyzer by inject<CombFilterAnalyzer>()
 
     @Test
     fun `should detect correct BPM for plain kicks`() {
         val wav = wavReader.read("src/test/resources/samples/120bpm_140Hz.wav")
-        val result = CombFilterAnalyzer().analyze(wav)
+        val result = combFilterAnalyzer.analyze(wav)
         assertEquals(expected = 120.0, actual = result)
     }
 
@@ -24,7 +27,7 @@ class CombFilterAnalyzerTest : BaseTest() {
     fun `should detect correct BPM for refined values`() {
         val wav = wavReader.read("src/test/resources/samples/120.5bpm_140Hz.wav")
         val analyzerParams = CombFilterAnalyzerParams(refinementParams = RefinementParams())
-        val result = CombFilterAnalyzer().analyze(wav, analyzerParams)
+        val result = combFilterAnalyzer.analyze(wav, analyzerParams)
         assertEquals(expected = 120.5, actual = result)
     }
 
@@ -35,7 +38,7 @@ class CombFilterAnalyzerTest : BaseTest() {
         bpm: Double,
     ) {
         val wav = wavReader.read(trackPath)
-        val result = CombFilterAnalyzer().analyze(wav)
+        val result = combFilterAnalyzer.analyze(wav)
         assertNearlyEquals(expected = bpm, actual = result)
     }
 }

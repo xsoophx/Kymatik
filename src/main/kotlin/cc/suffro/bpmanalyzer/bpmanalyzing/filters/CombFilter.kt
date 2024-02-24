@@ -67,7 +67,7 @@ class CombFilter(private val fftProcessor: FFTProcessor) {
         length: Int,
         bpm: Double,
         samplingRate: Int,
-    ): MutableList<Double> {
+    ): List<Double> {
         val combLength = (PULSES - 1) * length + 1
         val pulses =
             MutableList(combLength) { 0.0 }.also {
@@ -76,6 +76,19 @@ class CombFilter(private val fftProcessor: FFTProcessor) {
             }
 
         return pulses
+    }
+
+    /*
+     * Gets the first relevant samples of the signal used for analyzing the starting position via the comb filter.
+     */
+    fun getRelevantSamples(
+        bpm: Double,
+        samplingRate: Int,
+        signal: DoubleArray,
+    ): List<Double> {
+        val step = (1.0 / bpm * 60 * samplingRate).toInt()
+        val samples = signal.take(PULSES * step + 1)
+        return samples
     }
 
     /*
@@ -90,19 +103,6 @@ class CombFilter(private val fftProcessor: FFTProcessor) {
         for (i in 0 until PULSES) {
             pulses[i * step] = 1.0
         }
-    }
-
-    /*
-     * Gets the first relevant samples of the signal used for analyzing the starting position via the comb filter.
-     */
-    fun getRelevantSamples(
-        bpm: Double,
-        samplingRate: Int,
-        signal: DoubleArray,
-    ): List<Double> {
-        val step = (1.0 / bpm * 60 * samplingRate).toInt()
-        val samples = signal.take(PULSES * step + 1)
-        return samples
     }
 
     companion object {

@@ -4,8 +4,8 @@ import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.AnalyzerParams
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.BpmAnalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CacheAnalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.data.Bpm
-import cc.suffro.bpmanalyzer.bpmanalyzing.data.getFrequencyBands
 import cc.suffro.bpmanalyzer.bpmanalyzing.filters.CombFilter
+import cc.suffro.bpmanalyzer.bpmanalyzing.filters.CombFilterOperations
 import cc.suffro.bpmanalyzer.bpmanalyzing.filters.DifferentialRectifier
 import cc.suffro.bpmanalyzer.bpmanalyzing.filters.LowPassFilter
 import cc.suffro.bpmanalyzer.fft.FFTProcessor
@@ -18,7 +18,7 @@ import java.nio.file.Path
 class StartingPositionAnalyzer(
     private val analyzer: BpmAnalyzer<CombFilter>,
     private val wavReader: FileReader<Wav>,
-    private val combFilter: CombFilter,
+    private val combFilterOperations: CombFilterOperations,
     private val fftProcessor: FFTProcessor,
 ) : CacheAnalyzer<Wav, StartingPosition, StartingPosition> {
     override fun analyze(data: Wav): StartingPosition {
@@ -64,7 +64,7 @@ class StartingPositionAnalyzer(
         bpm: Bpm,
         data: Wav,
     ): FFTData {
-        val firstSamples = combFilter.getRelevantSamples(bpm, data.sampleRate, data.dataChunk.data.first())
+        val firstSamples = combFilterOperations.getRelevantSamples(bpm, data.sampleRate, data.dataChunk.data.first())
         val highestPowerOfTwo = getHighestPowerOfTwo(firstSamples.size)
 
         return fftProcessor.process(firstSamples.asSequence().take(highestPowerOfTwo), data.sampleRate)
@@ -74,7 +74,7 @@ class StartingPositionAnalyzer(
         fftResult: FFTData,
         data: Wav,
     ): List<List<Double>> {
-        val signals = fftResult.getFrequencyBands(fftResult.duration, fftProcessor)
+        val signals = combFilterOperations.getFrequencyBands(fftResult, fftProcessor)
         val lowPassFiltered =
             signals.map {
                 LowPassFilter(fftProcessor).process(it, data.fmtChunk)
@@ -102,7 +102,7 @@ class StartingPositionAnalyzer(
         bpm: Bpm,
         data: Wav,
     ): DoubleArray {
-        val filledFilter = combFilter.getFilledFilter(size, bpm, data.sampleRate)
+        val filledFilter = combFilterOperations.getFilledFilter(size, bpm, data.sampleRate)
         val result = DoubleArray(size)
 
         for (i in frequencySum.indices) {
