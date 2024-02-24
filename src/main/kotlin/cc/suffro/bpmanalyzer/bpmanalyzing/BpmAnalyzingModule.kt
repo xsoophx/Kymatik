@@ -24,6 +24,6 @@ val bpmAnalyzingModule =
             bind<BpmAnalyzer<CombFilter>>()
         }
         singleOf(::StartingPositionAnalyzer) {
-            bind<CacheAnalyzer<Wav, StartingPosition, CombFilter>>()
+            bind<CacheAnalyzer<Wav, StartingPosition, StartingPosition>>()
         }
     }

@@ -9,6 +9,7 @@ import java.util.Locale
 
 fun abs(n: Complex): Double = sqrt(n.re * n.re + n.im * n.im).re
 
+// calculates the highest power of two that is less than or equal to the given number
 fun getHighestPowerOfTwo(number: Int): Int {
     var result = number
     generateSequence(1) { (it * 2) }

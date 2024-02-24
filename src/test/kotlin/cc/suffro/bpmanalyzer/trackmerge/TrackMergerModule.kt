@@ -12,7 +12,7 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
-val trackMergerModule =
+val trackMergerTestModule =
     module {
         singleOf(::CombFilterCacheAnalyzer) {
             bind<CacheAnalyzer<Wav, TrackInfo, CombFilter>>()

@@ -25,7 +25,7 @@ val analyzerTestModule =
         }
 
         singleOf(::StartingPositionAnalyzer) {
-            bind<CacheAnalyzer<Wav, StartingPosition, CombFilter>>()
+            bind<CacheAnalyzer<Wav, StartingPosition, StartingPosition>>()
         }
         singleOf(::CombFilterCacheAnalyzer) {
             bind<CacheAnalyzer<Wav, TrackInfo, CombFilter>>()

@@ -60,6 +60,27 @@ class CombFilter(private val fftProcessor: FFTProcessor) {
         return estimatedBpm.round()
     }
 
+    /*
+     * Returns a list of pulses for the comb filter in relation to track BPM.
+     */
+    fun getFilledFilter(
+        length: Int,
+        bpm: Double,
+        samplingRate: Int,
+    ): MutableList<Double> {
+        val combLength = (PULSES - 1) * length + 1
+        val pulses =
+            MutableList(combLength) { 0.0 }.also {
+                fillPulses(bpm, it, samplingRate)
+                it[0] = 1.0
+            }
+
+        return pulses
+    }
+
+    /*
+     * Fills the pulses for the comb filter in relation to track BPM.
+     */
     private fun fillPulses(
         bpm: Double,
         pulses: MutableList<Double>,
@@ -71,7 +92,20 @@ class CombFilter(private val fftProcessor: FFTProcessor) {
         }
     }
 
+    /*
+     * Gets the first relevant samples of the signal used for analyzing the starting position via the comb filter.
+     */
+    fun getRelevantSamples(
+        bpm: Double,
+        samplingRate: Int,
+        signal: DoubleArray,
+    ): List<Double> {
+        val step = (1.0 / bpm * 60 * samplingRate).toInt()
+        val samples = signal.take(PULSES * step + 1)
+        return samples
+    }
+
     companion object {
-        const val PULSES = 3
+        private const val PULSES = 3
     }
 }

@@ -1,10 +1,11 @@
 package cc.suffro.bpmanalyzer
 
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.analyzerTestModule
+import cc.suffro.bpmanalyzer.bpmanalyzing.filters.filterTestModule
 import cc.suffro.bpmanalyzer.database.databaseTestModule
 import cc.suffro.bpmanalyzer.fft.fftTestModule
 import cc.suffro.bpmanalyzer.speedadjustment.speedAdjusterTestModule
-import cc.suffro.bpmanalyzer.trackmerge.trackMergerModule
+import cc.suffro.bpmanalyzer.trackmerge.trackMergerTestModule
 import cc.suffro.bpmanalyzer.wav.wavTestModule
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -54,7 +55,8 @@ open class BaseTest : KoinTest {
                     wavTestModule,
                     fftTestModule,
                     analyzerTestModule,
-                    trackMergerModule,
+                    trackMergerTestModule,
+                    filterTestModule,
                 )
             }
         }
