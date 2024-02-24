@@ -21,7 +21,7 @@ open class BaseTest : KoinTest {
         private val predefinedSamples =
             mapOf(
                 "src/test/resources/samples/120bpm_140Hz.wav" to 120.0,
-                "src/test/resources/samples/120.5bpm_140Hz.wav" to 120.5,
+                "src/test/resources/samples/120-5bpm_140Hz.wav" to 120.5,
                 "src/test/resources/samples/kick_140_16PCM.wav" to 140.0,
                 // add these after implementing correct 24 and 32 bit support
                 // "src/test/resources/samples/kick_140_24PCM.wav" to 140.0,

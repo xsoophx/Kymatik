@@ -39,7 +39,7 @@ class StartingPositionAnalyzerTest : BaseTest() {
         private fun getTracksWithBpm() =
             Stream.of(
                 Arguments.of("src/test/resources/samples/120bpm_140Hz.wav", 120.0, 1174, 0.026621315192743765),
-                Arguments.of("src/test/resources/samples/120.5bpm_140Hz.wav", 120.5, 1169, 0.026507936507936508),
+                Arguments.of("src/test/resources/samples/120-5bpm_140Hz.wav", 120.5, 1169, 0.026507936507936508),
                 // Arguments.of("src/test/resources/samples/kick_140_24PCM.wav", 17900, 0.40589569160997735),
             )
     }

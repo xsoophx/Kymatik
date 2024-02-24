@@ -90,7 +90,7 @@ class SpeedAdjusterTest : BaseTest() {
         )
 
         wavWriter.write(
-            Path.of("src/test/resources/samples/120.5bpm_140Hz.wav"),
+            Path.of("src/test/resources/samples/120-5bpm_140Hz.wav"),
             Wav(wav, result),
         )
     }

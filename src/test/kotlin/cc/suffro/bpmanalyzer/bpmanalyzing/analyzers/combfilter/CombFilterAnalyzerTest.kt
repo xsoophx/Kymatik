@@ -26,7 +26,7 @@ class CombFilterAnalyzerTest : BaseTest() {
 
     @Test
     fun `should detect correct BPM for refined values`() {
-        val wav = wavReader.read("src/test/resources/samples/120.5bpm_140Hz.wav")
+        val wav = wavReader.read("src/test/resources/samples/120-5bpm_140Hz.wav")
         val analyzerParams = CombFilterAnalyzerParams(refinementParams = RefinementParams())
         val result = combFilterAnalyzer.analyze(wav, analyzerParams)
         assertEquals(expected = 120.5, actual = result)
