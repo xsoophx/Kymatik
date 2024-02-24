@@ -23,6 +23,8 @@ val trackMergerTestModule =
                 get(named("ProdImpl")),
                 get(named("ProdSpeedAdjuster")),
                 get(),
+                get(),
+                get(),
             )
         }
     }

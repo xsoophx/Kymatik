@@ -1,27 +1,32 @@
 package cc.suffro.bpmanalyzer
 
-import cc.suffro.bpmanalyzer.wav.data.FileReader
-import cc.suffro.bpmanalyzer.wav.data.FileWriter
-import cc.suffro.bpmanalyzer.wav.data.Wav
-import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.AfterEach
 import org.koin.test.inject
+import java.io.File
 import kotlin.test.Test
+import kotlin.test.assertTrue
 
 class TrackMergerTest : BaseTest() {
     private val trackMerger by inject<TrackMerger>()
 
-    private val wavReader by inject<FileReader<Wav>>()
+    private val first = tracksWithBpm.entries.first()
+    private val second = tracksWithBpm.entries.last()
+    private val path = trackMerger.getMergedPathByPaths(first.key, second.key)
 
-    private val wavWriter by inject<FileWriter<Wav>>()
+    @AfterEach
+    fun cleanUp() {
+        val file = File(path)
+        if (file.exists()) {
+            file.delete()
+        }
+    }
 
     @Test
-    @Disabled
     fun `should merge two tracks correctly`() {
-        val trackOne = wavReader.read(tracksWithBpm.keys.first())
-        val trackTwo = wavReader.read(tracksWithBpm.keys.last())
-        val result = trackMerger.merge(trackOne, trackTwo, 130.0)
+        val targetBpm = 140.0
+        assertTrue(!File(path).exists())
 
-        // enable for listening to the result
-        // wavWriter.write("src/test/resources/copies/merged.wav", result)
+        trackMerger.merge(first.toPair(), second.toPair(), targetBpm)
+        assertTrue(File(path).exists())
     }
 }
