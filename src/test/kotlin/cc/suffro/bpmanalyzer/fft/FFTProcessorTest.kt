@@ -29,6 +29,8 @@ import kotlin.test.assertEquals
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Tag(FFT)
 class FFTProcessorTest {
+    private val fftProcessor = FFTProcessor()
+
     @ParameterizedTest
     @MethodSource("getFFTValues")
     fun `fft should yield correct results`(
@@ -36,14 +38,17 @@ class FFTProcessorTest {
         expected: List<Complex>,
     ) {
         val actual = processWindow(input, DEFAULT_SAMPLING_RATE)
+        actual.assertNearlyEquals(expected)
+    }
 
-        actual.output.forEachIndexed { index, complex ->
-            assertNearlyEquals(
-                expected = complex,
-                actual = expected[index],
-                message = "Expected ${expected[index]} at index $index, but was $complex.",
-            )
-        }
+    @ParameterizedTest
+    @MethodSource("getFFTValues")
+    fun `should return correct values for function with single sequence input`(
+        input: Sequence<Sample>,
+        expected: List<Complex>,
+    ) {
+        val actual = fftProcessor.process(input, samplingRate = DEFAULT_SAMPLING_RATE)
+        actual.assertNearlyEquals(expected)
     }
 
     @ParameterizedTest
@@ -55,13 +60,8 @@ class FFTProcessorTest {
         val fftResults = processWindow(input, samplingRate = DEFAULT_SAMPLING_RATE)
         val dftResults = processWindow(input, DEFAULT_SAMPLING_RATE, Method.R2C_DFT)
 
-        fftResults.output.forEachIndexed { index, fft ->
-            assertNearlyEquals(
-                expected = fft,
-                actual = dftResults.output.toList()[index],
-                message = "Value $fft at index $index is not the same as ${dftResults.output.toList()[index]}.",
-            )
-        }
+        fftResults.assertNearlyEquals(dftResults.output.toList())
+        dftResults.assertNearlyEquals(expected)
     }
 
     // 44100Hz sampling rate, 22050Hz Band, 1024 FFT Size, 512 Bins, df = 44100Hz/1024 = 43.06Hz
@@ -151,13 +151,22 @@ class FFTProcessorTest {
         method: Method = Method.FFT_IN_PLACE,
         windowFunction: WindowFunction? = null,
     ): FFTData {
-        val fftProcessor = FFTProcessor()
         return fftProcessor.process(
             inputSamples = sequenceOf(input),
             samplingRate = samplingRate,
             method = method,
             windowFunction = windowFunction,
         ).first()
+    }
+
+    private fun FFTData.assertNearlyEquals(expected: List<Complex>) {
+        output.forEachIndexed { index, complex ->
+            assertNearlyEquals(
+                expected = complex,
+                actual = expected[index],
+                message = "Expected ${expected[index]} at index $index, but was $complex.",
+            )
+        }
     }
 
     companion object {

@@ -1,6 +1,7 @@
 package cc.suffro.bpmanalyzer
 
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Disabled
 import org.koin.test.inject
 import java.io.File
 import kotlin.test.Test
@@ -28,5 +29,15 @@ class TrackMergerTest : BaseTest() {
 
         trackMerger.merge(first.toPair(), second.toPair(), targetBpm)
         assertTrue(File(path).exists())
+    }
+
+    @Test
+    @Disabled
+    fun `should merge two tracks correctly with different target bpm`() {
+        val targetBpm = 130.0
+        val trackOne = "src/test/resources/tracks/Lucinee, MRD - Bang Juice (MRD Remix).wav"
+        val trackTwo = "src/test/resources/samples/120bpm_140Hz.wav"
+
+        trackMerger.merge(trackOne to 144.0, trackTwo to 120.0, targetBpm)
     }
 }

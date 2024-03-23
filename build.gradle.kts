@@ -107,14 +107,5 @@ tasks {
         useJUnitPlatform()
         minHeapSize = "512m"
         maxHeapSize = "4096m"
-
-        testLogging {
-            events("passed", "skipped", "failed")
-            showStackTraces = true
-            showExceptions = true
-            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-            showCauses = true
-            showStandardStreams = true
-        }
     }
 }

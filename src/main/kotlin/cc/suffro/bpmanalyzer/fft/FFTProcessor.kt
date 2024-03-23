@@ -47,6 +47,12 @@ class FFTProcessor {
         windowFunction: WindowFunction? = null,
     ): FFTData = process(sequenceOf(inputSample), samplingRate, method, windowFunction).first()
 
+    fun process(
+        inputSample: List<Double>,
+        samplingRate: Int,
+        method: Method = Method.FFT_IN_PLACE,
+    ): FFTData = process(inputSample.asSequence(), samplingRate, method)
+
     fun processWav(
         wav: Wav,
         params: WindowProcessingParams,
