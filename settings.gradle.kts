@@ -1,1 +1,7 @@
-rootProject.name = "FFT"
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.5.0"
+}
+rootProject.name = "BPM-Analyzer"
+
+include("lib")
+include("application")

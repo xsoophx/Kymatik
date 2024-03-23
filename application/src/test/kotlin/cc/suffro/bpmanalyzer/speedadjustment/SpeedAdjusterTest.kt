@@ -8,6 +8,7 @@ import cc.suffro.bpmanalyzer.wav.data.FileReader
 import cc.suffro.bpmanalyzer.wav.data.FileWriter
 import cc.suffro.bpmanalyzer.wav.data.FmtChunk
 import cc.suffro.bpmanalyzer.wav.data.Wav
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest

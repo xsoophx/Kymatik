@@ -15,11 +15,11 @@ build/
 out/
 
 # resources
-src/test/resources/tracks/
-src/test/resources/copies/*
-src/test/resources/test.db
-!src/test/resources/samples
-!src/test/resources/copies/.gitkeep
+application/src/test/resources/tracks/
+application/src/test/resources/copies/*
+application/src/test/resources/test.db
+!application/src/test/resources/samples
+!application/src/test/resources/copies/.gitkeep
 
 # env
 .env
