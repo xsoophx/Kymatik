@@ -8,7 +8,7 @@ import cc.suffro.bpmanalyzer.speedadjustment.speedAdjusterModule
 import org.koin.core.component.KoinComponent
 import org.koin.core.context.startKoin
 
-open class KoinApplication : KoinComponent {
+open class BpmKoinInitializer : KoinComponent {
     init {
         startKoin {
             modules(appModule, databaseModule, speedAdjusterModule, fftModule, bpmAnalyzingModule, filterModule)

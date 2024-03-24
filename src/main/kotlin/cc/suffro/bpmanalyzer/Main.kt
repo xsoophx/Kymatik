@@ -14,7 +14,7 @@ import org.koin.core.qualifier.named
 
 private val logger = KotlinLogging.logger {}
 
-class Main : KoinApplication() {
+class Main : BpmKoinInitializer() {
     fun run(args: Array<String>) {
         val arguments = parseArguments(args)
         val result = getFromDbOrAnalyze(arguments)
