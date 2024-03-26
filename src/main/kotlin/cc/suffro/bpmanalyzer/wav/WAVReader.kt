@@ -18,7 +18,7 @@ import kotlin.io.path.Path
 import kotlin.io.path.inputStream
 
 // TODO: needs refactoring
-object WAVReader : FileReader<Wav> {
+internal object WAVReader : FileReader<Wav> {
     override fun read(path: String): Wav = read(Path(path))
 
     override fun read(path: Path): Wav =
