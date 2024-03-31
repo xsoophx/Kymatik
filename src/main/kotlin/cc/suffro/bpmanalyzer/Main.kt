@@ -1,6 +1,6 @@
 package cc.suffro.bpmanalyzer
 
-class Main : BpmAnalyzer() {
+internal class Main : BpmAnalyzer() {
     fun run(args: Array<String>) {
         analyze(args)
     }

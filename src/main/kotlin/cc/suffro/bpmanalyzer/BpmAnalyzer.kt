@@ -40,16 +40,14 @@ open class BpmAnalyzer : BpmOperations {
     override fun analyze(
         trackPath: String,
         databasePath: String,
-    ): TrackInfo {
-        val result = getFromDbOrAnalyze(trackPath, databasePath)
+    ): TrackInfo = getFromDbOrAnalyze(trackPath, databasePath)
 
-        println(result)
-        return result
-    }
+    override fun analyze(
+        wav: Wav,
+        databasePath: String,
+    ): TrackInfo = getFromDbOrAnalyze(wav, databasePath)
 
-    override fun close() {
-        stopKoin()
-    }
+    override fun close() = stopKoin()
 
     private fun parseArguments(args: Array<String>): Arguments {
         val parser by inject<ArgParser>()
@@ -65,12 +63,20 @@ open class BpmAnalyzer : BpmOperations {
         return Arguments(trackName!!, checkedDatabaseURL)
     }
 
+    private fun checkRequired(
+        trackPath: String,
+        databasePath: String,
+    ) {
+        require(trackPath.isNotEmpty()) { "Please provide a path to your audio file." }
+        require(trackPath.endsWith(".wav")) { "Please provide a wav file." }
+        require(databasePath.isNotEmpty()) { "Please provide a database path." }
+    }
+
     private fun getFromDbOrAnalyze(
         trackPath: String,
         databasePath: String,
     ): TrackInfo {
-        require(trackPath.isNotEmpty()) { "Please provide a path to your audio file." }
-        require(databasePath.endsWith(".wav")) { "Please provide a .wav file." }
+        checkRequired(trackPath, databasePath)
 
         val cacheAnalyzer by inject<CacheAnalyzer<Wav, TrackInfo>>(named("ProdImpl")) { parametersOf(databasePath) }
         logger.info { "Using cache analyzer for searching $trackPath with DB url $databasePath." }
@@ -78,9 +84,19 @@ open class BpmAnalyzer : BpmOperations {
         return cacheAnalyzer.getPathAndAnalyze(trackPath)
     }
 
-    private fun getFromDbOrAnalyze(arguments: Arguments): TrackInfo {
-        return getFromDbOrAnalyze(arguments.trackPath, arguments.databasePath)
+    private fun getFromDbOrAnalyze(
+        wav: Wav,
+        databasePath: String,
+    ): TrackInfo {
+        checkRequired(wav.filePath.toString(), databasePath)
+
+        val cacheAnalyzer by inject<CacheAnalyzer<Wav, TrackInfo>>(named("ProdImpl")) { parametersOf(databasePath) }
+        logger.info { "Using cache analyzer for searching ${wav.filePath} with DB url $databasePath." }
+
+        return cacheAnalyzer.analyze(wav)
     }
+
+    private fun getFromDbOrAnalyze(arguments: Arguments): TrackInfo = getFromDbOrAnalyze(arguments.trackPath, arguments.databasePath)
 
     companion object : BpmOperations by BpmAnalyzer() {
         private val logger = KotlinLogging.logger {}

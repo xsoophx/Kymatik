@@ -1,7 +1,7 @@
 package cc.suffro.bpmanalyzer.fft.data
 
 @JvmInline
-value class FftSampleSize(val size: Int) {
+internal value class FftSampleSize(val size: Int) {
     init {
         require((size != 0) && size and (size - 1) == 0) { "Length has to be power of two, but is $size." }
     }

@@ -11,7 +11,7 @@ import java.nio.ByteOrder
 import java.nio.file.Files
 import java.nio.file.Path
 
-internal object WavWriter : FileWriter<Wav> {
+object WavWriter : FileWriter<Wav> {
     override fun write(
         path: String,
         data: Wav,

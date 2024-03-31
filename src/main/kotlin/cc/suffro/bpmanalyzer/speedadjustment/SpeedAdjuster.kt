@@ -6,7 +6,8 @@ import cc.suffro.bpmanalyzer.wav.data.Wav
 import mu.KotlinLogging
 import kotlin.math.min
 
-class SpeedAdjuster(private val cacheAnalyzer: CacheAnalyzer<Wav, TrackInfo>) {
+// TODO: add support for wav as return type
+internal class SpeedAdjuster(private val cacheAnalyzer: CacheAnalyzer<Wav, TrackInfo>) {
     fun changeTo(
         wav: Wav,
         targetBpm: Double,

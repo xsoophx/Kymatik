@@ -13,7 +13,7 @@ import org.koin.core.module.dsl.named
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
-val bpmAnalyzingModule =
+internal val bpmAnalyzingModule =
     module {
         singleOf(::CombFilterCacheAnalyzer) {
             bind<CacheAnalyzer<Wav, TrackInfo>>()

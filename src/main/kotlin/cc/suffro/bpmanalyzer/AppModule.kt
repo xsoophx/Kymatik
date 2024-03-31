@@ -10,7 +10,7 @@ import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
-val appModule =
+internal val appModule =
     module {
         single { ArgParser("BPMAnalyzer") }
         single<FileReader<Wav>> { WAVReader }
