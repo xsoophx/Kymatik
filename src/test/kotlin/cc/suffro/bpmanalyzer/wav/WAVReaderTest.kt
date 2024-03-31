@@ -1,10 +1,12 @@
 package cc.suffro.bpmanalyzer.wav
 
+import cc.suffro.bpmanalyzer.BaseTest
 import cc.suffro.bpmanalyzer.FFT
 import cc.suffro.bpmanalyzer.fft.FFTProcessor
 import cc.suffro.bpmanalyzer.fft.data.FftSampleSize
 import cc.suffro.bpmanalyzer.wav.data.AudioFormat
 import cc.suffro.bpmanalyzer.wav.data.DataChunk
+import cc.suffro.bpmanalyzer.wav.data.FileReader
 import cc.suffro.bpmanalyzer.wav.data.FmtChunk
 import cc.suffro.bpmanalyzer.wav.data.Wav
 import cc.suffro.bpmanalyzer.wav.data.WindowProcessingParams
@@ -15,14 +17,16 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.MethodSource
+import org.koin.test.inject
 import java.util.stream.Stream
 import kotlin.io.path.Path
 import kotlin.test.assertEquals
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Tag(FFT)
-class WAVReaderTest {
-    private val wavReader = WAVReader
+class WAVReaderTest : BaseTest() {
+    private val wavReader by inject<FileReader<Wav>>()
+    private val fftProcessor by inject<FFTProcessor>()
 
     @ParameterizedTest
     @MethodSource("getWavDataWithFmt")
@@ -62,7 +66,7 @@ class WAVReaderTest {
     ) {
         val wav = wavReader.read(path)
         val samples = wav.getWindowContent(channel = 0, begin = 0)
-        val fftData = FFTProcessor().process(sequenceOf(samples), samplingRate = wav.sampleRate)
+        val fftData = fftProcessor.process(sequenceOf(samples), samplingRate = wav.sampleRate)
         val magnitudes = fftData.first().magnitudes
 
         assertEquals(
