@@ -14,7 +14,6 @@ import kotlin.test.assertEquals
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CombFilterAnalyzerTest : BaseTest() {
     private val wavReader by inject<FileReader<Wav>>()
-
     private val combFilterAnalyzer by inject<CombFilterAnalyzer>()
 
     @Test

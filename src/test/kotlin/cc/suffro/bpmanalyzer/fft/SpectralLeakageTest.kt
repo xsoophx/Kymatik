@@ -1,21 +1,25 @@
 package cc.suffro.bpmanalyzer.fft
 
+import cc.suffro.bpmanalyzer.BaseTest
 import cc.suffro.bpmanalyzer.Interval
 import cc.suffro.bpmanalyzer.wav.WAVReader
 import cc.suffro.bpmanalyzer.wav.data.WindowProcessingParams
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.koin.test.inject
 import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class SpectralLeakageTest {
+class SpectralLeakageTest : BaseTest() {
+    private val fftProcessor by inject<FFTProcessor>()
+
     @Test
     fun `should not detect frequencies between sine signals`() {
         val wav = WAVReader.read(SINE_ON_OFF)
         val sineInterval = 60.0 / 130.0
         val windowSize = 0.01
         val params = WindowProcessingParams(end = sineInterval * 4, interval = windowSize)
-        val fftData = FFTProcessor().processWav(wav, params)
+        val fftData = fftProcessor.processWav(wav, params)
 
         val silenceIntervals =
             (0 until 8).asSequence()

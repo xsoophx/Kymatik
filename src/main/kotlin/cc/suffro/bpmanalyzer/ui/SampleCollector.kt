@@ -8,4 +8,4 @@ data class SampleCollector(
     val samples: LinkedList<FFTData>,
 ) : List<FFTData> by samples
 
-class SampleCreator(val fftProcessor: FFTProcessor = FFTProcessor())
+class SampleCreator(val fftProcessor: FFTProcessor)

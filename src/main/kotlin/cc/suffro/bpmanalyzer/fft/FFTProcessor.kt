@@ -14,7 +14,7 @@ import org.kotlinmath.complex
 import org.kotlinmath.exp
 import kotlin.math.PI
 
-class FFTProcessor {
+object FFTProcessor {
     fun process(
         inputSamples: Sequence<Sequence<Double>>,
         samplingRate: Int,

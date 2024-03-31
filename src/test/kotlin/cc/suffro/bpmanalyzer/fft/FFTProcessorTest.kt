@@ -1,5 +1,6 @@
 package cc.suffro.bpmanalyzer.fft
 
+import cc.suffro.bpmanalyzer.BaseTest
 import cc.suffro.bpmanalyzer.FFT
 import cc.suffro.bpmanalyzer.assertNearlyEquals
 import cc.suffro.bpmanalyzer.fft.data.FFTData
@@ -16,6 +17,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.ValueSource
+import org.koin.test.inject
 import org.kotlinmath.Complex
 import org.kotlinmath.I
 import org.kotlinmath.R
@@ -28,8 +30,8 @@ import kotlin.test.assertEquals
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Tag(FFT)
-class FFTProcessorTest {
-    private val fftProcessor = FFTProcessor()
+class FFTProcessorTest : BaseTest() {
+    private val fftProcessor by inject<FFTProcessor>()
 
     @ParameterizedTest
     @MethodSource("getFFTValues")
@@ -131,7 +133,6 @@ class FFTProcessorTest {
     fun `should yield correct values for inverse FFT`(frequency: Int) {
         val signal = getSignalByFrequency(frequency)
 
-        val fftProcessor = FFTProcessor()
         val fftResults = fftProcessor.process(inputSamples = sequenceOf(signal), samplingRate = DEFAULT_SAMPLING_RATE)
         val inverseFftResults = fftProcessor.processInverse(inputSamples = fftResults.map { it.output.asSequence() })
         val firstResult = inverseFftResults.first().toList()
