@@ -1,31 +1,30 @@
 # Kymatik: A Kotlin Library for Audio Analysis 🎵🧪
 
-Named after the fascinating study of wave phenomena, Kymatik offers a suite to analyze Audio data. It contains a range 
-of functionalities, including accurate BPM detection and comprehensive FFT analysis. Beyond its capabilities with audio 
-files, Kymatik's FFT methods can be applied to samples of various origins, not limited to audio data. 
-This flexibility allows for a broader scope of analysis and manipulation. Kymatik aims to facilitate a deeper 
-exploration of .wav files and beyond, offering the tools necessary for detailed examination and manipulation of complex 
+Named after the fascinating study of wave phenomena, Kymatik offers a suite to analyze Audio data. It contains a range
+of functionalities, including accurate BPM detection and comprehensive FFT analysis. Beyond its capabilities with audio
+files, Kymatik's FFT methods can be applied to samples of various origins, not limited to audio data.
+This flexibility allows for a broader scope of analysis and manipulation. Kymatik aims to facilitate a deeper
+exploration of .wav files and beyond, offering the tools necessary for detailed examination and manipulation of complex
 waveforms.
 
 # Contents
 
 - [Kymatik: A Kotlin Library for Audio Analysis 🎵🧪](#kymatik-a-kotlin-library-for-audio-analysis-)
-  * [Current Features](#current-features)
+    * [Current Features](#current-features)
 - [Upcoming Features 🚧](#upcoming-features-)
 - [Getting Started 🚀](#getting-started-)
-  + [1. Installation](#1-installation)
-  + [2. Usage](#2-usage)
-    - [Kymatik with Koin Dependency Injection](#kymatik-with-koin-dependency-injection)
-    - [Kymatik without Koin Dependency Injection](#kymatik-without-koin-dependency-injection)
+    + [1. Installation](#1-installation)
+    + [2. Usage](#2-usage)
+        - [Kymatik with Koin Dependency Injection](#kymatik-with-koin-dependency-injection)
+        - [Kymatik without Koin Dependency Injection](#kymatik-without-koin-dependency-injection)
 - [Contributing](#contributing)
 - [Feedback and Support](#feedback-and-support)
 - [License](#license)
 - [BPM Analyzer 🎛️](#bpm-analyzer-)
-  + [Step 1: Filter Bank](#step-1-filter-bank)
-  + [Step 2: Smoothing](#step-2-smoothing)
-  + [Step 3: Differential Rectification](#step-3-differential-rectification)
-  + [Step 4: Comb Filter](#step-4-comb-filter)
-
+    + [Step 1: Filter Bank](#step-1-filter-bank)
+    + [Step 2: Smoothing](#step-2-smoothing)
+    + [Step 3: Differential Rectification](#step-3-differential-rectification)
+    + [Step 4: Comb Filter](#step-4-comb-filter)
 
 # Current Features
 
@@ -56,31 +55,33 @@ or modifying the pace of a track.
 I'm excited about the roadmap ahead and are actively working on expanding Kymatik's capabilities.
 Some of the features currently in development include:
 
-## 1. Expanding FFT Analysis:
+### 1. Expanding FFT Analysis:
 
-- Windowed FFT
+- Windowed FFT: Adding FFT Hop size as sample number (currently only supports hop size in seconds, e.g. 0.1s)
+    - Current solution: hopIntervalInSeconds = hopSizeInSamples / sampleRate
+- Zero Padding: Zero padding the input signal to improve the frequency resolution of the FFT
 - Bluestein Algorithm
 - Goertzel Algorithm
 
-## 2. Starting Position Detection:
+### 2. Starting Position Detection:
 
 A feature that will allow you to detect the starting position of a beat in a music file.
 This can be useful for removing silence at the beginning of a track or aligning beats in a remix.
 
-## 3. Various pitch detection / shifting algorithms:
+### 3. Various pitch detection / shifting algorithms:
 
 Including YIN, Harmonic Product Spectrum and more.
 
-## 4. .mp3 and .flac support:
+### 4. .mp3 and .flac support:
 
 Support for additional audio formats, allowing to analyze a wider range of audio files but also converting them to
 other formats.
 
-## 5. Audio visualization:
+### 5. Audio visualization:
 
 Visualize the audio data in various ways, including waveform, spectrogram and more.
 
-## 6. Documentation:
+### 6. Documentation:
 
 Comprehensive documentation as a guide through the library's features and functionalities.
 
@@ -97,7 +98,7 @@ To install Kymatik in your project, add the following dependency to your `build.
 
 ```kotlin
 repositories {
-  maven { url "https://jitpack.io" }
+    maven { url "https://jitpack.io" }
 }
 
 dependencies {
@@ -107,21 +108,94 @@ dependencies {
 
 ## 2. Usage
 
-### Kymatik with Koin Dependency Injection
+Kymatik is using Koin as its dependency injection framework. In the following examples, you can see how to use Kymatik
+with and without Koin.
 
-Kymatik is using Koin as the dependency injection framework. Here's a simple example of how to use Kymatik with Koin:
+## Kymatik without Koin Dependency Injection
 
-#### Reading a .wav file and analyzing its BPM:
+If you prefer not to use Koin, you can also use Kymatik without it.
+Here's an example of how to use Kymatik without Koin:
 
-1. Create a class that inherits from `BPMAnalyzer`, which is taking care of the Koin startup and shutdown:
+### Reading a .wav file and analyzing its BPM:
 
 ```kotlin
-class Main : BpmAnalyzer(){ 
+val wav = WAVReader.read("path/to/your/wav/file.wav")
+val result = BpmAnalyzer().analyze(wav)
+```
+
+### Reading a .wav file and calculating its FFT:
+
+```kotlin
+    fun calculateFFT() {
+    val wav = WAVReader.read("path/to/your/wav/file.wav")
+    val params = WindowProcessingParams(
+        start = 0.0,
+        end = 10.0,
+        interval = 0.01,
+        channel = 0,
+        numSamples = FftSampleSize.DEFAULT
+    )
+    val fftResult = FFTProcessor.processWav(wav, params, WindowFunctionType.HAMMING.function)
+}
+```
+
+This method is yielding a sequence of Time Domain Windows, each containing the FFT result of the respective window.
+
+### Calculating the FFT of your custom samples:
+
+```kotlin
+  fun calculateFftOfCustom() {
+    val samples = (0 until 1024).map { i -> i.toDouble() }
+    val fftResult = FFTProcessor.process(samples, 44100)
+}
+```
+
+### Using your custom window function and a non-default FFT method:
+
+```kotlin
+ fun calculateWithCustomFunction() {
+    val samples = (0 until 1024).map { i -> i.toDouble() }
+    val customFunction: WindowFunction = { sample, length -> sample.toDouble() / length }
+    
+    val fftResult = FFTProcessor.process(
+        inputSamples = samples,
+        samplingRate = 44100,
+        method = Method.R2C_DFT,
+        windowFunction = customFunction
+    )
+}
+```
+
+## Kymatik with Koin Dependency Injection
+
+**Important: Make sure to initialize Koin before using it. This can be done through instantiating the class
+or by inheriting from it. Alternatively, you can also call `KoinManager.INSTANCE` to initialize Koin.**
+
+### 1. Implement KoinComponent and call `KoinManager.INSTANCE` to initialize Koin:
+
+```kotlin
+class Main : KoinComponent {
+
+    init {
+        KoinManager.INSTANCE
+    }
+}
+```
+
+Alternatively you can also create a class that inherits from `BPMAnalyzer` or instantiate an instance of it, which is
+then taking care of the Koin startup and shutdown in its init function:
+
+```kotlin
+class Main : BpmAnalyzer() {
     // Your code here
 }
 ```
 
-2. In your class, you can now use the Koin dependency injection to get your desired services:
+### 2. In your class, you can now use the Koin dependency injection to get your desired services.
+
+**Important: Make sure to stop Koin after you're done analyzing your audio files. This can be achieved by calling
+`close()`on the BPMAnalyzer instance or using the `use` function (see example above). Alternatively, you can also call
+`KoinManager.INSTANCE.close()` to stop Koin.**
 
 ```kotlin
 class Main : BpmAnalyzer() {
@@ -135,14 +209,17 @@ class Main : BpmAnalyzer() {
 }
 ```
 
-Alternatively, you can also initialize Koin via creating an instance of the BPMAnalyzer class and implementing
-KoinComponent:
+or
 
 ```kotlin
 class Main : KoinComponent {
-    
+
+    init {
+        KoinManager.INSTANCE
+    }
+
     fun analyze(wav: Wav): TrackInfo {
-        val bpmAnalyzer = BpmAnalyzer()
+        val bpmAnalyzer: BPMAnalyzer by inject()
         val fileReader: FileReader<Wav> by inject()
         val wav = fileReader.read("path/to/your/wav/file.wav")
 
@@ -151,24 +228,6 @@ class Main : KoinComponent {
 }
 ```
 
-Important:
-
-- Make sure to initialize Koin before using it. This can be done through instantiating the class
-  or by inheriting from it. Alternatively, you can also call `KoinManager.INSTANCE` to initialize Koin.
-- Also make sure to stop Koin after you're done analyzing your audio files. This can be achieved by calling `close()`
-  on the BPMAnalyzer instance or using the `use` function (see example above). Alternatively, you
-  can also call `KoinManager.INSTANCE.close()` to stop Koin.
-
-### Kymatik without Koin Dependency Injection
-If you prefer not to use Koin, you can also use Kymatik without it. 
-Here's an example of how to use Kymatik without Koin:
-
-#### Reading a .wav file and analyzing its BPM:
-
-```kotlin
-val wav = WAVReader.read("path/to/your/wav/file.wav")
-val result = BpmAnalyzer().analyze(wav)
-```
 # Contributing
 
 Contributions are warmly welcomed. Whether it's feature development, bug fixes or documentation improvements.

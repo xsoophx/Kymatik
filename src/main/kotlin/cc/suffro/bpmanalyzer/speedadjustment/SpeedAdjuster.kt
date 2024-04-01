@@ -7,7 +7,7 @@ import mu.KotlinLogging
 import kotlin.math.min
 
 // TODO: add support for wav as return type
-internal class SpeedAdjuster(private val cacheAnalyzer: CacheAnalyzer<Wav, TrackInfo>) {
+class SpeedAdjuster(private val cacheAnalyzer: CacheAnalyzer<Wav, TrackInfo>) {
     fun changeTo(
         wav: Wav,
         targetBpm: Double,
