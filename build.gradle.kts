@@ -58,7 +58,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Version.COROUTINES}")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-javafx:${Version.COROUTINES}")
 
-    api("org.xerial:sqlite-jdbc:${Version.JDBC}")
+    implementation("org.xerial:sqlite-jdbc:${Version.JDBC}")
 
     api("io.insert-koin:koin-core:${Version.KOIN}")
     implementation("io.insert-koin:koin-test:${Version.KOIN_TEST}") {
@@ -113,17 +113,16 @@ tasks {
 
 publishing {
     publications {
-        create<MavenPublication>("bpm-analyzer") {
+        create<MavenPublication>("kymatik") {
             from(components["java"])
 
             group = "cc.suffro"
-            artifactId = "bpm-analyzer"
+            artifactId = "kymatik"
             version = "0.1.0"
 
-            // Pom-Konfiguration für zusätzliche Metadaten
             pom {
                 name.set("BPM Analyzer")
-                description.set("A simple tool  to analyze the tempo (BPM) of .wav music files.")
+                description.set("A Kotlin library for audio analysis: FFT, pitch shifting and accurate BPM detection for audio files.")
                 url.set("https://example.com/my-library")
 
                 licenses {

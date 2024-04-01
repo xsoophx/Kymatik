@@ -2,7 +2,7 @@ package cc.suffro.bpmanalyzer
 
 internal class Main : BpmAnalyzer() {
     fun run(args: Array<String>) {
-        analyze(args)
+        use { analyze(args) }
     }
 
     companion object {

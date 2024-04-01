@@ -1,33 +1,23 @@
 package cc.suffro.bpmanalyzer
 
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CacheAnalyzer
-import cc.suffro.bpmanalyzer.bpmanalyzing.bpmAnalyzingModule
-import cc.suffro.bpmanalyzer.bpmanalyzing.filters.filterModule
 import cc.suffro.bpmanalyzer.data.Arguments
 import cc.suffro.bpmanalyzer.data.TrackInfo
-import cc.suffro.bpmanalyzer.database.databaseModule
-import cc.suffro.bpmanalyzer.fft.fftModule
-import cc.suffro.bpmanalyzer.speedadjustment.speedAdjusterModule
 import cc.suffro.bpmanalyzer.wav.data.Wav
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import mu.KotlinLogging
 import org.koin.core.component.inject
-import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.core.parameter.parametersOf
 import org.koin.core.qualifier.named
 import java.nio.file.Path
 
 open class BpmAnalyzer : BpmOperations {
-    init {
-        init()
-    }
+    private val logger = KotlinLogging.logger {}
 
-    final override fun init() {
-        startKoin {
-            modules(appModule, databaseModule, speedAdjusterModule, fftModule, bpmAnalyzingModule, filterModule)
-        }
+    init {
+        KoinManager.INSTANCE
     }
 
     override fun analyze(args: Array<String>): TrackInfo {
@@ -128,9 +118,5 @@ open class BpmAnalyzer : BpmOperations {
         val analyzer by inject<cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.BpmAnalyzer>()
 
         return TrackInfo(trackName = wav.filePath.fileName.toString(), analyzer.analyze(wav))
-    }
-
-    companion object : BpmOperations by BpmAnalyzer() {
-        private val logger = KotlinLogging.logger {}
     }
 }
