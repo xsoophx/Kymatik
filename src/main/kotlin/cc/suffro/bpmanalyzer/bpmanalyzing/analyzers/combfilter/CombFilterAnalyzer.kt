@@ -10,8 +10,10 @@ import cc.suffro.bpmanalyzer.fft.FFTProcessor
 import cc.suffro.bpmanalyzer.fft.data.FFTData
 import cc.suffro.bpmanalyzer.fft.data.TimeDomainWindow
 import cc.suffro.bpmanalyzer.fft.data.WindowFunction
+import cc.suffro.bpmanalyzer.wav.data.FileReader
 import cc.suffro.bpmanalyzer.wav.data.FmtChunk
 import cc.suffro.bpmanalyzer.wav.data.Wav
+import org.koin.core.component.inject
 import java.nio.file.Path
 
 class CombFilterAnalyzer(
@@ -33,6 +35,19 @@ class CombFilterAnalyzer(
         val bassBand = combFilterOperations.getBassBand(fftResult, fftProcessor)
 
         return bassBand.getBpm(LowPassFilter(fftProcessor), wav.fmtChunk, params)
+    }
+
+    override fun analyze(path: String): Bpm {
+        return analyze(path, CombFilterAnalyzerParams())
+    }
+
+    override fun analyze(
+        path: String,
+        analyzerParams: AnalyzerParams,
+    ): Bpm {
+        val fileReader by inject<FileReader<Wav>>()
+        val wav = fileReader.read(path)
+        return analyze(wav, analyzerParams)
     }
 
     private fun calculateFftResult(

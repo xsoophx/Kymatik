@@ -58,7 +58,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Version.COROUTINES}")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-javafx:${Version.COROUTINES}")
 
-    implementation("org.xerial:sqlite-jdbc:${Version.JDBC}")
+    api("org.xerial:sqlite-jdbc:${Version.JDBC}")
 
     api("io.insert-koin:koin-core:${Version.KOIN}")
     implementation("io.insert-koin:koin-test:${Version.KOIN_TEST}") {

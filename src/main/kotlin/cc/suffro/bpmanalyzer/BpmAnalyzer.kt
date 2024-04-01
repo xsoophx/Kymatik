@@ -17,6 +17,7 @@ import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.core.parameter.parametersOf
 import org.koin.core.qualifier.named
+import java.nio.file.Path
 
 open class BpmAnalyzer : BpmOperations {
     init {
@@ -47,6 +48,21 @@ open class BpmAnalyzer : BpmOperations {
         databasePath: String,
     ): TrackInfo = getFromDbOrAnalyze(wav, databasePath)
 
+    override fun analyze(trackPath: Path): TrackInfo {
+        verifyTrackPath(trackPath.toString())
+        return analyzeWithoutCache(trackPath.toString())
+    }
+
+    override fun analyze(trackPath: String): TrackInfo {
+        verifyTrackPath(trackPath)
+        return analyzeWithoutCache(trackPath)
+    }
+
+    override fun analyze(wav: Wav): TrackInfo {
+        verifyTrackPath(wav.filePath.toString())
+        return analyzeWithoutCache(wav)
+    }
+
     override fun close() = stopKoin()
 
     private fun parseArguments(args: Array<String>): Arguments {
@@ -63,12 +79,12 @@ open class BpmAnalyzer : BpmOperations {
         return Arguments(trackName!!, checkedDatabaseURL)
     }
 
-    private fun checkRequired(
-        trackPath: String,
-        databasePath: String,
-    ) {
+    private fun verifyTrackPath(trackPath: String) {
         require(trackPath.isNotEmpty()) { "Please provide a path to your audio file." }
         require(trackPath.endsWith(".wav")) { "Please provide a wav file." }
+    }
+
+    private fun verifyDatabasePath(databasePath: String) {
         require(databasePath.isNotEmpty()) { "Please provide a database path." }
     }
 
@@ -76,11 +92,7 @@ open class BpmAnalyzer : BpmOperations {
         trackPath: String,
         databasePath: String,
     ): TrackInfo {
-        checkRequired(trackPath, databasePath)
-
-        val cacheAnalyzer by inject<CacheAnalyzer<Wav, TrackInfo>>(named("ProdImpl")) { parametersOf(databasePath) }
-        logger.info { "Using cache analyzer for searching $trackPath with DB url $databasePath." }
-
+        val cacheAnalyzer = verifyParametersAndCreateCacheAnalyzer(trackPath, databasePath)
         return cacheAnalyzer.getPathAndAnalyze(trackPath)
     }
 
@@ -88,15 +100,35 @@ open class BpmAnalyzer : BpmOperations {
         wav: Wav,
         databasePath: String,
     ): TrackInfo {
-        checkRequired(wav.filePath.toString(), databasePath)
-
-        val cacheAnalyzer by inject<CacheAnalyzer<Wav, TrackInfo>>(named("ProdImpl")) { parametersOf(databasePath) }
-        logger.info { "Using cache analyzer for searching ${wav.filePath} with DB url $databasePath." }
-
+        val cacheAnalyzer = verifyParametersAndCreateCacheAnalyzer(wav.filePath.toString(), databasePath)
         return cacheAnalyzer.analyze(wav)
     }
 
+    private fun verifyParametersAndCreateCacheAnalyzer(
+        filePath: String,
+        databasePath: String,
+    ): CacheAnalyzer<Wav, TrackInfo> {
+        verifyTrackPath(filePath)
+        verifyDatabasePath(databasePath)
+
+        val cacheAnalyzer by inject<CacheAnalyzer<Wav, TrackInfo>>(named("ProdImpl")) { parametersOf(databasePath) }
+        logger.info { "Using cache analyzer for searching $filePath with DB url $databasePath." }
+        return cacheAnalyzer
+    }
+
     private fun getFromDbOrAnalyze(arguments: Arguments): TrackInfo = getFromDbOrAnalyze(arguments.trackPath, arguments.databasePath)
+
+    private fun analyzeWithoutCache(trackPath: String): TrackInfo {
+        val analyzer by inject<cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.BpmAnalyzer>()
+
+        return TrackInfo(trackName = trackPath.split("/").last(), analyzer.analyze(trackPath))
+    }
+
+    private fun analyzeWithoutCache(wav: Wav): TrackInfo {
+        val analyzer by inject<cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.BpmAnalyzer>()
+
+        return TrackInfo(trackName = wav.filePath.fileName.toString(), analyzer.analyze(wav))
+    }
 
     companion object : BpmOperations by BpmAnalyzer() {
         private val logger = KotlinLogging.logger {}

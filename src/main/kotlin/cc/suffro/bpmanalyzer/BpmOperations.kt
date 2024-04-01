@@ -40,5 +40,11 @@ interface BpmOperations : Closeable, KoinComponent {
         return analyze(trackPath.toString(), databasePath)
     }
 
+    fun analyze(trackPath: Path): TrackInfo
+
+    fun analyze(trackPath: String): TrackInfo
+
+    fun analyze(wav: Wav): TrackInfo
+
     fun init()
 }

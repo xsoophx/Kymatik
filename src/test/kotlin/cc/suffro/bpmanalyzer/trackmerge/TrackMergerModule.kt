@@ -18,7 +18,7 @@ val trackMergerTestModule =
             named("ProdImpl")
         }
 
-        single {
+        factory {
             TrackMerger(
                 get(named("ProdImpl")),
                 get(named("ProdSpeedAdjuster")),

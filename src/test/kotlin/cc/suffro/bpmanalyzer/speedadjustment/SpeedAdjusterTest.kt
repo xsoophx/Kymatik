@@ -9,7 +9,6 @@ import cc.suffro.bpmanalyzer.wav.data.FileWriter
 import cc.suffro.bpmanalyzer.wav.data.FmtChunk
 import cc.suffro.bpmanalyzer.wav.data.Wav
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.koin.core.qualifier.named
@@ -17,7 +16,6 @@ import org.koin.test.inject
 import java.nio.file.Path
 import kotlin.test.assertEquals
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SpeedAdjusterTest : BaseTest() {
     private val prodSpeedAdjuster by inject<SpeedAdjuster>(named("ProdSpeedAdjuster"))
 

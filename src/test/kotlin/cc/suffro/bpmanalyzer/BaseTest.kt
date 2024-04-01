@@ -9,6 +9,7 @@ import cc.suffro.bpmanalyzer.trackmerge.trackMergerTestModule
 import cc.suffro.bpmanalyzer.wav.wavTestModule
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.provider.Arguments
 import org.koin.core.context.GlobalContext.startKoin
 import org.koin.core.context.GlobalContext.stopKoin
@@ -16,6 +17,7 @@ import org.koin.core.logger.Level
 import org.koin.test.KoinTest
 import kotlin.streams.asStream
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 open class BaseTest : KoinTest {
     companion object {
         private val predefinedSamples =

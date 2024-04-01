@@ -1,12 +1,17 @@
-package cc.suffro.bpmanalyzer
+package cc.suffro.bpmanalyzer.trackmerge
 
+import cc.suffro.bpmanalyzer.BaseTest
+import cc.suffro.bpmanalyzer.TrackMerger
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.TestInstance
 import org.koin.test.inject
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
+// TODO: check Koin dependency
+@TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class TrackMergerTest : BaseTest() {
     private val trackMerger by inject<TrackMerger>()
 
