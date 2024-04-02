@@ -27,18 +27,22 @@ class CombFilterAnalyzer(
     }
 
     override fun analyze(
-        wav: Wav,
-        analyzerParams: AnalyzerParams,
+        data: Wav,
+        params: AnalyzerParams,
     ): Bpm {
-        val params = analyzerParams as CombFilterAnalyzerParams
-        val fftResult = calculateFftResult(wav, analyzerParams.start, params.windowFunction)
+        val combParams = params as CombFilterAnalyzerParams
+        val fftResult = calculateFftResult(data, combParams.start, combParams.windowFunction)
         val bassBand = combFilterOperations.getBassBand(fftResult, fftProcessor)
 
-        return bassBand.getBpm(LowPassFilter(fftProcessor), wav.fmtChunk, params)
+        return bassBand.getBpm(LowPassFilter(fftProcessor), data.fmtChunk, combParams)
     }
 
-    override fun analyze(path: String): Bpm {
+    override fun getPathAndAnalyze(path: String): Bpm {
         return analyze(path, CombFilterAnalyzerParams())
+    }
+
+    override fun getPathAndAnalyze(path: Path): Bpm {
+        return analyze(path.toString(), CombFilterAnalyzerParams())
     }
 
     override fun analyze(

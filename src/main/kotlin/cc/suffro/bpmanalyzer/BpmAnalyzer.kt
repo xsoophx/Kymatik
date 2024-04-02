@@ -111,7 +111,7 @@ open class BpmAnalyzer : BpmOperations {
     private fun analyzeWithoutCache(trackPath: String): TrackInfo {
         val analyzer by inject<cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.BpmAnalyzer>()
 
-        return TrackInfo(trackName = trackPath.split("/").last(), analyzer.analyze(trackPath))
+        return TrackInfo(trackName = trackPath.split("/").last(), analyzer.getPathAndAnalyze(trackPath))
     }
 
     private fun analyzeWithoutCache(wav: Wav): TrackInfo {
