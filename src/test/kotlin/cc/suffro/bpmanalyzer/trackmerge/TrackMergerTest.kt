@@ -15,9 +15,9 @@ import kotlin.test.assertTrue
 class TrackMergerTest : BaseTest() {
     private val trackMerger by inject<TrackMerger>()
 
-    private val first = tracksWithBpm.entries.first()
-    private val second = tracksWithBpm.entries.last()
-    private val path = trackMerger.getMergedPathByPaths(first.key, second.key)
+    private val first = tracksWithBpm.first()
+    private val second = tracksWithBpm.first()
+    private val path = trackMerger.getMergedPathByPaths(first.path, second.path)
 
     @AfterEach
     fun cleanUp() {
@@ -32,7 +32,7 @@ class TrackMergerTest : BaseTest() {
         val targetBpm = 140.0
         assertTrue(!File(path).exists())
 
-        trackMerger.merge(first.toPair(), second.toPair(), targetBpm)
+        trackMerger.merge(first.path to first.bpm, second.path to second.bpm, targetBpm)
         assertTrue(File(path).exists())
     }
 

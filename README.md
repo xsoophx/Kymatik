@@ -21,10 +21,6 @@ waveforms.
 - [Feedback and Support](#feedback-and-support)
 - [License](#license)
 - [BPM Analyzer 🎛️](#bpm-analyzer-)
-    + [Step 1: Filter Bank](#step-1-filter-bank)
-    + [Step 2: Smoothing](#step-2-smoothing)
-    + [Step 3: Differential Rectification](#step-3-differential-rectification)
-    + [Step 4: Comb Filter](#step-4-comb-filter)
 
 # Current Features
 
@@ -139,7 +135,14 @@ val result = BpmAnalyzer().analyze(wav)
 }
 ```
 
-This method is yielding a sequence of Time Domain Windows, each containing the FFT result of the respective window.
+### Adjusting the tempo of a .wav file:
+
+```kotlin
+
+```
+
+This method is yielding a sequence of Frequency Domain Windows, each containing the FFT result of the respective time
+window.
 
 ### Calculating the FFT of your custom samples:
 
@@ -156,7 +159,7 @@ This method is yielding a sequence of Time Domain Windows, each containing the F
  fun calculateWithCustomFunction() {
     val samples = (0 until 1024).map { i -> i.toDouble() }
     val customFunction: WindowFunction = { sample, length -> sample.toDouble() / length }
-    
+
     val fftResult = FFTProcessor.process(
         inputSamples = samples,
         samplingRate = 44100,
@@ -170,6 +173,8 @@ This method is yielding a sequence of Time Domain Windows, each containing the F
 
 **Important: Make sure to initialize Koin before using it. This can be done through instantiating the class
 or by inheriting from it. Alternatively, you can also call `KoinManager.INSTANCE` to initialize Koin.**
+
+All the examples from above can be used with Koin as well. Here's an example of how to use Kymatik with Koin:
 
 ### 1. Implement KoinComponent and call `KoinManager.INSTANCE` to initialize Koin:
 

@@ -4,6 +4,7 @@ import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CacheAnalyzer
 import cc.suffro.bpmanalyzer.data.TrackInfo
 import cc.suffro.bpmanalyzer.wav.data.Wav
 import mu.KotlinLogging
+import java.nio.file.Path
 import kotlin.math.min
 
 // TODO: add support for wav as return type
@@ -25,6 +26,16 @@ class SpeedAdjuster(private val cacheAnalyzer: CacheAnalyzer<Wav, TrackInfo>) {
     ): Array<DoubleArray> {
         val inverseStretchFactor = targetBpm / currentBpm
         return wav.dataChunk.data.map { interpolate(it, inverseStretchFactor) }.toTypedArray()
+    }
+
+    fun changeWavTo(
+        wav: Wav,
+        targetBpm: Double,
+        customFilePath: Path?,
+    ): Wav {
+        val result = changeTo(wav, targetBpm)
+        val filePath = customFilePath ?: wav.filePath
+        return Wav(wav.copy(filePath = filePath), result)
     }
 
     private fun interpolate(
