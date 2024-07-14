@@ -21,27 +21,20 @@ class CombFilterOperationsImpl(private val combFilter: CombFilter) : CombFilterO
         samplingRate: Int,
     ) = combFilter.getFilledFilter(length, bpm, samplingRate)
 
-    override fun getFrequencyBands(
-        fftData: FFTData,
-        fftProcessor: FFTProcessor,
-    ): List<TimeDomainWindow> {
+    override fun getFrequencyBands(fftData: FFTData): List<TimeDomainWindow> {
         val separatedSignals = Filterbank.separateSignals(fftData, MAXIMUM_FREQUENCY)
-        return transformToTimeDomain(separatedSignals, fftData.duration, fftProcessor).toList()
+        return transformToTimeDomain(separatedSignals, fftData.duration).toList()
     }
 
-    override fun getBassBand(
-        fftData: FFTData,
-        fftProcessor: FFTProcessor,
-    ): TimeDomainWindow = getFrequencyBands(fftData, fftProcessor).first()
+    override fun getBassBand(fftData: FFTData): TimeDomainWindow = getFrequencyBands(fftData).first()
 
     override fun transformToTimeDomain(
         separatedSignals: SeparatedSignals,
         interval: Double,
-        fftProcessor: FFTProcessor,
     ): Sequence<TimeDomainWindow> {
         // TODO: add better handling for low frequencies, don't cut information
         val signalInTimeDomain =
-            fftProcessor.processInverse(
+            FFTProcessor.processInverse(
                 separatedSignals.values.asSequence().map {
                     val powerOfTwo = getHighestPowerOfTwo(it.size)
                     it.asSequence().take(powerOfTwo)

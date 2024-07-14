@@ -44,7 +44,7 @@ class StartingPositionAnalyzerTest : BaseTest() {
         val wav = wavReader.read(path)
         val result = startingPositionAnalyzer.analyze(wav, StartingPositionCacheAnalyzerParams(144.0))
 
-        assertEquals(result.startInSec, 0.8)
+        assertEquals(0.8, result.startInSec)
     }
 
     companion object {

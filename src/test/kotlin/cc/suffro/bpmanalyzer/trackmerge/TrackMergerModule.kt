@@ -6,7 +6,6 @@ import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter.Analyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter.CombFilterCacheAnalyzer
 import cc.suffro.bpmanalyzer.data.TrackInfo
 import cc.suffro.bpmanalyzer.wav.data.Wav
-import org.koin.core.module.dsl.named
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 

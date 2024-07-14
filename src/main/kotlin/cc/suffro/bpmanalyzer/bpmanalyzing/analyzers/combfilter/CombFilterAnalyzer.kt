@@ -1,11 +1,11 @@
 package cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter
 
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.AnalyzerParams
-import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.BpmAnalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.data.Bpm
 import cc.suffro.bpmanalyzer.bpmanalyzing.filters.CombFilterOperations
 import cc.suffro.bpmanalyzer.bpmanalyzing.filters.DifferentialRectifier
 import cc.suffro.bpmanalyzer.bpmanalyzing.filters.LowPassFilter
+import cc.suffro.bpmanalyzer.data.TrackInfo
 import cc.suffro.bpmanalyzer.fft.FFTProcessor
 import cc.suffro.bpmanalyzer.fft.data.FFTData
 import cc.suffro.bpmanalyzer.fft.data.TimeDomainWindow
@@ -13,42 +13,42 @@ import cc.suffro.bpmanalyzer.fft.data.WindowFunction
 import cc.suffro.bpmanalyzer.wav.data.FileReader
 import cc.suffro.bpmanalyzer.wav.data.FmtChunk
 import cc.suffro.bpmanalyzer.wav.data.Wav
+import mu.KotlinLogging
 import org.koin.core.component.inject
 import java.nio.file.Path
 
-class CombFilterAnalyzer(
-    private val fftProcessor: FFTProcessor,
-    private val combFilterOperations: CombFilterOperations,
-) : BpmAnalyzer {
+class CombFilterAnalyzer(private val combFilterOperations: CombFilterOperations) : Analyzer<Wav, TrackInfo> {
     private val cache = mutableMapOf<Path, FFTData>()
 
-    override fun analyze(wav: Wav): Bpm {
-        return analyze(wav, CombFilterAnalyzerParams())
+    override fun analyze(data: Wav): TrackInfo {
+        return analyze(data, CombFilterAnalyzerParams())
     }
 
     override fun analyze(
         data: Wav,
         params: AnalyzerParams,
-    ): Bpm {
+    ): TrackInfo {
+        logger.info { "Analyzing track: ${data.filePath} with params: $params" }
         val combParams = params as CombFilterAnalyzerParams
         val fftResult = calculateFftResult(data, combParams.start, combParams.windowFunction)
-        val bassBand = combFilterOperations.getBassBand(fftResult, fftProcessor)
+        val bassBand = combFilterOperations.getBassBand(fftResult)
 
-        return bassBand.getBpm(LowPassFilter(fftProcessor), data.fmtChunk, combParams)
+        val bpm = bassBand.getBpm(LowPassFilter(), data.fmtChunk, combParams)
+        return TrackInfo(data.filePath.toString(), bpm)
     }
 
-    override fun getPathAndAnalyze(path: String): Bpm {
+    override fun getPathAndAnalyze(path: String): TrackInfo {
         return analyze(path, CombFilterAnalyzerParams())
     }
 
-    override fun getPathAndAnalyze(path: Path): Bpm {
+    override fun getPathAndAnalyze(path: Path): TrackInfo {
         return analyze(path.toString(), CombFilterAnalyzerParams())
     }
 
-    override fun analyze(
+    fun analyze(
         path: String,
         analyzerParams: AnalyzerParams,
-    ): Bpm {
+    ): TrackInfo {
         val fileReader by inject<FileReader<Wav>>()
         val wav = fileReader.read(path)
         return analyze(wav, analyzerParams)
@@ -64,7 +64,7 @@ class CombFilterAnalyzer(
         }
         return cache.getOrPut(wav.filePath) {
             val window = wav.getWindow(start = start, numSamples = MINIMUM_FFT_SIZE_BY_ENERGY_LEVELS)
-            fftProcessor.process(window, wav.sampleRate, windowFunction = windowFunction)
+            FFTProcessor.process(window, wav.sampleRate, windowFunction = windowFunction)
         }
     }
 
@@ -87,5 +87,6 @@ class CombFilterAnalyzer(
         // CombFilter has three pulses: 1, 44100, 88200 (-1 offset)
         private const val MINIMUM_FFT_SIZE_BY_ENERGY_LEVELS = 131072
         private const val ANALYZING_DURATION = 2.2
+        private val logger = KotlinLogging.logger {}
     }
 }

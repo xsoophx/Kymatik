@@ -1,6 +1,7 @@
 package cc.suffro.bpmanalyzer
 
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CacheAnalyzer
+import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter.Analyzer
 import cc.suffro.bpmanalyzer.data.Arguments
 import cc.suffro.bpmanalyzer.data.TrackInfo
 import cc.suffro.bpmanalyzer.wav.data.Wav
@@ -108,15 +109,23 @@ open class BpmAnalyzer : BpmOperations {
 
     private fun getFromDbOrAnalyze(arguments: Arguments): TrackInfo = getFromDbOrAnalyze(arguments.trackPath, arguments.databasePath)
 
-    private fun analyzeWithoutCache(trackPath: String): TrackInfo {
-        val analyzer by inject<cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.BpmAnalyzer>()
+    private fun analyzeWithoutCache(
+        trackPath: String,
+        showTrackNameOnly: Boolean = false,
+    ): TrackInfo {
+        val analyzer by inject<Analyzer<Wav, TrackInfo>>()
+        val trackInfo = analyzer.getPathAndAnalyze(trackPath)
 
-        return TrackInfo(trackName = trackPath.split("/").last(), analyzer.getPathAndAnalyze(trackPath))
+        return if (showTrackNameOnly) trackInfo.copy(trackName = trackPath.split("/").last()) else trackInfo
     }
 
-    private fun analyzeWithoutCache(wav: Wav): TrackInfo {
-        val analyzer by inject<cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.BpmAnalyzer>()
+    private fun analyzeWithoutCache(
+        wav: Wav,
+        showTrackNameOnly: Boolean = false,
+    ): TrackInfo {
+        val analyzer by inject<Analyzer<Wav, TrackInfo>>()
+        val trackInfo = analyzer.analyze(wav)
 
-        return TrackInfo(trackName = wav.filePath.fileName.toString(), analyzer.analyze(wav))
+        return if (showTrackNameOnly) trackInfo.copy(trackName = wav.filePath.fileName.toString()) else trackInfo
     }
 }

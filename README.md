@@ -112,6 +112,17 @@ with and without Koin.
 If you prefer not to use Koin, you can also use Kymatik without it.
 Here's an example of how to use Kymatik without Koin:
 
+### Call `KoinManager.INSTANCE` to initialize Kyamitks Koin dependency injection framework:
+
+```kotlin
+class Main {
+
+    init {
+        KoinManager.INSTANCE
+    }
+}
+```
+
 ### Reading a .wav file and analyzing its BPM:
 
 ```kotlin

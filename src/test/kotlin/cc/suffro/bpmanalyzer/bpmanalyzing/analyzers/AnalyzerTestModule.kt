@@ -6,7 +6,6 @@ import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter.CombFilterCacheAn
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter.CombFilterCacheAnalyzerTestImpl
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.startingposition.StartingPosition
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.startingposition.StartingPositionAnalyzer
-import cc.suffro.bpmanalyzer.bpmanalyzing.data.Bpm
 import cc.suffro.bpmanalyzer.data.TrackInfo
 import cc.suffro.bpmanalyzer.wav.data.Wav
 import org.koin.core.module.dsl.bind
@@ -18,9 +17,8 @@ import org.koin.dsl.module
 val analyzerTestModule =
     module {
         singleOf(::CombFilterAnalyzer) {
-            bind<BpmAnalyzer>()
+            bind<Analyzer<Wav, TrackInfo>>()
         }
-        single<Analyzer<Wav, Bpm>> { get<CombFilterAnalyzer>() }
 
         single { CombFilterCacheAnalyzerTestImpl() }
         single<CacheAnalyzer<Wav, TrackInfo>>(named("TestImpl")) { get<CombFilterCacheAnalyzerTestImpl>() }

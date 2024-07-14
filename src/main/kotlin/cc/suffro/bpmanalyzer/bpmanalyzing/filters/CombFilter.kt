@@ -11,13 +11,13 @@ import kotlin.math.pow
 
 private val logger = KotlinLogging.logger {}
 
-class CombFilter(private val fftProcessor: FFTProcessor) {
+class CombFilter {
     fun process(
         bassSignal: Signal,
         samplingRate: Int,
         params: CombFilterAnalyzerParams,
     ): Double {
-        val fftResult = fftProcessor.process(bassSignal, samplingRate)
+        val fftResult = FFTProcessor.process(bassSignal, samplingRate)
         val result = process(params.minimumBpm, params.maximumBpm, params.stepSize, bassSignal, samplingRate, fftResult)
 
         return if (params.refinementParams == null) {
@@ -45,7 +45,7 @@ class CombFilter(private val fftProcessor: FFTProcessor) {
             var energy = 0.0
             val pulses = MutableList(bassSignal.count()) { 0.0 }
             fillPulses(bpm, pulses, samplingRate)
-            val fftOfFilter = fftProcessor.process(pulses.asSequence(), samplingRate)
+            val fftOfFilter = FFTProcessor.process(pulses.asSequence(), samplingRate)
 
             val convolution = (fftResult.output zip fftOfFilter.output).map { abs(it.first * it.second).pow(2) }
             energy += convolution.sum()
