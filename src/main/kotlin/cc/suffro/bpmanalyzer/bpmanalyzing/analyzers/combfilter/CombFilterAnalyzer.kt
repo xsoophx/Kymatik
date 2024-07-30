@@ -6,10 +6,7 @@ import cc.suffro.bpmanalyzer.bpmanalyzing.filters.CombFilterOperations
 import cc.suffro.bpmanalyzer.bpmanalyzing.filters.DifferentialRectifier
 import cc.suffro.bpmanalyzer.bpmanalyzing.filters.LowPassFilter
 import cc.suffro.bpmanalyzer.data.TrackInfo
-import cc.suffro.bpmanalyzer.fft.FFTProcessor
-import cc.suffro.bpmanalyzer.fft.data.FFTData
 import cc.suffro.bpmanalyzer.fft.data.TimeDomainWindow
-import cc.suffro.bpmanalyzer.fft.data.WindowFunction
 import cc.suffro.bpmanalyzer.wav.data.FileReader
 import cc.suffro.bpmanalyzer.wav.data.FmtChunk
 import cc.suffro.bpmanalyzer.wav.data.Wav
@@ -18,8 +15,6 @@ import org.koin.core.component.inject
 import java.nio.file.Path
 
 class CombFilterAnalyzer(private val combFilterOperations: CombFilterOperations) : Analyzer<Wav, TrackInfo> {
-    private val cache = mutableMapOf<Path, FFTData>()
-
     override fun analyze(data: Wav): TrackInfo {
         return analyze(data, CombFilterAnalyzerParams())
     }
@@ -30,10 +25,16 @@ class CombFilterAnalyzer(private val combFilterOperations: CombFilterOperations)
     ): TrackInfo {
         logger.info { "Analyzing track: ${data.filePath} with params: $params" }
         val combParams = params as CombFilterAnalyzerParams
-        val fftResult = calculateFftResult(data, combParams.start, combParams.windowFunction)
+
+        require(combParams.start + ANALYZING_DURATION < data.trackLength) {
+            "Starting time of ${combParams.start} seconds is too close to track end."
+        }
+
+        val window = data.getWindow(start = combParams.start, numSamples = MINIMUM_FFT_SIZE_BY_ENERGY_LEVELS)
+        val fftResult = combFilterOperations.calculateFftResult(data, window, combParams.windowFunction)
         val bassBand = combFilterOperations.getBassBand(fftResult)
 
-        val bpm = bassBand.getBpm(LowPassFilter(), data.fmtChunk, combParams)
+        val bpm = bassBand.getBpm(data.fmtChunk, combParams)
         return TrackInfo(data.filePath.toString(), bpm)
     }
 
@@ -54,29 +55,14 @@ class CombFilterAnalyzer(private val combFilterOperations: CombFilterOperations)
         return analyze(wav, analyzerParams)
     }
 
-    private fun calculateFftResult(
-        wav: Wav,
-        start: Double = 0.0,
-        windowFunction: WindowFunction? = null,
-    ): FFTData {
-        require(start + ANALYZING_DURATION < wav.trackLength) {
-            "Starting time of $start seconds is too close to track end."
-        }
-        return cache.getOrPut(wav.filePath) {
-            val window = wav.getWindow(start = start, numSamples = MINIMUM_FFT_SIZE_BY_ENERGY_LEVELS)
-            FFTProcessor.process(window, wav.sampleRate, windowFunction = windowFunction)
-        }
-    }
-
     private fun TimeDomainWindow.getBpm(
-        lowPassFilter: LowPassFilter,
         fmtChunk: FmtChunk,
         analyzerParams: CombFilterAnalyzerParams,
     ): Bpm {
-        val lowPassFiltered = lowPassFilter.process(this, fmtChunk)
+        val lowPassFiltered = LowPassFilter.process(this, fmtChunk)
         val differentials = DifferentialRectifier.process(lowPassFiltered)
 
-        return combFilterOperations.process(differentials, fmtChunk.sampleRate, analyzerParams)
+        return combFilterOperations.getBpm(differentials, fmtChunk.sampleRate, analyzerParams)
     }
 
     companion object {

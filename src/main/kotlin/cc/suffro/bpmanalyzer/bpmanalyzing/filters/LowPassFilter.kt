@@ -10,19 +10,24 @@ import org.kotlinmath.Complex
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-class LowPassFilter() {
+object LowPassFilter {
     fun process(
         window: TimeDomainWindow,
-        fmtChunk: FmtChunk,
+        sampleRate: Int,
     ): Signal {
         val fullWaveRectified = TimeDomainWindow(window.map(::abs), window.duration, window.startingTime)
-        val numSamples = (window.duration * 2 * fmtChunk.sampleRate).roundToInt()
+        val numSamples = (window.duration * 2 * sampleRate).roundToInt()
         val halfHanningWindow = getHalfOfHanningWindow(numSamples)
-        val (first, second) = processSignals(fullWaveRectified, halfHanningWindow, fmtChunk.sampleRate)
+        val (first, second) = processSignals(fullWaveRectified, halfHanningWindow, sampleRate)
 
         val convolved = convolve(first, second)
         return FFTProcessor.processInverse(convolved)
     }
+
+    fun process(
+        window: TimeDomainWindow,
+        fmtChunk: FmtChunk,
+    ) = process(window, fmtChunk.sampleRate)
 
     private fun processSignals(
         a: Sequence<Double>,
