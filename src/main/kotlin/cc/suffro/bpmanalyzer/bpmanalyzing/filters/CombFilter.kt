@@ -6,7 +6,7 @@ import cc.suffro.bpmanalyzer.bpmanalyzing.data.Signal
 import cc.suffro.bpmanalyzer.fft.FFTProcessor
 import cc.suffro.bpmanalyzer.fft.data.FFTData
 import cc.suffro.bpmanalyzer.round
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.math.pow
 
 class CombFilter {

@@ -7,7 +7,7 @@ import cc.suffro.bpmanalyzer.database.DatabaseOperations
 import cc.suffro.bpmanalyzer.fft.data.WindowFunction
 import cc.suffro.bpmanalyzer.wav.data.FileReader
 import cc.suffro.bpmanalyzer.wav.data.Wav
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 
 class CombFilterCacheAnalyzer(

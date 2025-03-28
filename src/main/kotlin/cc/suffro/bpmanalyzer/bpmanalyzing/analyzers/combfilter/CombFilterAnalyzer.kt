@@ -10,7 +10,7 @@ import cc.suffro.bpmanalyzer.fft.data.TimeDomainWindow
 import cc.suffro.bpmanalyzer.wav.data.FileReader
 import cc.suffro.bpmanalyzer.wav.data.FmtChunk
 import cc.suffro.bpmanalyzer.wav.data.Wav
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.koin.core.component.inject
 import java.nio.file.Path
 

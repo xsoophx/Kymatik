@@ -9,7 +9,7 @@ import cc.suffro.bpmanalyzer.speedadjustment.SpeedAdjuster
 import cc.suffro.bpmanalyzer.wav.data.FileReader
 import cc.suffro.bpmanalyzer.wav.data.FileWriter
 import cc.suffro.bpmanalyzer.wav.data.Wav
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.nio.file.Path
 
@@ -102,7 +102,7 @@ internal class TrackMerger(
                 if (trackA != trackB) {
                     val trackNameB = trackB.filePath.nameWithoutExtension()
                     merge(trackA, trackB, targetBpm)
-                    logger.info("Merged $trackNameA and $trackNameB")
+                    logger.info { "Merged $trackNameA and $trackNameB" }
                 }
             }
         }

@@ -6,6 +6,7 @@ import io.data2viz.scale.Scales
 import io.data2viz.viz.JFxVizRenderer
 import io.data2viz.viz.Viz
 import io.data2viz.viz.viz
+import io.github.oshai.kotlinlogging.KotlinLogging
 import javafx.scene.Group
 import javafx.scene.Scene
 import javafx.scene.canvas.Canvas
@@ -15,7 +16,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
-import mu.KotlinLogging
 import kotlin.coroutines.CoroutineContext
 
 private val logger = KotlinLogging.logger {}
