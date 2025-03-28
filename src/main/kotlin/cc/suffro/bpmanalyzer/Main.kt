@@ -4,9 +4,9 @@ import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CacheAnalyzer
 import cc.suffro.bpmanalyzer.data.Arguments
 import cc.suffro.bpmanalyzer.data.TrackInfo
 import cc.suffro.bpmanalyzer.wav.data.Wav
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
-import mu.KotlinLogging
 import org.koin.core.component.inject
 import org.koin.core.context.stopKoin
 import org.koin.core.parameter.parametersOf

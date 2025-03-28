@@ -3,7 +3,7 @@ package cc.suffro.bpmanalyzer.speedadjustment
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CacheAnalyzer
 import cc.suffro.bpmanalyzer.data.TrackInfo
 import cc.suffro.bpmanalyzer.wav.data.Wav
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.math.min
 
 class SpeedAdjuster(private val cacheAnalyzer: CacheAnalyzer<Wav, TrackInfo>) {
@@ -31,9 +31,9 @@ class SpeedAdjuster(private val cacheAnalyzer: CacheAnalyzer<Wav, TrackInfo>) {
         inverseStretchFactor: Double,
     ): DoubleArray {
         val newLength = (data.size / inverseStretchFactor).toInt()
-        logger.info("New length: $newLength")
+        logger.info { "New length: $newLength" }
         val stretchedData = DoubleArray(newLength)
-        logger.info("Array created successfully")
+        logger.info { "Array created successfully" }
 
         for (i in 0 until newLength) {
             // get old values for new position

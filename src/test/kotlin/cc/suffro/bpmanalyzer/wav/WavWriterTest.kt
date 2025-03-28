@@ -3,6 +3,7 @@ package cc.suffro.bpmanalyzer.wav
 import cc.suffro.bpmanalyzer.BaseTest
 import cc.suffro.bpmanalyzer.wav.data.FileReader
 import cc.suffro.bpmanalyzer.wav.data.Wav
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -46,7 +47,7 @@ class WavWriterTest : BaseTest() {
     }
 
     companion object {
-        val logger = mu.KotlinLogging.logger {}
+        val logger = KotlinLogging.logger {}
 
         @JvmStatic
         fun getWavData(): Stream<Arguments> {

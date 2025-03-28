@@ -1,7 +1,7 @@
 package cc.suffro.bpmanalyzer.database
 
 import cc.suffro.bpmanalyzer.data.TrackInfo
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.sql.Connection
 import java.sql.ResultSet
@@ -27,7 +27,7 @@ class SQLiteDatabase(private val databaseConnector: DatabaseConnector) : Databas
         try {
             getTablesAndCreateStatement()
         } catch (e: SQLException) {
-            logger.error(e.message)
+            logger.error { e.message }
         }
     }
 
@@ -47,24 +47,24 @@ class SQLiteDatabase(private val databaseConnector: DatabaseConnector) : Databas
         trackName: String,
         bpm: Double,
     ): Int {
-        logger.info("Trying to save $bpm for $trackName to database.")
+        logger.info { "Trying to save $bpm for $trackName to database." }
         databaseConnector.getConnection().use { connection ->
             try {
                 return prepareStatement(trackName, bpm, connection)
             } catch (e: SQLException) {
-                logger.error(e.message)
+                logger.error { e.message }
                 return -1
             }
         }
     }
 
     override fun getTrackInfo(trackName: String): TrackInfo? {
-        logger.info("Searching for $trackName in database...")
+        logger.info { "Searching for $trackName in database..." }
         databaseConnector.getConnection().use { connection ->
             try {
                 return getResults(trackName, connection)
             } catch (e: SQLException) {
-                logger.error(e.message)
+                logger.error { e.message }
                 return null
             }
         }
@@ -106,14 +106,14 @@ class SQLiteDatabase(private val databaseConnector: DatabaseConnector) : Databas
                 statement.executeUpdate()
             }
 
-        logger.info("Saving $trackName to database successful.")
+        logger.info { "Saving $trackName to database successful." }
         return status
     }
 
     private fun ensureConnectionIsOpen() {
         if (databaseConnector.getConnection().isClosed) {
             // Log error or throw exception
-            logger.error("Database connection is closed.")
+            logger.error { "Database connection is closed." }
             throw SQLException("Attempted to operate on a closed database connection.")
         }
     }
@@ -128,7 +128,7 @@ class SQLiteDatabase(private val databaseConnector: DatabaseConnector) : Databas
             val resultSet = statement.executeQuery()
 
             if (!resultSet.next()) {
-                logger.info("Getting $trackName from database failed.")
+                logger.info { "Getting $trackName from database failed." }
                 return null
             }
 
@@ -138,7 +138,7 @@ class SQLiteDatabase(private val databaseConnector: DatabaseConnector) : Databas
 
     private fun ResultSet.getResult(trackName: String): TrackInfo {
         val bpm = getDouble("bpm")
-        logger.info("Getting $trackName from database successful.")
+        logger.info { "Getting $trackName from database successful." }
         return TrackInfo(trackName, bpm)
     }
 }
