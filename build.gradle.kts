@@ -1,8 +1,9 @@
 plugins {
     application
-    kotlin("jvm") version "2.0.0-Beta3"
-    id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
+    kotlin("jvm") version "2.1.20"
+    id("org.jlleitschuh.gradle.ktlint") version "12.2.0"
     id("org.openjfx.javafxplugin") version "0.1.0"
+    id("maven-publish")
 }
 
 group = "cc.suffro"
@@ -36,18 +37,18 @@ application {
 }
 
 object Version {
-    const val ASSERTK = "0.25"
-    const val COROUTINES = "1.7.0-Beta"
-    const val JDBC = "3.45.1.0"
-    const val JUNIT = "5.10.1"
-    const val KOIN = "3.5.3"
-    const val KOIN_TEST = "3.5.3"
+    const val ASSERTK = "0.28.1"
+    const val COROUTINES = "1.10.1"
+    const val JDBC = "3.49.1.0"
+    const val JUNIT = "5.13.0-M2"
+    const val KOIN = "4.1.0-Beta5"
+    const val KOIN_TEST = "4.1.0-Beta5"
     const val KOTLIN_MATH = "1.0"
     const val KOTLINX_CLI = "0.3.6"
-    const val LOGBACK = "1.2.3"
-    const val LOGGING = "3.0.2"
-    const val SLF4J = "2.0.3"
-    const val VIZ = "0.9.1"
+    const val LOGBACK = "1.5.18"
+    const val LOGGING = "7.0.5"
+    const val SLF4J = "2.1.0-alpha1"
+    const val VIZ = "0.10.7"
 }
 
 dependencies {
@@ -68,7 +69,7 @@ dependencies {
 
     implementation("org.kotlinmath:complex-numbers:${Version.KOTLIN_MATH}")
 
-    implementation("io.github.microutils:kotlin-logging-jvm:${Version.LOGGING}")
+    implementation("io.github.oshai:kotlin-logging-jvm:${Version.LOGGING}")
 
     implementation("org.slf4j:slf4j-simple:${Version.SLF4J}")
 
@@ -92,13 +93,13 @@ dependencies {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(23))
     }
 }
 
 kotlin {
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(23))
     }
 }
 
