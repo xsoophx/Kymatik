@@ -44,7 +44,7 @@ class SQLiteDatabase(private val databaseConnector: DatabaseConnector) : Databas
     }
 
     override fun saveTrackInfo(
-        trackName: String,
+        trackName: Path,
         bpm: Double,
     ): Int {
         logger.info { "Trying to save $bpm for $trackName to database." }
@@ -92,7 +92,7 @@ class SQLiteDatabase(private val databaseConnector: DatabaseConnector) : Databas
     }
 
     private fun prepareStatement(
-        trackName: String,
+        trackName: Path,
         bpm: Double,
         connection: Connection,
     ): Int {
@@ -101,7 +101,7 @@ class SQLiteDatabase(private val databaseConnector: DatabaseConnector) : Databas
         val sql = "INSERT INTO $tableName (track_name, bpm) VALUES (?, ?)"
         val status =
             connection.prepareStatement(sql).use { statement ->
-                statement.setString(1, trackName)
+                statement.setString(1, trackName.toString())
                 statement.setDouble(2, bpm)
                 statement.executeUpdate()
             }
@@ -139,6 +139,6 @@ class SQLiteDatabase(private val databaseConnector: DatabaseConnector) : Databas
     private fun ResultSet.getResult(trackName: String): TrackInfo {
         val bpm = getDouble("bpm")
         logger.info { "Getting $trackName from database successful." }
-        return TrackInfo(trackName, bpm)
+        return TrackInfo(Path.of(trackName), bpm)
     }
 }

@@ -35,7 +35,7 @@ class CombFilterAnalyzer(private val combFilterOperations: CombFilterOperations)
         val bassBand = combFilterOperations.getBassBand(fftResult)
 
         val bpm = bassBand.getBpm(data.fmtChunk, combParams)
-        return TrackInfo(data.filePath.toString(), bpm)
+        return TrackInfo(data.filePath, bpm)
     }
 
     override fun getPathAndAnalyze(path: String): TrackInfo {

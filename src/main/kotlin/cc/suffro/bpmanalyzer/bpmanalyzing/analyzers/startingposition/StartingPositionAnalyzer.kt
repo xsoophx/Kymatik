@@ -41,25 +41,34 @@ class StartingPositionAnalyzer(
         return analyze(data, bpm)
     }
 
+    // TODO: too much guessing, too unprecise but okay for now
+    //  use comb filter with determined bpm and move it over the start of the track
     private fun analyze(
         data: Wav,
         bpm: Bpm,
         samplesToSkip: Int = 0,
     ): StartingPosition {
         logger.info { "Analyzing starting position of track: ${data.filePath} with bpm: $bpm" }
+
         val sampleSizeToAnalyze = (ANALYZING_DURATION * data.sampleRate).toInt()
         val samples = data.defaultChannel().drop(samplesToSkip)
 
         val fftResults =
             samples.take(sampleSizeToAnalyze)
                 .asSequence()
-                .windowed(FFT_SAMPLES, STEP_SIZE, partialWindows = false) {
-                    fftProcessor.process(it, data.sampleRate).magnitudes.sum()
+                .windowed(FFT_SAMPLES, STEP_SIZE, partialWindows = false) { window ->
+                    val fft = fftProcessor.process(window, data.sampleRate)
+
+                    val lowFreqStart = fft.binIndexOf(20.0)
+                    val lowFreqEnd = fft.binIndexOf(150.0)
+
+                    fft.magnitudes.slice(lowFreqStart..lowFreqEnd).average()
                 }.toList()
 
-        val max = fftResults.max()
-        val relatives = fftResults.map { it / max }
-        val firstPeak = relatives.indexOfFirst { it > 0.1 }
+        val avgNoise = fftResults.take(10).average()
+        val threshold = avgNoise * 1.5
+
+        val firstPeak = fftResults.indexOfFirst { it > threshold }
 
         return StartingPosition(
             firstSample = firstPeak * STEP_SIZE,
@@ -70,7 +79,7 @@ class StartingPositionAnalyzer(
     companion object {
         const val ANALYZING_DURATION = 2.0
         const val FFT_SAMPLES = 1024
-        const val STEP_SIZE = 512
+        const val STEP_SIZE = 128
         private val logger = KotlinLogging.logger {}
     }
 }

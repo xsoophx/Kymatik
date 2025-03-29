@@ -5,7 +5,7 @@ import java.nio.file.Path
 
 interface DatabaseOperations {
     fun saveTrackInfo(
-        trackName: String,
+        trackName: Path,
         bpm: Double,
     ): Int
 

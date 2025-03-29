@@ -116,7 +116,7 @@ open class BpmAnalyzer : BpmOperations {
         val analyzer by inject<Analyzer<Wav, TrackInfo>>()
         val trackInfo = analyzer.getPathAndAnalyze(trackPath)
 
-        return if (showTrackNameOnly) trackInfo.copy(trackName = trackPath.split("/").last()) else trackInfo
+        return if (showTrackNameOnly) trackInfo.copy(trackName = Path.of(trackPath.split("/").last())) else trackInfo
     }
 
     private fun analyzeWithoutCache(
@@ -126,6 +126,6 @@ open class BpmAnalyzer : BpmOperations {
         val analyzer by inject<Analyzer<Wav, TrackInfo>>()
         val trackInfo = analyzer.analyze(wav)
 
-        return if (showTrackNameOnly) trackInfo.copy(trackName = wav.filePath.fileName.toString()) else trackInfo
+        return if (showTrackNameOnly) trackInfo.copy(trackName = wav.filePath.fileName) else trackInfo
     }
 }

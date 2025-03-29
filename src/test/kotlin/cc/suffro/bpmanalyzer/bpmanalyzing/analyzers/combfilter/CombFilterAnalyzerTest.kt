@@ -10,6 +10,7 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.koin.test.inject
+import java.nio.file.Path
 import kotlin.test.assertEquals
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -19,7 +20,7 @@ class CombFilterAnalyzerTest : BaseTest() {
 
     @Test
     fun `should detect correct BPM for plain kicks`() {
-        val path = "src/test/resources/samples/120bpm_140Hz.wav"
+        val path = Path.of("src/test/resources/samples/120bpm_140Hz.wav")
         val wav = wavReader.read(path)
         val result = combFilterAnalyzer.analyze(wav)
         assertEquals(expected = TrackInfo(path, 120.0), actual = result)
@@ -27,7 +28,7 @@ class CombFilterAnalyzerTest : BaseTest() {
 
     @Test
     fun `should detect correct BPM for refined values`() {
-        val path = "src/test/resources/samples/120-5bpm_140Hz.wav"
+        val path = Path.of("src/test/resources/samples/120-5bpm_140Hz.wav")
         val wav = wavReader.read(path)
         val analyzerParams = CombFilterAnalyzerParams(refinementParams = RefinementParams())
         val result = combFilterAnalyzer.analyze(wav, analyzerParams)
