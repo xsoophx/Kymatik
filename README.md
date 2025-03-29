@@ -1,11 +1,8 @@
 # Kymatik: A Kotlin Library for Audio Analysis 🎵🧪
 
 Named after the fascinating study of wave phenomena, Kymatik offers a suite to analyze Audio data. It contains a range
-of functionalities, including accurate BPM detection and comprehensive FFT analysis. Beyond its capabilities with audio
-files, Kymatik's FFT methods can be applied to samples of various origins, not limited to audio data.
-This flexibility allows for a broader scope of analysis and manipulation. Kymatik aims to facilitate a deeper
-exploration of .wav files and beyond, offering the tools necessary for detailed examination and manipulation of complex
-waveforms.
+of functionalities, including accurate BPM detection and comprehensive FFT analysis. The FFT components can also be 
+used to analyze your own samples.
 
 # Contents
 
@@ -41,14 +38,14 @@ See [BPM Analyzer 🎛️](#bpm-analyzer-)
 
 ## 3. Stretching / compressing audio files
 
-Kymatik enables the extension or reduction of audio file durations. However, this currently affects the pitch of the
-audio file. Efforts are underway to develop a pitch correction feature that will permit the alteration of audio file
-lengths without impacting their pitch. This functionality is particularly valuable for beat synchronization in remixes
-or modifying the pace of a track.
+Kymatik allows you to change the length of audio files, either by extending or shortening them. However, this currently
+affects the pitch of the audio. Efforts are underway to develop a pitch correction feature that will allow you to change
+the length of an audio file without affecting its pitch. This feature will be especially useful for syncing beats in
+remixes or adjusting the tempo of a track.
 
 # Upcoming Features 🚧
 
-I'm excited about the roadmap ahead and are actively working on expanding Kymatik's capabilities.
+I'm (more or less) actively working on expanding Kymatik's capabilities.
 Some of the features currently in development include:
 
 ### 1. Expanding FFT Analysis:
@@ -81,8 +78,7 @@ Visualize the audio data in various ways, including waveform, spectrogram and mo
 
 Comprehensive documentation as a guide through the library's features and functionalities.
 
-**Please note that these features are in various stages of development and will be rolled out as they reach maturity.
-I'm committed to ensuring that each new feature meets high standards for reliability and performance.**
+**Please note that these features are in various stages of development and will be rolled out as they reach maturity.**
 
 # Getting Started 🚀
 
