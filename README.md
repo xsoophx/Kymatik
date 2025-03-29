@@ -108,7 +108,7 @@ will be used. In the following examples, you can see how to use Kymatik with and
 If you prefer not to use Koin, you can also use Kymatik without it.
 Here's an example of how to use Kymatik without Koin:
 
-### Call `KoinManager.INSTANCE` to initialize Kyamitks Koin dependency injection framework:
+### Call `KoinManager.INSTANCE` to initialize Kymatiks Koin dependency injection framework:
 
 ```kotlin
 class Main {
