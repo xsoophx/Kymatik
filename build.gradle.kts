@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "cc.suffro"
-version = "1.0-SNAPSHOT"
+version = "0.1.0-beta"
 
 repositories {
     mavenCentral()
@@ -118,7 +118,7 @@ publishing {
 
             group = "cc.suffro"
             artifactId = "kymatik"
-            version = "0.1.0"
+            version = "0.1.0-beta"
 
             pom {
                 name.set("BPM Analyzer")

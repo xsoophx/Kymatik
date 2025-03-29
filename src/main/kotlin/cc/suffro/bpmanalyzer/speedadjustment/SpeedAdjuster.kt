@@ -38,6 +38,17 @@ class SpeedAdjuster(private val analyzer: Analyzer<Wav, TrackInfo>) {
         return Wav(wav.copy(filePath = filePath), result)
     }
 
+    fun changeWavTo(
+        wav: Wav,
+        currentBpm: Double,
+        targetBpm: Double,
+        customFilePath: Path?,
+    ): Wav {
+        val result = changeTo(wav, currentBpm, targetBpm)
+        val filePath = customFilePath ?: wav.filePath
+        return Wav(wav.copy(filePath = filePath), result)
+    }
+
     private fun interpolate(
         data: DoubleArray,
         inverseStretchFactor: Double,

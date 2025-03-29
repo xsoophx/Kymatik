@@ -65,16 +65,11 @@ This can be useful for removing silence at the beginning of a track or aligning 
 
 Including YIN, Harmonic Product Spectrum and more.
 
-### 4. .mp3 and .flac support:
-
-Support for additional audio formats, allowing to analyze a wider range of audio files but also converting them to
-other formats.
-
-### 5. Audio visualization:
+###  4. (optional) Audio visualization:
 
 Visualize the audio data in various ways, including waveform, spectrogram and more.
 
-### 6. Documentation:
+### 5. Documentation:
 
 Comprehensive documentation as a guide through the library's features and functionalities.
 
@@ -86,7 +81,9 @@ To get started with Kymatik, please follow these steps:
 
 ## 1. Installation
 
-To install Kymatik in your project, add the following dependency to your `build.gradle.kts` file:
+Make sure to check out https://jitpack.io/ for more info on how to use JitPack.
+To install Kymatik in your project, add the `dependencyResolutionManagement` to your `settings.gradle` and the 
+following dependency to your `build.gradle` file:
 
 ```kotlin
 repositories {
@@ -94,14 +91,17 @@ repositories {
 }
 
 dependencies {
-    implementation("cc.suffro:kymatik:0.1.0")
+    implementation("cc.suffro:kymatik:0.1.0-beta")
 }
 ```
 
+
+
 ## 2. Usage
 
-Kymatik is using Koin as its dependency injection framework. In the following examples, you can see how to use Kymatik
-with and without Koin.
+Kymatik is using Koin as its dependency injection framework. If using this project without Koin, you have to create
+each instance for each constructor on your own. If you are using it with Koin, the configurations out of the modules
+will be used. In the following examples, you can see how to use Kymatik with and without Koin.
 
 ## Kymatik without Koin Dependency Injection
 
@@ -116,63 +116,6 @@ class Main {
     init {
         KoinManager.INSTANCE
     }
-}
-```
-
-### Reading a .wav file and analyzing its BPM:
-
-```kotlin
-val wav = WAVReader.read("path/to/your/wav/file.wav")
-val result = BpmAnalyzer().analyze(wav)
-```
-
-### Reading a .wav file and calculating its FFT:
-
-```kotlin
-    fun calculateFFT() {
-    val wav = WAVReader.read("path/to/your/wav/file.wav")
-    val params = WindowProcessingParams(
-        start = 0.0,
-        end = 10.0,
-        interval = 0.01,
-        channel = 0,
-        numSamples = FftSampleSize.DEFAULT
-    )
-    val fftResult = FFTProcessor.processWav(wav, params, WindowFunctionType.HAMMING.function)
-}
-```
-
-### Adjusting the tempo of a .wav file:
-
-```kotlin
-
-```
-
-This method is yielding a sequence of Frequency Domain Windows, each containing the FFT result of the respective time
-window.
-
-### Calculating the FFT of your custom samples:
-
-```kotlin
-  fun calculateFftOfCustom() {
-    val samples = (0 until 1024).map { i -> i.toDouble() }
-    val fftResult = FFTProcessor.process(samples, 44100)
-}
-```
-
-### Using your custom window function and a non-default FFT method:
-
-```kotlin
- fun calculateWithCustomFunction() {
-    val samples = (0 until 1024).map { i -> i.toDouble() }
-    val customFunction: WindowFunction = { sample, length -> sample.toDouble() / length }
-
-    val fftResult = FFTProcessor.process(
-        inputSamples = samples,
-        samplingRate = 44100,
-        method = Method.R2C_DFT,
-        windowFunction = customFunction
-    )
 }
 ```
 
@@ -239,6 +182,95 @@ class Main : KoinComponent {
     }
 }
 ```
+
+## Usage of Kymatik
+
+### Reading a .wav file and analyzing its BPM:
+
+```kotlin
+val wav = WAVReader.read("path/to/your/wav/file.wav")
+val result = BpmAnalyzer().analyze(wav)
+```
+
+### Reading a .wav file and calculating its FFT:
+
+```kotlin
+    fun calculateFFT() {
+    val wav = WAVReader.read("path/to/your/wav/file.wav")
+    val params = WindowProcessingParams(
+        start = 0.0,
+        end = 10.0,
+        interval = 0.01,
+        channel = 0,
+        numSamples = FftSampleSize.DEFAULT
+    )
+    val fftResult = FFTProcessor.processWav(wav, params, WindowFunctionType.HAMMING.function)
+}
+```
+
+### Adjusting the tempo of a .wav file:
+
+You can either use the new samples obtained by the ``changeTo`` functions:
+```kotlin
+// current BPM not determined yet
+fun adjustTempo() {
+    val wav = WAVReader.read("path/to/your/wav/file.wav")
+
+    // analyzer can get injected, if class is KoinComponent
+    val injectedAnalyzer by inject<Analyzer<Wav, TrackInfo>>()
+    val samplesOne = SpeedAdjuster(injectedAnalyzer).changeTo(wav, 120.0)
+
+    // otherwise, you can create an instance of the analyzer
+    val analyzer = CombFilterAnalyzer(CombFilterOperationsImpl())
+    val samplesTwo = SpeedAdjuster(analyzer).changeTo(wav, 120.0)
+}
+```
+
+Or save the new wav file directly:
+```kotlin
+ // current BPM not determined yet
+    fun stretchAndSaveWav() {
+        val wav = WAVReader.read("path/to/your/wav/file.wav")
+        val targetPath = Path.of("output/path/for/first.wav")
+
+        // analyzer can get injected, if class is KoinComponent
+        val injectedAnalyzer by inject<Analyzer<Wav, TrackInfo>>()
+        val samplesOne = SpeedAdjuster(injectedAnalyzer).changeWavTo(wav, 120.0, targetPath)
+
+        // otherwise, you can create an instance of the analyzer
+        val analyzer = CombFilterAnalyzer(CombFilterOperationsImpl())
+        val samplesTwo = SpeedAdjuster(analyzer).changeWavTo(wav, 120.0, 130.0, targetPath)
+    }
+```
+
+### Calculating the FFT of your custom samples:
+
+```kotlin
+  fun calculateFftOfCustom() {
+    val samples = (0 until 1024).map { i -> i.toDouble() }
+    val fftResult = FFTProcessor.process(samples, 44100)
+}
+```
+
+This method is yielding a sequence of Frequency Domain Windows, each containing the FFT result of the respective time
+window.
+
+### Using your custom window function and a non-default FFT method:
+
+```kotlin
+ fun calculateWithCustomFunction() {
+    val samples = (0 until 1024).map { i -> i.toDouble() }
+    val customFunction: WindowFunction = { sample, length -> sample.toDouble() / length }
+
+    val fftResult = FFTProcessor.process(
+        inputSamples = samples,
+        samplingRate = 44100,
+        method = Method.R2C_DFT,
+        windowFunction = customFunction
+    )
+}
+```
+
 
 # Contributing
 

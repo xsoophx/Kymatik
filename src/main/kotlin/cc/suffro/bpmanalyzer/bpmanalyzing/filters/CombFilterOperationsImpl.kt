@@ -12,7 +12,7 @@ import cc.suffro.bpmanalyzer.isPowerOfTwo
 import cc.suffro.bpmanalyzer.wav.data.Wav
 import java.nio.file.Path
 
-class CombFilterOperationsImpl(private val combFilter: CombFilter) : CombFilterOperations {
+class CombFilterOperationsImpl(private val combFilter: CombFilter = CombFilter()) : CombFilterOperations {
     private val cache = mutableMapOf<Path, FFTData>()
 
     override fun getBpm(

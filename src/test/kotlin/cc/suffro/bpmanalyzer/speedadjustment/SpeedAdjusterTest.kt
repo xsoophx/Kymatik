@@ -111,4 +111,22 @@ class SpeedAdjusterTest : BaseTest() {
         assertEquals(customPath, result.filePath)
         assertTrue(wav.copy(filePath = customPath).headerIsEqualTo(result))
     }
+
+    @Test
+    fun `should create correct wav file with custom path and current bpm`() {
+        val wav = wavReader.read("src/test/resources/samples/120bpm_140Hz.wav")
+        val currentBpm = 120.0
+        val targetBpm = 130.0
+        val customPath = Path.of("src/test/resources/samples/130bpm_140Hz.wav")
+        val result = prodSpeedAdjuster.changeWavTo(wav, currentBpm, targetBpm, customPath)
+
+        assertNearlyEquals(
+            expected = (wav.dataChunk.dataChunkSize * (currentBpm / targetBpm)).toInt(),
+            actual = result.dataChunk.data.first().size * wav.fmtChunk.numChannels * wav.fmtChunk.bitsPerSample / 8,
+            e = 3,
+            exclusive = false,
+        )
+        assertEquals(customPath, result.filePath)
+        assertTrue(wav.copy(filePath = customPath).headerIsEqualTo(result))
+    }
 }
