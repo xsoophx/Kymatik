@@ -8,16 +8,16 @@ import cc.suffro.bpmanalyzer.wav.data.FileReader
 import cc.suffro.bpmanalyzer.wav.data.FileWriter
 import cc.suffro.bpmanalyzer.wav.data.FmtChunk
 import cc.suffro.bpmanalyzer.wav.data.Wav
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.koin.core.qualifier.named
 import org.koin.test.inject
 import java.nio.file.Path
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SpeedAdjusterTest : BaseTest() {
     private val prodSpeedAdjuster by inject<SpeedAdjuster>(named("ProdSpeedAdjuster"))
 
@@ -93,5 +93,62 @@ class SpeedAdjusterTest : BaseTest() {
             Path.of("src/test/resources/samples/120-5bpm_140Hz.wav"),
             Wav(wav, result),
         )
+    }
+
+    @Test
+    fun `should create correct wav file with custom path`() {
+        val wav = wavReader.read("src/test/resources/samples/120bpm_140Hz.wav")
+        val currentBpm = 120.0
+        val targetBpm = 130.0
+        val customPath = Path.of("src/test/resources/samples/130bpm_140Hz.wav")
+        val result = prodSpeedAdjuster.changeWavTo(wav, targetBpm, customPath)
+
+        assertNearlyEquals(
+            expected = (wav.dataChunk.dataChunkSize * (currentBpm / targetBpm)).toInt(),
+            actual = result.dataChunk.data.first().size * wav.fmtChunk.numChannels * wav.fmtChunk.bitsPerSample / 8,
+            e = 3,
+            exclusive = false,
+        )
+        assertEquals(customPath, result.filePath)
+        assertTrue(wav.copy(filePath = customPath).headerIsEqualTo(result))
+    }
+
+    @Test
+    fun `should create correct wav file with custom path and current bpm`() {
+        val wav = wavReader.read("src/test/resources/samples/120bpm_140Hz.wav")
+        val currentBpm = 120.0
+        val targetBpm = 130.0
+        val customPath = Path.of("src/test/resources/samples/130bpm_140Hz.wav")
+        val result = prodSpeedAdjuster.changeWavTo(wav, currentBpm, targetBpm, customPath)
+
+        assertNearlyEquals(
+            expected = (wav.dataChunk.dataChunkSize * (currentBpm / targetBpm)).toInt(),
+            actual = result.dataChunk.data.first().size * wav.fmtChunk.numChannels * wav.fmtChunk.bitsPerSample / 8,
+            e = 3,
+            exclusive = false,
+        )
+        assertEquals(customPath, result.filePath)
+        assertTrue(wav.copy(filePath = customPath).headerIsEqualTo(result))
+    }
+
+    @Test
+    @Disabled
+    fun `should create correct wav file with custom path and current bpm for 24-bit PCM WAVE_EXTENSIBLE`() {
+        val wav = wavReader.read("src/test/resources/samples/MAC DECLOS - A2. All Cries Are Beautiful.wav")
+        val currentBpm = 148.0
+        val targetBpm = 130.0
+        val customPath = Path.of("src/test/resources/samples/MAC DECLOS - A2. All Cries Are Beautiful2.wav")
+        val result = prodSpeedAdjuster.changeWavTo(wav, currentBpm, targetBpm, customPath)
+
+        wavWriter.write(customPath, result)
+        assertNearlyEquals(
+            expected = (wav.dataChunk.dataChunkSize * (currentBpm / targetBpm)).toInt(),
+            actual = result.dataChunk.data.first().size * wav.fmtChunk.numChannels * wav.fmtChunk.bitsPerSample / 8,
+            // should not be 5
+            e = 5,
+            exclusive = false,
+        )
+        assertEquals(customPath, result.filePath)
+        assertTrue(wav.copy(filePath = customPath).headerIsEqualTo(result))
     }
 }

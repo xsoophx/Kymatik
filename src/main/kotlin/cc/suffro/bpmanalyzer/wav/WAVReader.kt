@@ -1,5 +1,6 @@
 package cc.suffro.bpmanalyzer.wav
 
+import cc.suffro.bpmanalyzer.wav.WAVReader.readBuffer
 import cc.suffro.bpmanalyzer.wav.data.AudioFormat
 import cc.suffro.bpmanalyzer.wav.data.DataChunk
 import cc.suffro.bpmanalyzer.wav.data.Error
@@ -14,12 +15,11 @@ import java.nio.ByteOrder
 import java.nio.file.Path
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
-import kotlin.io.path.Path
 import kotlin.io.path.inputStream
 
 // TODO: needs refactoring
 object WAVReader : FileReader<Wav> {
-    override fun read(path: String): Wav = read(Path(path))
+    override fun read(path: String): Wav = read(Path.of(path))
 
     override fun read(path: Path): Wav =
         path.inputStream().buffered().use { input ->
@@ -37,6 +37,10 @@ object WAVReader : FileReader<Wav> {
             val blockAlign = input.readAsShort()
             val bitsPerSample = input.readAsShort()
 
+            // TODO: implement extensible wave format
+            if (audioFormat == AudioFormat.WAVE_FORMAT_EXTENSIBLE) {
+                val throwAway = input.readBuffer(36)
+            }
             // data
             val dataSignature = String(input.readNBytes(4), Charsets.US_ASCII)
             check(dataSignature == DATA_SIGNATURE, ErrorType.UNEXPECTED_DATA_SIGNATURE)

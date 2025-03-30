@@ -28,7 +28,17 @@ fun assertNearlyEquals(
 fun assertNearlyEquals(
     expected: Double,
     actual: Double,
-    e: Int = 2,
+    e: Int,
+    exclusive: Boolean = true,
+    message: String? = null,
+) {
+    assertTrue(actual.closeTo(expected, e, exclusive), message ?: "Expected <$expected>, actual <$actual>.")
+}
+
+fun assertNearlyEquals(
+    expected: Int,
+    actual: Int,
+    e: Int,
     exclusive: Boolean = true,
     message: String? = null,
 ) {
@@ -38,16 +48,17 @@ fun assertNearlyEquals(
 fun assertNearlyEquals(
     expected: StartingPosition,
     actual: StartingPosition,
+    exclusive: Boolean = true,
     sampleDistance: Int = 100,
     secondDistance: Double = 0.01,
     message: String? = null,
 ) {
     assertTrue(
-        actual.firstSample.closeTo(expected.firstSample, sampleDistance, true),
+        actual.firstSample.closeTo(expected.firstSample, sampleDistance, exclusive),
         message ?: "Expected <$expected>, actual <$actual>.",
     )
     assertTrue(
-        actual.startInSec.closeTo(expected.startInSec, secondDistance),
+        actual.startInSec.closeTo(expected.startInSec, secondDistance, exclusive),
         message ?: "Expected <$expected>, actual <$actual>.",
     )
 }
@@ -71,5 +82,11 @@ private fun Int.closeTo(
 private fun Double.closeTo(
     number: Double,
     e: Int,
+    exclusive: Boolean,
+): Boolean = if (exclusive) abs(this - number) < e else abs(this - number) <= e
+
+private fun Double.closeTo(
+    number: Double,
+    e: Double,
     exclusive: Boolean,
 ): Boolean = if (exclusive) abs(this - number) < e else abs(this - number) <= e

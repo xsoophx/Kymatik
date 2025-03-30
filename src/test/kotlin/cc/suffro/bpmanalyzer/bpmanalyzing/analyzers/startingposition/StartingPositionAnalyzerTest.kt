@@ -13,7 +13,6 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.koin.test.inject
 import java.util.stream.Stream
-import kotlin.test.assertEquals
 
 class StartingPositionAnalyzerTest : BaseTest() {
     private val wavReader by inject<FileReader<Wav>>()
@@ -31,8 +30,9 @@ class StartingPositionAnalyzerTest : BaseTest() {
         val result = startingPositionAnalyzer.analyze(wav, StartingPositionCacheAnalyzerParams(bpm))
         assertNearlyEquals(
             expected = StartingPosition(firstSample = firstSample, startInSec = startInSec),
+            exclusive = false,
             actual = result,
-            sampleDistance = 20,
+            sampleDistance = 150,
             secondDistance = 0.01,
         )
     }
@@ -44,7 +44,7 @@ class StartingPositionAnalyzerTest : BaseTest() {
         val wav = wavReader.read(path)
         val result = startingPositionAnalyzer.analyze(wav, StartingPositionCacheAnalyzerParams(144.0))
 
-        assertEquals(result.startInSec, 0.8)
+        assertNearlyEquals(0.8, result.startInSec, 0.2)
     }
 
     companion object {

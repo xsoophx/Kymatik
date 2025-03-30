@@ -64,6 +64,7 @@ object WavWriter : FileWriter<Wav> {
         output.write(intToByteArray(dataChunk.dataChunkSize))
         val sampleCount = dataChunk.dataChunkSize / fmtChunk.blockAlign
 
+        // TODO: add 24 and 32 bits per sample
         when (fmtChunk.bitsPerSample.toInt()) {
             16 -> {
                 for (sampleIndex in 0 until sampleCount) {

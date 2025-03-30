@@ -8,14 +8,14 @@ import java.nio.file.Path
 
 class CombFilterCacheAnalyzerTestImpl : CacheAnalyzer<Wav, TrackInfo> {
     override fun analyze(data: Wav): TrackInfo {
-        return TrackInfo(trackName = "test", bpm = 100.0)
+        return TrackInfo(trackName = Path.of("test"), bpm = 100.0)
     }
 
     override fun analyze(
         data: Wav,
         params: AnalyzerParams,
     ): TrackInfo {
-        return TrackInfo(trackName = "test", bpm = 100.0)
+        return TrackInfo(trackName = Path.of("test"), bpm = 100.0)
     }
 
     override fun getPathAndAnalyze(path: String): TrackInfo {
