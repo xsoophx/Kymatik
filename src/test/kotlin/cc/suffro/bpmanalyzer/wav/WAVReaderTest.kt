@@ -2,6 +2,7 @@ package cc.suffro.bpmanalyzer.wav
 
 import cc.suffro.bpmanalyzer.BaseTest
 import cc.suffro.bpmanalyzer.FFT
+import cc.suffro.bpmanalyzer.assertNearlyEquals
 import cc.suffro.bpmanalyzer.fft.FFTProcessor
 import cc.suffro.bpmanalyzer.fft.data.FftSampleSize
 import cc.suffro.bpmanalyzer.wav.data.AudioFormat
@@ -10,12 +11,14 @@ import cc.suffro.bpmanalyzer.wav.data.FileReader
 import cc.suffro.bpmanalyzer.wav.data.FmtChunk
 import cc.suffro.bpmanalyzer.wav.data.Wav
 import cc.suffro.bpmanalyzer.wav.data.WindowProcessingParams
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.MethodSource
+import org.koin.core.component.inject
 import org.koin.test.inject
 import java.util.stream.Stream
 import kotlin.io.path.Path
@@ -103,6 +106,33 @@ class WAVReaderTest : BaseTest() {
         assertEquals(expected = 0, actual = actual.count())
     }
 
+    @ParameterizedTest
+    @MethodSource("getWavDataWithPCM")
+    fun `should read correct samples from wav file with PCM`(
+        path: String,
+        fmtChunk: FmtChunk,
+        dataChunkSize: Int,
+    ) {
+        val actual = wavReader.read(path)
+        val expected =
+            Wav(
+                filePath = Path(path),
+                fmtChunk = fmtChunk,
+                dataChunk = DataChunk(dataChunkSize, actual.dataChunk.data),
+            )
+
+        assertEquals(expected = expected, actual = actual)
+    }
+
+    // TODO: add sample which has WAVE_FORMAT_EXTENSIBLE
+    @Disabled
+    @Test
+    fun `should be able to read track correctly`() {
+        val wav =
+            WAVReader.read("src/test/resources/samples/MAC DECLOS - A2. All Cries Are Beautiful.wav")
+        assertNearlyEquals(327.57, wav.trackLength, 0.01)
+    }
+
     companion object {
         @JvmStatic
         private fun getWavDataWithFmt() =
@@ -142,6 +172,25 @@ class WAVReaderTest : BaseTest() {
             Stream.of(
                 Arguments.of("src/test/resources/samples/440.wav", 440.0),
                 Arguments.of("src/test/resources/samples/220.wav", 220.0),
+            )
+
+        @JvmStatic
+        private fun getWavDataWithPCM() =
+            Stream.of(
+                Arguments.of(
+                    "src/test/resources/samples/kick_140_24PCM.wav",
+                    FmtChunk(
+                        riffChunkSize = 1542852,
+                        fmtChunkSize = 16,
+                        audioFormat = AudioFormat.PCM,
+                        numChannels = 2,
+                        sampleRate = 44100,
+                        byteRate = 264600,
+                        blockAlign = 6,
+                        bitsPerSample = 24,
+                    ),
+                    1542714,
+                ),
             )
     }
 }
