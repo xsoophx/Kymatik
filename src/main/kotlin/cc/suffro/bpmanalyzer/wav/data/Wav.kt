@@ -28,17 +28,6 @@ data class DataChunk(
     }
 }
 
-data class FmtChunk(
-    val riffChunkSize: Int,
-    val fmtChunkSize: Int,
-    val audioFormat: AudioFormat,
-    val numChannels: Short,
-    val sampleRate: Int,
-    val byteRate: Int,
-    val blockAlign: Short,
-    val bitsPerSample: Short,
-)
-
 data class Wav(
     val filePath: Path,
     val fmtChunk: FmtChunk,
