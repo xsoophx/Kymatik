@@ -28,7 +28,6 @@ data class WaveExtensibleFmtChunk(
     private val standardChunk: PcmFmtChunk,
     private val extensibleChunk: ExtensibleChunk,
 ) : FmtChunk() {
-
     override val riffChunkSize: Int get() = standardChunk.riffChunkSize
     override val fmtChunkSize: Int get() = standardChunk.fmtChunkSize
     override val audioFormat: AudioFormat get() = standardChunk.audioFormat
@@ -45,5 +44,5 @@ data class ExtensibleChunk(
     private val channelMask: Int,
     private val subFormat: ByteBuffer,
     private val factChunkSize: Int,
-    private val factSampleLength: Int
+    private val factSampleLength: Int,
 )

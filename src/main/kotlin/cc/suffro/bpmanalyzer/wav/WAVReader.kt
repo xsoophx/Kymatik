@@ -43,9 +43,12 @@ object WAVReader : FileReader<Wav> {
             val bitsPerSample = input.readAsShort()
 
             // TODO: implement extensible wave format
-            val extensibleChunk = if (audioFormat == AudioFormat.WAVE_FORMAT_EXTENSIBLE) {
-                input.readWaveExtensibleChunk(bitsPerSample, blockAlign, numChannels, riffChunkSize)
-            } else null
+            val extensibleChunk =
+                if (audioFormat == AudioFormat.WAVE_FORMAT_EXTENSIBLE) {
+                    input.readWaveExtensibleChunk(bitsPerSample, blockAlign, numChannels, riffChunkSize)
+                } else {
+                    null
+                }
 
             // data
             val dataSignature = String(input.readNBytes(4), Charsets.US_ASCII)
@@ -66,9 +69,10 @@ object WAVReader : FileReader<Wav> {
                     bitsPerSample = bitsPerSample,
                 )
 
-            val fmtChunk = extensibleChunk?.let {
-                WaveExtensibleFmtChunk(standardChunk = pcmFmtChunk, extensibleChunk = it)
-            } ?: pcmFmtChunk
+            val fmtChunk =
+                extensibleChunk?.let {
+                    WaveExtensibleFmtChunk(standardChunk = pcmFmtChunk, extensibleChunk = it)
+                } ?: pcmFmtChunk
 
             Wav(
                 filePath = path,
@@ -182,7 +186,7 @@ object WAVReader : FileReader<Wav> {
         bitsPerSample: Short,
         blockAlign: Short,
         numChannels: Short,
-        riffChunkSize: Int
+        riffChunkSize: Int,
     ): ExtensibleChunk {
         check(bitsPerSample.toInt() == 8 * blockAlign / numChannels, ErrorType.INVALID_W_BITS_PER_SAMPLE)
 
@@ -196,7 +200,7 @@ object WAVReader : FileReader<Wav> {
         val subFormat = readBuffer(16)
         check(
             subFormat[0].toInt() == 0xFF && subFormat[1].toInt() == 0xFE,
-            ErrorType.INVALID_WAVE_FORMAT_EXTENSIBLE
+            ErrorType.INVALID_WAVE_FORMAT_EXTENSIBLE,
         )
 
         val ckId = String(readNBytes(4), Charsets.US_ASCII)

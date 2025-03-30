@@ -6,7 +6,6 @@ import cc.suffro.bpmanalyzer.wav.data.AudioFormat
 import cc.suffro.bpmanalyzer.wav.data.DataChunk
 import cc.suffro.bpmanalyzer.wav.data.FileReader
 import cc.suffro.bpmanalyzer.wav.data.FileWriter
-import cc.suffro.bpmanalyzer.wav.data.FmtChunk
 import cc.suffro.bpmanalyzer.wav.data.PcmFmtChunk
 import cc.suffro.bpmanalyzer.wav.data.Wav
 import org.junit.jupiter.api.Disabled
