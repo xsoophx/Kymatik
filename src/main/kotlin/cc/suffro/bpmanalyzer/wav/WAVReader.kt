@@ -1,8 +1,5 @@
 package cc.suffro.bpmanalyzer.wav
 
-import cc.suffro.bpmanalyzer.wav.WAVReader.readAsInt
-import cc.suffro.bpmanalyzer.wav.WAVReader.readAsShort
-import cc.suffro.bpmanalyzer.wav.WAVReader.readBuffer
 import cc.suffro.bpmanalyzer.wav.data.AudioFormat
 import cc.suffro.bpmanalyzer.wav.data.DataChunk
 import cc.suffro.bpmanalyzer.wav.data.Error
@@ -42,7 +39,6 @@ object WAVReader : FileReader<Wav> {
             val blockAlign = input.readAsShort()
             val bitsPerSample = input.readAsShort()
 
-            // TODO: implement extensible wave format
             val extensibleChunk =
                 if (audioFormat == AudioFormat.WAVE_FORMAT_EXTENSIBLE) {
                     input.readWaveExtensibleChunk(bitsPerSample, blockAlign, numChannels, riffChunkSize)
