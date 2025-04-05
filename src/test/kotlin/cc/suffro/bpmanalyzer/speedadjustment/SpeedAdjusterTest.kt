@@ -6,7 +6,7 @@ import cc.suffro.bpmanalyzer.wav.data.AudioFormat
 import cc.suffro.bpmanalyzer.wav.data.DataChunk
 import cc.suffro.bpmanalyzer.wav.data.FileReader
 import cc.suffro.bpmanalyzer.wav.data.FileWriter
-import cc.suffro.bpmanalyzer.wav.data.FmtChunk
+import cc.suffro.bpmanalyzer.wav.data.PcmFmtChunk
 import cc.suffro.bpmanalyzer.wav.data.Wav
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -33,7 +33,7 @@ class SpeedAdjusterTest : BaseTest() {
         val wav =
             Wav(
                 filePath = Path.of("dummy.wav"),
-                fmtChunk = FmtChunk(1, 1, AudioFormat.PCM, 1, 1, 1, 1, 1),
+                fmtChunk = PcmFmtChunk(1, 1, AudioFormat.PCM, 1, 1, 1, 1, 1),
                 dataChunk = DataChunk(0, arrayOf(data)),
             )
 
@@ -49,7 +49,7 @@ class SpeedAdjusterTest : BaseTest() {
         val wav =
             Wav(
                 filePath = Path.of("dummy.wav"),
-                fmtChunk = FmtChunk(1, 1, AudioFormat.PCM, 2, 1, 1, 1, 1),
+                fmtChunk = PcmFmtChunk(1, 1, AudioFormat.PCM, 2, 1, 1, 1, 1),
                 dataChunk = DataChunk(0, data),
             )
 

@@ -1,13 +1,15 @@
 package cc.suffro.bpmanalyzer.wav
 
-import cc.suffro.bpmanalyzer.wav.WAVReader.readBuffer
 import cc.suffro.bpmanalyzer.wav.data.AudioFormat
 import cc.suffro.bpmanalyzer.wav.data.DataChunk
 import cc.suffro.bpmanalyzer.wav.data.Error
 import cc.suffro.bpmanalyzer.wav.data.ErrorType
+import cc.suffro.bpmanalyzer.wav.data.ExtensibleChunk
 import cc.suffro.bpmanalyzer.wav.data.FileReader
 import cc.suffro.bpmanalyzer.wav.data.FmtChunk
+import cc.suffro.bpmanalyzer.wav.data.PcmFmtChunk
 import cc.suffro.bpmanalyzer.wav.data.Wav
+import cc.suffro.bpmanalyzer.wav.data.WaveExtensibleFmtChunk
 import java.io.BufferedInputStream
 import java.io.InputStream
 import java.nio.ByteBuffer
@@ -37,10 +39,13 @@ object WAVReader : FileReader<Wav> {
             val blockAlign = input.readAsShort()
             val bitsPerSample = input.readAsShort()
 
-            // TODO: implement extensible wave format
-            if (audioFormat == AudioFormat.WAVE_FORMAT_EXTENSIBLE) {
-                val throwAway = input.readBuffer(36)
-            }
+            val extensibleChunk =
+                if (audioFormat == AudioFormat.WAVE_FORMAT_EXTENSIBLE) {
+                    input.readWaveExtensibleChunk(bitsPerSample, blockAlign, numChannels, riffChunkSize)
+                } else {
+                    null
+                }
+
             // data
             val dataSignature = String(input.readNBytes(4), Charsets.US_ASCII)
             check(dataSignature == DATA_SIGNATURE, ErrorType.UNEXPECTED_DATA_SIGNATURE)
@@ -48,8 +53,8 @@ object WAVReader : FileReader<Wav> {
             val data = input.readNBytes(dataChunkSize)
             check(data.size == dataChunkSize, ErrorType.WRONG_DATA_SIZE)
 
-            val fmtChunk =
-                FmtChunk(
+            val pcmFmtChunk =
+                PcmFmtChunk(
                     riffChunkSize = riffChunkSize,
                     fmtChunkSize = fmtChunkSize,
                     audioFormat = audioFormat,
@@ -60,10 +65,15 @@ object WAVReader : FileReader<Wav> {
                     bitsPerSample = bitsPerSample,
                 )
 
+            val fmtChunk =
+                extensibleChunk?.let {
+                    WaveExtensibleFmtChunk(standardChunk = pcmFmtChunk, extensibleChunk = it)
+                } ?: pcmFmtChunk
+
             Wav(
                 filePath = path,
                 fmtChunk = fmtChunk,
-                dataChunk = DataChunk(dataChunkSize, data.readSamples(fmtChunk)),
+                dataChunk = DataChunk(dataChunkSize, data.readSamples(pcmFmtChunk)),
             )
         }
 
@@ -132,7 +142,7 @@ object WAVReader : FileReader<Wav> {
 
     private fun InputStream.readBuffer(size: Int): ByteBuffer =
         readNBytes(size)
-            ?.takeIf { it.size == size }
+            .takeIf { it.size == size }
             ?.let(ByteBuffer::wrap)
             ?.apply { order(ByteOrder.LITTLE_ENDIAN) }
             ?: throw ParsingException(Error(ErrorType.UNEXPECTED_EOF))
@@ -166,5 +176,45 @@ object WAVReader : FileReader<Wav> {
         if (!value) {
             throw ParsingException(Error(error, lazyMessage()))
         }
+    }
+
+    private fun InputStream.readWaveExtensibleChunk(
+        bitsPerSample: Short,
+        blockAlign: Short,
+        numChannels: Short,
+        riffChunkSize: Int,
+    ): ExtensibleChunk {
+        check(bitsPerSample.toInt() == 8 * blockAlign / numChannels, ErrorType.INVALID_W_BITS_PER_SAMPLE)
+
+        val cbSize = readAsShort()
+        check(cbSize.toInt() == 22, ErrorType.INVALID_WAVE_FORMAT_EXTENSIBLE)
+
+        val validBitsPerSample = readAsShort()
+        check(validBitsPerSample.toInt() == bitsPerSample.toInt(), ErrorType.INVALID_WAVE_FORMAT_EXTENSIBLE)
+
+        val channelMask = readAsInt()
+        val subFormat = readBuffer(16)
+        check(
+            subFormat[0].toInt() == 0xFF && subFormat[1].toInt() == 0xFE,
+            ErrorType.INVALID_WAVE_FORMAT_EXTENSIBLE,
+        )
+
+        val ckId = String(readNBytes(4), Charsets.US_ASCII)
+        check(ckId == FACT_SIGNATURE, ErrorType.UNEXPECTED_FMT_SIGNATURE)
+
+        val factChunkSize = readAsInt()
+        check(factChunkSize == 4, ErrorType.UNEXPECTED_FMT_SIGNATURE)
+
+        val factSampleLength = readAsInt()
+        check(factSampleLength == riffChunkSize / blockAlign * numChannels, ErrorType.UNEXPECTED_FMT_SIGNATURE)
+
+        return ExtensibleChunk(
+            cbSize = cbSize,
+            validBitsPerSample = validBitsPerSample,
+            channelMask = channelMask,
+            subFormat = subFormat,
+            factChunkSize = factChunkSize,
+            factSampleLength = factSampleLength,
+        )
     }
 }

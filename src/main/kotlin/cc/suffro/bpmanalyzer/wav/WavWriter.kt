@@ -1,15 +1,20 @@
 package cc.suffro.bpmanalyzer.wav
 
+import cc.suffro.bpmanalyzer.wav.data.AudioFormat
 import cc.suffro.bpmanalyzer.wav.data.DataChunk
 import cc.suffro.bpmanalyzer.wav.data.FileWriter
 import cc.suffro.bpmanalyzer.wav.data.FmtChunk
 import cc.suffro.bpmanalyzer.wav.data.Wav
+import cc.suffro.bpmanalyzer.wav.data.WaveExtensibleFmtChunk
 import java.io.BufferedOutputStream
 import java.io.OutputStream
+import java.math.BigDecimal
+import java.math.BigInteger
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.math.min
 
 object WavWriter : FileWriter<Wav> {
     override fun write(
@@ -53,6 +58,17 @@ object WavWriter : FileWriter<Wav> {
         output.write(intToByteArray(fmtChunk.byteRate))
         output.write(shortToByteArray(fmtChunk.blockAlign))
         output.write(shortToByteArray(fmtChunk.bitsPerSample))
+
+        if (fmtChunk.audioFormat == AudioFormat.WAVE_FORMAT_EXTENSIBLE) {
+            val extensibleFmtChunk = (fmtChunk as WaveExtensibleFmtChunk).extensibleChunk
+            output.write(shortToByteArray(extensibleFmtChunk.cbSize))
+            output.write(shortToByteArray(extensibleFmtChunk.validBitsPerSample))
+            output.write(intToByteArray(extensibleFmtChunk.channelMask))
+            output.write(bufferToByteArray(extensibleFmtChunk.subFormat, 16))
+            output.write(FACT_SIGNATURE.toByteArray(Charsets.US_ASCII))
+            output.write(intToByteArray(extensibleFmtChunk.factChunkSize))
+            output.write(intToByteArray(extensibleFmtChunk.factSampleLength))
+        }
     }
 
     private fun writeDataChunk(
@@ -64,16 +80,52 @@ object WavWriter : FileWriter<Wav> {
         output.write(intToByteArray(dataChunk.dataChunkSize))
         val sampleCount = dataChunk.dataChunkSize / fmtChunk.blockAlign
 
-        // TODO: add 24 and 32 bits per sample
         when (fmtChunk.bitsPerSample.toInt()) {
             16 -> {
                 for (sampleIndex in 0 until sampleCount) {
                     for (channel in 0 until fmtChunk.numChannels) {
-                        val shortValue = (dataChunk.data[channel][sampleIndex] * Short.MAX_VALUE).toInt().toShort()
+                        val intValue =
+                            min((dataChunk.data[channel][sampleIndex] * Short.MAX_VALUE).toInt(), Int.MAX_VALUE)
+                        val shortValue = intValue.toShort()
                         val sampleBytes =
                             ByteBuffer.allocate(Short.SIZE_BYTES).apply {
                                 order(ByteOrder.LITTLE_ENDIAN)
                                 putShort(shortValue)
+                            }.array()
+                        output.write(sampleBytes)
+                    }
+                }
+            }
+
+            24 -> {
+                for (sampleIndex in 0 until sampleCount) {
+                    for (channel in 0 until fmtChunk.numChannels) {
+                        val intValue =
+                            min((dataChunk.data[channel][sampleIndex] * MAX_VALUE_24BIT).toInt(), MAX_VALUE_24BIT)
+                        val sampleBytes =
+                            byteArrayOf(
+                                intValue.toByte(),
+                                (intValue shr 8).toByte(),
+                                (intValue shr 16).toByte(),
+                            )
+                        output.write(sampleBytes)
+                    }
+                }
+            }
+
+            32 -> {
+                for (sampleIndex in 0 until sampleCount) {
+                    for (channel in 0 until fmtChunk.numChannels) {
+                        val intAsBigInteger =
+                            BigInteger.valueOf((dataChunk.data[channel][sampleIndex] * Int.MAX_VALUE).toLong())
+                        val bigDecimal = BigDecimal.valueOf(dataChunk.data[channel][sampleIndex])
+                        val multiplied = intAsBigInteger.toBigDecimal().multiply(bigDecimal)
+                        val intValue = multiplied.toInt()
+
+                        val sampleBytes =
+                            ByteBuffer.allocate(Int.SIZE_BYTES).apply {
+                                order(ByteOrder.LITTLE_ENDIAN)
+                                putInt(intValue)
                             }.array()
                         output.write(sampleBytes)
                     }
@@ -94,6 +146,15 @@ object WavWriter : FileWriter<Wav> {
         ByteBuffer.allocate(Short.SIZE_BYTES).apply {
             order(ByteOrder.LITTLE_ENDIAN)
             putShort(value)
+        }.array()
+
+    private fun bufferToByteArray(
+        buffer: ByteBuffer,
+        size: Int,
+    ): ByteArray =
+        ByteBuffer.allocate(size).apply {
+            order(ByteOrder.LITTLE_ENDIAN)
+            put(buffer)
         }.array()
 
     private fun sampleToBytes(

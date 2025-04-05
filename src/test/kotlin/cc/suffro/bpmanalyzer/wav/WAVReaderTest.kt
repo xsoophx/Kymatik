@@ -9,6 +9,7 @@ import cc.suffro.bpmanalyzer.wav.data.AudioFormat
 import cc.suffro.bpmanalyzer.wav.data.DataChunk
 import cc.suffro.bpmanalyzer.wav.data.FileReader
 import cc.suffro.bpmanalyzer.wav.data.FmtChunk
+import cc.suffro.bpmanalyzer.wav.data.PcmFmtChunk
 import cc.suffro.bpmanalyzer.wav.data.Wav
 import cc.suffro.bpmanalyzer.wav.data.WindowProcessingParams
 import org.junit.jupiter.api.Disabled
@@ -139,7 +140,7 @@ class WAVReaderTest : BaseTest() {
             Stream.of(
                 Arguments.of(
                     "src/test/resources/samples/220.wav",
-                    FmtChunk(
+                    PcmFmtChunk(
                         riffChunkSize = 654006,
                         fmtChunkSize = 16,
                         audioFormat = AudioFormat.PCM,
@@ -153,7 +154,7 @@ class WAVReaderTest : BaseTest() {
                 ),
                 Arguments.of(
                     "src/test/resources/samples/440.wav",
-                    FmtChunk(
+                    PcmFmtChunk(
                         riffChunkSize = 880110,
                         fmtChunkSize = 16,
                         audioFormat = AudioFormat.PCM,
@@ -179,7 +180,7 @@ class WAVReaderTest : BaseTest() {
             Stream.of(
                 Arguments.of(
                     "src/test/resources/samples/kick_140_24PCM.wav",
-                    FmtChunk(
+                    PcmFmtChunk(
                         riffChunkSize = 1542852,
                         fmtChunkSize = 16,
                         audioFormat = AudioFormat.PCM,
