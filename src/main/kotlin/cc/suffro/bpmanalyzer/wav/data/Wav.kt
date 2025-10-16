@@ -92,6 +92,7 @@ data class Wav(
             field = channel
         }
 
+    // TODO: this could be streamed to avoid loading all samples in memory
     fun defaultChannel() = dataChunk.data[defaultChannel]
 
     override fun toString(): String = "Filepath:$filePath, fmtChunk:$fmtChunk."
