@@ -5,12 +5,16 @@ import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CacheAnalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter.Analyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.data.Bpm
 import cc.suffro.bpmanalyzer.bpmanalyzing.filters.CombFilterOperations
+import cc.suffro.bpmanalyzer.bpmanalyzing.filters.LowPassFilter
 import cc.suffro.bpmanalyzer.data.TrackInfo
 import cc.suffro.bpmanalyzer.fft.FFTProcessor
+import cc.suffro.bpmanalyzer.fft.data.TimeDomainWindow
 import cc.suffro.bpmanalyzer.wav.data.FileReader
 import cc.suffro.bpmanalyzer.wav.data.Wav
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
+import kotlin.math.exp
+import kotlin.math.ln
 
 class StartingPositionAnalyzer(
     private val analyzer: Analyzer<Wav, TrackInfo>,
@@ -51,28 +55,37 @@ class StartingPositionAnalyzer(
         logger.info { "Analyzing starting position of track: ${data.filePath} with bpm: $bpm" }
 
         val sampleSizeToAnalyze = (ANALYZING_DURATION * data.sampleRate).toInt()
+
+        // TODO: this could be streamed to avoid loading all samples in memory
         val samples = data.defaultChannel().drop(samplesToSkip)
 
+        val k = ln(1000.0) / (FFT_SAMPLES - 1) // f(N-1) ca. 1/1000
+        val eFunction = (0 until FFT_SAMPLES).map { i -> exp(-k * i) }
+
         val fftResults =
-            samples.take(sampleSizeToAnalyze)
-                .asSequence()
-                .windowed(FFT_SAMPLES, STEP_SIZE, partialWindows = false) { window ->
-                    val fft = fftProcessor.process(window, data.sampleRate)
+            samples
+                .take(sampleSizeToAnalyze)
+                .windowed(FFT_SAMPLES, STEP_SIZE, partialWindows = false)
+                .mapIndexed { idx, window ->
+                    val startSample = idx * STEP_SIZE
+                    val startTime = startSample / data.sampleRate.toDouble()
+                    val duration = window.size / data.sampleRate.toDouble()
+                    val tdWindow = TimeDomainWindow(window.asSequence(), duration, startTime)
 
-                    val lowFreqStart = fft.binIndexOf(20.0)
-                    val lowFreqEnd = fft.binIndexOf(150.0)
+                    val lowPassed = LowPassFilter.processFrequencyDomainFFTData(tdWindow, data.sampleRate)
 
-                    fft.magnitudes.slice(lowFreqStart..lowFreqEnd).average()
-                }.toList()
+                    // add weighting function to magnitudes
+                    val weightedMagnitudes = lowPassed.magnitudes.zip(eFunction).map { (mag, factor) -> mag * factor }
+                    val maxValue = weightedMagnitudes.maxOrNull() ?: 0.0
+                    maxValue to startTime
+                }
 
-        val avgNoise = fftResults.take(10).average()
-        val threshold = avgNoise * 1.5
-
-        val firstPeak = fftResults.indexOfFirst { it > threshold }
+        val max = fftResults.maxByOrNull { it.first } ?: (0.0 to 0.0)
+        val firstPeak = fftResults.indexOfFirst { it.first == max.first }
 
         return StartingPosition(
-            firstSample = firstPeak * STEP_SIZE,
-            startInSec = firstPeak * STEP_SIZE / data.sampleRate.toDouble(),
+            firstSample = firstPeak * STEP_SIZE + samplesToSkip,
+            startInSec = max.second,
         )
     }
 
