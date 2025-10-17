@@ -2,6 +2,8 @@ package cc.suffro.bpmanalyzer.bpmanalyzing.filters
 
 import cc.suffro.bpmanalyzer.bpmanalyzing.data.Signal
 import cc.suffro.bpmanalyzer.fft.FFTProcessor
+import cc.suffro.bpmanalyzer.fft.data.Bins
+import cc.suffro.bpmanalyzer.fft.data.FFTData
 import cc.suffro.bpmanalyzer.fft.data.TimeDomainWindow
 import cc.suffro.bpmanalyzer.fft.data.hanningFunction
 import cc.suffro.bpmanalyzer.getHighestPowerOfTwo
@@ -18,7 +20,9 @@ object LowPassFilter {
         val fullWaveRectified = TimeDomainWindow(window.map(::abs), window.duration, window.startingTime)
         val numSamples = (window.duration * 2 * sampleRate).roundToInt()
         val halfHanningWindow = getHalfOfHanningWindow(numSamples)
-        val (first, second) = processSignals(fullWaveRectified, halfHanningWindow, sampleRate)
+
+        val fftSize = getSmallerSizeOf(fullWaveRectified.count(), halfHanningWindow.count())
+        val (first, second) = processSignals(fullWaveRectified, halfHanningWindow, sampleRate, fftSize)
 
         val convolved = convolve(first, second)
         return FFTProcessor.processInverse(convolved)
@@ -29,14 +33,38 @@ object LowPassFilter {
         fmtChunk: FmtChunk,
     ) = process(window, fmtChunk.sampleRate)
 
+    fun processFrequencyDomainFFTData(
+        window: TimeDomainWindow,
+        sampleRate: Int,
+    ): FFTData {
+        // TODO: remove duplication
+        val fullWaveRectified = TimeDomainWindow(window.map(::abs), window.duration, window.startingTime)
+        val numSamples = (window.duration * 2 * sampleRate).roundToInt()
+        val halfHanningWindow = getHalfOfHanningWindow(numSamples)
+
+        val fftSize = getSmallerSizeOf(fullWaveRectified.count(), halfHanningWindow.count())
+        val (first, second) = processSignals(fullWaveRectified, halfHanningWindow, sampleRate, fftSize)
+
+        val filtered = first.zip(second).map { (a, b) -> a * b }
+        val sampleSize = filtered.size
+        val bins = Bins(fftSize / 2)
+
+        return FFTData(
+            bins = bins,
+            sampleSize = sampleSize,
+            samplingRate = sampleRate,
+            output = filtered,
+        )
+    }
+
     private fun processSignals(
         a: Sequence<Double>,
         b: Sequence<Double>,
         sampleRate: Int,
+        fftSize: Int,
     ): Pair<List<Complex>, List<Complex>> {
-        val size = getSmallerSizeOf(a.count(), b.count())
-        val first = FFTProcessor.process(a.take(size), sampleRate).output
-        val second = FFTProcessor.process(b.take(size), sampleRate).output
+        val first = FFTProcessor.process(a.take(fftSize), sampleRate).output
+        val second = FFTProcessor.process(b.take(fftSize), sampleRate).output
         return first to second
     }
 
