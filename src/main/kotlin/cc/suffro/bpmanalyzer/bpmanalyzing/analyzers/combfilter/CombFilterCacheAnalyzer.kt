@@ -40,6 +40,15 @@ class CombFilterCacheAnalyzer(
         return trackInfoFromDb ?: database.analyzeAndSave(data.filePath, data, start, windowFunction)
     }
 
+    override fun getTransformedSamples(
+        samples: List<Double>,
+        sampleSizeToAnalyze: Int,
+        data: Wav,
+        startingSample: Int,
+    ): List<Double> {
+        TODO("Not yet implemented")
+    }
+
     private fun DatabaseOperations.analyzeAndSave(
         trackName: Path,
         wav: Wav,

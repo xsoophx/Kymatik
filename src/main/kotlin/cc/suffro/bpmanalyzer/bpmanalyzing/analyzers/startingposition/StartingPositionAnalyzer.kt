@@ -8,6 +8,7 @@ import cc.suffro.bpmanalyzer.bpmanalyzing.filters.CombFilterOperations
 import cc.suffro.bpmanalyzer.bpmanalyzing.filters.LowPassFilter
 import cc.suffro.bpmanalyzer.data.TrackInfo
 import cc.suffro.bpmanalyzer.fft.FFTProcessor
+import cc.suffro.bpmanalyzer.fft.data.FFTData
 import cc.suffro.bpmanalyzer.fft.data.TimeDomainWindow
 import cc.suffro.bpmanalyzer.wav.data.FileReader
 import cc.suffro.bpmanalyzer.wav.data.Wav
@@ -45,6 +46,72 @@ class StartingPositionAnalyzer(
         return analyze(data, bpm)
     }
 
+    override fun getTransformedSamples(
+        samples: List<Double>,
+        sampleSizeToAnalyze: Int,
+        data: Wav,
+        startingSample: Int,
+    ): List<Double> {
+        val startingTime = startingSample / data.sampleRate.toDouble()
+        val fftData = getFFTWindows(samples, sampleSizeToAnalyze, data, startingTime, startingSample)
+
+        val timeDomainWindows =
+            fftData.mapIndexed { index, fftData ->
+                val samples = FFTProcessor.processInverse(fftData)
+                val startTime = startingTime + (index * STEP_SIZE) / data.sampleRate.toDouble()
+                val startIndex = index * STEP_SIZE + startingSample
+                TimeDomainWindow(samples, fftData.duration, startTime, startIndex)
+            }
+
+        val paddedValues =
+            timeDomainWindows.mapIndexed { index, window ->
+                window.fill(
+                    index * STEP_SIZE,
+                    sampleSizeToAnalyze - window.samples.count(),
+                )
+            }
+
+        val length = paddedValues.first().size
+        val averaged =
+            (0 until length).map { i ->
+                val column = paddedValues.map { it[i] }
+
+                column.filter { it >= -1.0 }.average()
+            }
+
+        return averaged
+    }
+
+    private fun TimeDomainWindow.fill(
+        leftPadding: Int,
+        rightPadding: Int,
+    ): List<Double> {
+        val left = List(leftPadding) { -2.0 }
+        val right = List(rightPadding) { -2.0 }
+        return left + this.samples.toList() + right
+    }
+
+    private fun getFFTWindows(
+        samples: List<Double>,
+        sampleSizeToAnalyze: Int,
+        data: Wav,
+        startingTime: Double,
+        startingSample: Int,
+    ): List<FFTData> {
+        val k = ln(1000.0) / (FFT_SAMPLES - 1) // f(N-1) ca. 1/1000
+        val eFunction = (0 until FFT_SAMPLES).map { i -> exp(-k * i) }
+
+        return samples
+            .take(sampleSizeToAnalyze)
+            .windowed(FFT_SAMPLES, STEP_SIZE, partialWindows = false)
+            .map { window ->
+                val duration = window.size / data.sampleRate.toDouble()
+                val tdWindow = TimeDomainWindow(window, duration, startingTime, startingSample)
+
+                LowPassFilter.getFrequencyDomainWindow(tdWindow, data.sampleRate)
+            }
+    }
+
     private fun analyze(
         data: Wav,
         bpm: Bpm,
@@ -56,33 +123,10 @@ class StartingPositionAnalyzer(
         // TODO: this could be streamed to avoid loading all samples in memory
         val samples = data.defaultChannel().drop(samplesToSkip)
 
-        val k = ln(1000.0) / (FFT_SAMPLES - 1) // f(N-1) ca. 1/1000
-        val eFunction = (0 until FFT_SAMPLES).map { i -> exp(-k * i) }
-
-        val fftResults =
-            samples
-                .take(sampleSizeToAnalyze)
-                .windowed(FFT_SAMPLES, STEP_SIZE, partialWindows = false)
-                .mapIndexed { idx, window ->
-                    val startSample = idx * STEP_SIZE
-                    val startTime = startSample / data.sampleRate.toDouble()
-                    val duration = window.size / data.sampleRate.toDouble()
-                    val tdWindow = TimeDomainWindow(window.asSequence(), duration, startTime)
-
-                    val lowPassed = LowPassFilter.processFrequencyDomainFFTData(tdWindow, data.sampleRate)
-
-                    // add weighting function to magnitudes
-                    val weightedMagnitudes = lowPassed.magnitudes.zip(eFunction).map { (mag, factor) -> mag * factor }
-                    val maxValue = weightedMagnitudes.maxOrNull() ?: 0.0
-                    maxValue to startTime
-                }
-
-        val max = fftResults.maxByOrNull { it.first } ?: (0.0 to 0.0)
-        val firstPeak = fftResults.indexOfFirst { it.first == max.first }
-
+        // TODO
         return StartingPosition(
-            firstSample = firstPeak * STEP_SIZE + samplesToSkip,
-            startInSec = max.second,
+            firstSample = 1,
+            startInSec = 1.0,
         )
     }
 

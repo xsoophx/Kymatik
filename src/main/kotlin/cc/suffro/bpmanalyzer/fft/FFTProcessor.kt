@@ -69,6 +69,14 @@ object FFTProcessor {
         return inputSamples.map { samples -> inverseFftInPlace(samples).map { it.re } }
     }
 
+    fun processInverse(inputSamples: Collection<FFTData>): List<Sequence<Double>> {
+        return inputSamples.map { fftData -> processInverse(fftData) }
+    }
+
+    fun processInverse(inputSamples: FFTData): Sequence<Double> {
+        return inverseFftInPlace(inputSamples.output).map { it.re }
+    }
+
     private inline fun Sequence<Double>.applyWindowFunction(crossinline function: (Int, Int) -> Double): Sequence<Double> {
         val length = this.count()
         return mapIndexed { index, sample -> function(index, length) * sample }
@@ -119,6 +127,8 @@ object FFTProcessor {
     }
 
     private fun inverseFftInPlace(x: Sequence<Complex>) = fftInPlace(x, true)
+
+    private fun inverseFftInPlace(x: Collection<Complex>) = fftInPlace(x.asSequence(), true)
 
     // http://www.librow.com/articles/article-10
     private inline fun bitReverseCopy(

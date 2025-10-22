@@ -12,6 +12,13 @@ interface Analyzer<T, R> : KoinComponent {
         params: AnalyzerParams,
     ): R
 
+    fun getTransformedSamples(
+        samples: List<Double>,
+        sampleSizeToAnalyze: Int,
+        data: T,
+        startingSample: Int,
+    ): List<Double>
+
     fun getPathAndAnalyze(path: String): R
 
     fun getPathAndAnalyze(path: Path): R

@@ -13,6 +13,9 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 object LowPassFilter {
+    /**
+     * Returns the low-pass filtered signal in the time domain.
+     */
     fun process(
         window: TimeDomainWindow,
         sampleRate: Int,
@@ -33,7 +36,10 @@ object LowPassFilter {
         fmtChunk: FmtChunk,
     ) = process(window, fmtChunk.sampleRate)
 
-    fun processFrequencyDomainFFTData(
+    /**
+     * Returns the frequency domain representation of the low-pass filtered signal.
+     */
+    fun getFrequencyDomainWindow(
         window: TimeDomainWindow,
         sampleRate: Int,
     ): FFTData {

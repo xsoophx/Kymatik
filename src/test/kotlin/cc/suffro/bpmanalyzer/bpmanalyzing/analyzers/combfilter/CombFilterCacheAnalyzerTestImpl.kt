@@ -18,6 +18,15 @@ class CombFilterCacheAnalyzerTestImpl : CacheAnalyzer<Wav, TrackInfo> {
         return TrackInfo(trackName = Path.of("test"), bpm = 100.0)
     }
 
+    override fun getTransformedSamples(
+        samples: List<Double>,
+        sampleSizeToAnalyze: Int,
+        data: Wav,
+        startingSample: Int,
+    ): List<Double> {
+        TODO("Not yet implemented")
+    }
+
     override fun getPathAndAnalyze(path: String): TrackInfo {
         TODO("Not yet implemented")
     }
