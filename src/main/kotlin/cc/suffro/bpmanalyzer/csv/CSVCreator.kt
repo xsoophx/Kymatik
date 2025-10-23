@@ -64,6 +64,6 @@ class CSVCreator() : KoinComponent {
         const val DEFAULT_PATH = "./src/test/resources/samples/120bpm_140Hz.wav"
         const val DEFAULT_CSV_PATH =
             "./src/main/kotlin/cc/suffro/bpmanalyzer/csv/resources/starting_position_output.csv"
-        const val DEFAULT_SAMPLE_SIZE = 100000
+        const val DEFAULT_SAMPLE_SIZE = 1000
     }
 }
