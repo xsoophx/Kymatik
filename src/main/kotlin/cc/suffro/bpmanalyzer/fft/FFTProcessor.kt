@@ -69,6 +69,10 @@ object FFTProcessor {
         return inputSamples.map { samples -> inverseFftInPlace(samples).map { it.re } }
     }
 
+    fun processInverse(inputSamples: Collection<Complex>): Sequence<Double> {
+        return inverseFftInPlace(inputSamples).map { it.re }
+    }
+
     fun processInverse(inputSamples: Collection<FFTData>): List<Sequence<Double>> {
         return inputSamples.map { fftData -> processInverse(fftData) }
     }
