@@ -4,7 +4,6 @@ import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.AnalyzerParams
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.CacheAnalyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.analyzers.combfilter.Analyzer
 import cc.suffro.bpmanalyzer.bpmanalyzing.data.Bpm
-import cc.suffro.bpmanalyzer.bpmanalyzing.filters.CombFilterOperations
 import cc.suffro.bpmanalyzer.bpmanalyzing.filters.LowPassFilter
 import cc.suffro.bpmanalyzer.data.TrackInfo
 import cc.suffro.bpmanalyzer.fft.FFTProcessor
@@ -14,14 +13,10 @@ import cc.suffro.bpmanalyzer.wav.data.FileReader
 import cc.suffro.bpmanalyzer.wav.data.Wav
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
-import kotlin.math.exp
-import kotlin.math.ln
 
 class StartingPositionAnalyzer(
     private val analyzer: Analyzer<Wav, TrackInfo>,
     private val wavReader: FileReader<Wav>,
-    private val combFilterOperations: CombFilterOperations,
-    private val fftProcessor: FFTProcessor,
 ) : CacheAnalyzer<Wav, StartingPosition> {
     override fun analyze(data: Wav): StartingPosition {
         val trackInfo = analyzer.analyze(data)
@@ -52,43 +47,48 @@ class StartingPositionAnalyzer(
         data: Wav,
         startingSample: Int,
     ): List<Double> {
+        require(sampleSizeToAnalyze >= FFT_SAMPLES) {
+            "Sample size to analyze must be greater than FFT samples size of $FFT_SAMPLES to execute analyzing."
+        }
+
         val startingTime = startingSample / data.sampleRate.toDouble()
         val fftData = getFFTWindows(samples, sampleSizeToAnalyze, data, startingTime, startingSample)
+        val size = fftData.size
 
         val timeDomainWindows =
             fftData.mapIndexed { index, fftData ->
-                val samples = FFTProcessor.processInverse(fftData)
+                logger.info { "Creating Timedomainwindow $index of $size" }
+
+                // TODO: normalize
+                val samples = FFTProcessor.processInverse(fftData.output)
                 val startTime = startingTime + (index * STEP_SIZE) / data.sampleRate.toDouble()
                 val startIndex = index * STEP_SIZE + startingSample
                 TimeDomainWindow(samples, fftData.duration, startTime, startIndex)
             }
 
-        val paddedValues =
-            timeDomainWindows.mapIndexed { index, window ->
-                window.fill(
-                    index * STEP_SIZE,
-                    sampleSizeToAnalyze - window.samples.count(),
-                )
+        return (0 until sampleSizeToAnalyze).map { index ->
+            logger.info { "calculating index $index" }
+            val firstWindowIndex = index / FFT_SAMPLES
+            val firstLocalIndex = index % FFT_SAMPLES
+            val firstSamples = timeDomainWindows[firstWindowIndex].samples.toList()
+
+            val secondWindowIndex = (index + STEP_SIZE) / FFT_SAMPLES
+            val secondLocalIndex = (index + STEP_SIZE) % FFT_SAMPLES
+            val secondSamples = timeDomainWindows[secondWindowIndex].samples.toList()
+
+            if (secondWindowIndex < timeDomainWindows.size) {
+                // non overlapping windows
+                if (firstWindowIndex == secondWindowIndex) {
+                    firstSamples[firstLocalIndex]
+                } else {
+                    // overlapping windows
+                    (firstSamples[firstLocalIndex] + secondSamples[secondLocalIndex]) / 2.0
+                }
+            } else {
+                // last window
+                firstSamples[firstLocalIndex]
             }
-
-        val length = paddedValues.first().size
-        val averaged =
-            (0 until length).map { i ->
-                val column = paddedValues.map { it[i] }
-
-                column.filter { it >= -1.0 }.average()
-            }
-
-        return averaged
-    }
-
-    private fun TimeDomainWindow.fill(
-        leftPadding: Int,
-        rightPadding: Int,
-    ): List<Double> {
-        val left = List(leftPadding) { -2.0 }
-        val right = List(rightPadding) { -2.0 }
-        return left + this.samples.toList() + right
+        }
     }
 
     private fun getFFTWindows(
@@ -98,9 +98,6 @@ class StartingPositionAnalyzer(
         startingTime: Double,
         startingSample: Int,
     ): List<FFTData> {
-        val k = ln(1000.0) / (FFT_SAMPLES - 1) // f(N-1) ca. 1/1000
-        val eFunction = (0 until FFT_SAMPLES).map { i -> exp(-k * i) }
-
         return samples
             .take(sampleSizeToAnalyze)
             .windowed(FFT_SAMPLES, STEP_SIZE, partialWindows = false)
@@ -108,7 +105,7 @@ class StartingPositionAnalyzer(
                 val duration = window.size / data.sampleRate.toDouble()
                 val tdWindow = TimeDomainWindow(window, duration, startingTime, startingSample)
 
-                LowPassFilter.getFrequencyDomainWindow(tdWindow, data.sampleRate)
+                LowPassFilter.simpleLowpass(100.0, tdWindow.samples.toList(), data.sampleRate)
             }
     }
 
