@@ -20,6 +20,8 @@ src/test/resources/copies/*
 src/test/resources/test.db
 !src/test/resources/samples
 !src/test/resources/copies/.gitkeep
+src/main/kotlin/cc/suffro/bpmanalyzer/csv/resources/*
+src/main/python/resources/*
 
 # env
 .env
