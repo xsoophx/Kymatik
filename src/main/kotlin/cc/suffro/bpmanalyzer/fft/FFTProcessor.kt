@@ -81,6 +81,17 @@ object FFTProcessor {
         return inverseFftInPlace(inputSamples.output).map { it.re }
     }
 
+    fun buildFullSpectrum(halfSpectrum: List<Complex>): List<Complex> {
+        require(halfSpectrum.size and (halfSpectrum.size - 1) == 0) { "FFT size must be a power of two, got ${halfSpectrum.size}" }
+
+        val dc = halfSpectrum.first()
+        val nyquist = halfSpectrum.last()
+        val positiveFrequencies = halfSpectrum.subList(1, halfSpectrum.size)
+        val negativeFrequencies = positiveFrequencies.asReversed().map { it.conj() }
+
+        return listOf(dc) + positiveFrequencies + nyquist + negativeFrequencies
+    }
+
     private inline fun Sequence<Double>.applyWindowFunction(crossinline function: (Int, Int) -> Double): Sequence<Double> {
         val length = this.count()
         return mapIndexed { index, sample -> function(index, length) * sample }

@@ -49,7 +49,7 @@ object LowPassFilter {
         return fftResult.copy(
             output =
                 fftResult.output.mapIndexed { index, complex ->
-                    if (index <= cutOffIndex) complex else complex(0.0, 0.0)
+                    if (index <= cutOffIndex || index > fftResult.output.size) complex else complex(0.0, 0.0)
                 },
         )
     }

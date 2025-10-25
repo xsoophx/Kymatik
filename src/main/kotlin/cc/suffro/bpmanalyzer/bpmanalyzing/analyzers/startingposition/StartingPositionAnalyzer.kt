@@ -60,7 +60,8 @@ class StartingPositionAnalyzer(
                 logger.info { "Creating Timedomainwindow $index of $size" }
 
                 // TODO: normalize
-                val samples = FFTProcessor.processInverse(fftData.output)
+                val fullSpectrum = FFTProcessor.buildFullSpectrum(fftData.output)
+                val samples = FFTProcessor.processInverse(fullSpectrum)
                 val startTime = startingTime + (index * STEP_SIZE) / data.sampleRate.toDouble()
                 val startIndex = index * STEP_SIZE + startingSample
                 TimeDomainWindow(samples, fftData.duration, startTime, startIndex)
