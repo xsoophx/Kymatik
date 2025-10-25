@@ -33,7 +33,8 @@ javafx {
 }
 
 application {
-    mainClass.set("cc.suffro.bpmanalyzer.Main")
+    val mainClassProp = providers.gradleProperty("mainClass")
+    mainClass.set(mainClassProp.orElse("cc.suffro.bpmanalyzer.Main"))
 }
 
 object Version {

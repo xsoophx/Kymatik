@@ -2,15 +2,21 @@ package cc.suffro.bpmanalyzer.bpmanalyzing.filters
 
 import cc.suffro.bpmanalyzer.bpmanalyzing.data.Signal
 import cc.suffro.bpmanalyzer.fft.FFTProcessor
+import cc.suffro.bpmanalyzer.fft.data.FFTData
 import cc.suffro.bpmanalyzer.fft.data.TimeDomainWindow
+import cc.suffro.bpmanalyzer.fft.data.WindowFunctionType
 import cc.suffro.bpmanalyzer.fft.data.hanningFunction
 import cc.suffro.bpmanalyzer.getHighestPowerOfTwo
 import cc.suffro.bpmanalyzer.wav.data.FmtChunk
 import org.kotlinmath.Complex
+import org.kotlinmath.complex
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
 object LowPassFilter {
+    /**
+     * Returns the low-pass filtered signal in the time domain.
+     */
     fun process(
         window: TimeDomainWindow,
         sampleRate: Int,
@@ -18,7 +24,9 @@ object LowPassFilter {
         val fullWaveRectified = TimeDomainWindow(window.map(::abs), window.duration, window.startingTime)
         val numSamples = (window.duration * 2 * sampleRate).roundToInt()
         val halfHanningWindow = getHalfOfHanningWindow(numSamples)
-        val (first, second) = processSignals(fullWaveRectified, halfHanningWindow, sampleRate)
+
+        val fftSize = getSmallerSizeOf(fullWaveRectified.count(), halfHanningWindow.count())
+        val (first, second) = processSignals(fullWaveRectified, halfHanningWindow, sampleRate, fftSize)
 
         val convolved = convolve(first, second)
         return FFTProcessor.processInverse(convolved)
@@ -29,14 +37,31 @@ object LowPassFilter {
         fmtChunk: FmtChunk,
     ) = process(window, fmtChunk.sampleRate)
 
+    fun simpleLowpass(
+        threshold: Double = 100.0,
+        samples: List<Double>,
+        samplingRate: Int,
+    ): FFTData {
+        val fftResult =
+            FFTProcessor.process(samples, samplingRate, windowFunction = WindowFunctionType.HANNING.function)
+        val cutOffIndex = fftResult.binIndexOf(threshold)
+
+        return fftResult.copy(
+            output =
+                fftResult.output.mapIndexed { index, complex ->
+                    if (index <= cutOffIndex || index > fftResult.output.size) complex else complex(0.0, 0.0)
+                },
+        )
+    }
+
     private fun processSignals(
         a: Sequence<Double>,
         b: Sequence<Double>,
         sampleRate: Int,
+        fftSize: Int,
     ): Pair<List<Complex>, List<Complex>> {
-        val size = getSmallerSizeOf(a.count(), b.count())
-        val first = FFTProcessor.process(a.take(size), sampleRate).output
-        val second = FFTProcessor.process(b.take(size), sampleRate).output
+        val first = FFTProcessor.process(a.take(fftSize), sampleRate).output
+        val second = FFTProcessor.process(b.take(fftSize), sampleRate).output
         return first to second
     }
 

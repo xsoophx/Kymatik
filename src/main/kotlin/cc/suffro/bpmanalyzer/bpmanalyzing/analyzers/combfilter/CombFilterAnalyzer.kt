@@ -38,6 +38,15 @@ class CombFilterAnalyzer(private val combFilterOperations: CombFilterOperations)
         return TrackInfo(data.filePath, bpm)
     }
 
+    override fun getTransformedSamples(
+        samples: List<Double>,
+        sampleSizeToAnalyze: Int,
+        data: Wav,
+        startingSample: Int,
+    ): List<Double> {
+        TODO("Not yet implemented")
+    }
+
     override fun getPathAndAnalyze(path: String): TrackInfo {
         return analyze(path, CombFilterAnalyzerParams())
     }

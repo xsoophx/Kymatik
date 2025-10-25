@@ -45,7 +45,11 @@ data class TimeDomainWindow(
     val samples: Sequence<Sample>,
     val duration: Double,
     val startingTime: Double,
-) : Sequence<Sample> by samples
+    val startingSample: Int = -1,
+) : Sequence<Sample> by samples {
+    constructor(samples: List<Sample>, duration: Double, startingTime: Double, startingSample: Int = -1) :
+        this(samples.asSequence(), duration, startingTime, startingSample)
+}
 
 data class FrequencyDomainWindow(
     val magnitudes: List<Double>,
