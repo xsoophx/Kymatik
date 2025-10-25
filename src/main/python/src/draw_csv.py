@@ -57,12 +57,12 @@ def main():
     out_path = args.out or default_output_for(csv_path)
     times, values = read_csv(csv_path)
     if not times or not values:
-        print("Keine gültigen Daten in der CSV gefunden.", file=sys.stderr)
+        print("No valid data in CSV file found.", file=sys.stderr)
         sys.exit(3)
 
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     plot_and_save(times, values, out_path, show=args.show)
-    print(f"Bild gespeichert: {out_path}")
+    print(f"Image saved: {out_path}")
 
 if __name__ == "__main__":
     main()
