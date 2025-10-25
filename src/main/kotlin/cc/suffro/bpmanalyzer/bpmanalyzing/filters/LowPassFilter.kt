@@ -2,13 +2,14 @@ package cc.suffro.bpmanalyzer.bpmanalyzing.filters
 
 import cc.suffro.bpmanalyzer.bpmanalyzing.data.Signal
 import cc.suffro.bpmanalyzer.fft.FFTProcessor
-import cc.suffro.bpmanalyzer.fft.data.Bins
 import cc.suffro.bpmanalyzer.fft.data.FFTData
 import cc.suffro.bpmanalyzer.fft.data.TimeDomainWindow
+import cc.suffro.bpmanalyzer.fft.data.WindowFunctionType
 import cc.suffro.bpmanalyzer.fft.data.hanningFunction
 import cc.suffro.bpmanalyzer.getHighestPowerOfTwo
 import cc.suffro.bpmanalyzer.wav.data.FmtChunk
 import org.kotlinmath.Complex
+import org.kotlinmath.complex
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -36,30 +37,20 @@ object LowPassFilter {
         fmtChunk: FmtChunk,
     ) = process(window, fmtChunk.sampleRate)
 
-    /**
-     * Returns the frequency domain representation of the low-pass filtered signal.
-     */
-    fun getFrequencyDomainWindow(
-        window: TimeDomainWindow,
-        sampleRate: Int,
+    fun simpleLowpass(
+        threshold: Double = 100.0,
+        samples: List<Double>,
+        samplingRate: Int,
     ): FFTData {
-        // TODO: remove duplication
-        val fullWaveRectified = TimeDomainWindow(window.map(::abs), window.duration, window.startingTime)
-        val numSamples = (window.duration * 2 * sampleRate).roundToInt()
-        val halfHanningWindow = getHalfOfHanningWindow(numSamples)
+        val fftResult =
+            FFTProcessor.process(samples, samplingRate, windowFunction = WindowFunctionType.HANNING.function)
+        val cutOffIndex = fftResult.binIndexOf(threshold)
 
-        val fftSize = getSmallerSizeOf(fullWaveRectified.count(), halfHanningWindow.count())
-        val (first, second) = processSignals(fullWaveRectified, halfHanningWindow, sampleRate, fftSize)
-
-        val filtered = first.zip(second).map { (a, b) -> a * b }
-        val sampleSize = filtered.size
-        val bins = Bins(fftSize / 2)
-
-        return FFTData(
-            bins = bins,
-            sampleSize = sampleSize,
-            samplingRate = sampleRate,
-            output = filtered,
+        return fftResult.copy(
+            output =
+                fftResult.output.mapIndexed { index, complex ->
+                    if (index <= cutOffIndex) complex else complex(0.0, 0.0)
+                },
         )
     }
 
