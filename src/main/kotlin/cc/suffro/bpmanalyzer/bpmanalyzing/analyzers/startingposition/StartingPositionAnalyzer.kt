@@ -53,12 +53,9 @@ class StartingPositionAnalyzer(
 
         val startingTime = startingSample / data.sampleRate.toDouble()
         val fftData = getFFTWindows(samples, sampleSizeToAnalyze, data, startingTime, startingSample)
-        val size = fftData.size
 
         val timeDomainWindows =
             fftData.mapIndexed { index, fftData ->
-                logger.info { "Creating Timedomainwindow $index of $size" }
-
                 // TODO: normalize
                 val fullSpectrum = FFTProcessor.buildFullSpectrum(fftData.output)
                 val samples = FFTProcessor.processInverse(fullSpectrum)
@@ -67,28 +64,44 @@ class StartingPositionAnalyzer(
                 TimeDomainWindow(samples, fftData.duration, startTime, startIndex)
             }
 
+        logger.info { "Calculating indices for sample" }
+        val overlapCount : Int = (FFT_SAMPLES + STEP_SIZE - 1) / STEP_SIZE
         return (0 until sampleSizeToAnalyze).map { index ->
-            logger.info { "calculating index $index" }
-            val firstWindowIndex = index / FFT_SAMPLES
-            val firstLocalIndex = index % FFT_SAMPLES
-            val firstSamples = timeDomainWindows[firstWindowIndex].samples.toList()
-
-            val secondWindowIndex = (index + STEP_SIZE) / FFT_SAMPLES
-            val secondLocalIndex = (index + STEP_SIZE) % FFT_SAMPLES
-            val secondSamples = timeDomainWindows[secondWindowIndex].samples.toList()
-
-            if (secondWindowIndex < timeDomainWindows.size) {
-                // non overlapping windows
-                if (firstWindowIndex == secondWindowIndex) {
-                    firstSamples[firstLocalIndex]
+            // Windows to consider are those where [start ; end] is within the sample index
+            // The maximum number of overlapping windows is overlapCount
+            // Graphical example:
+            //
+            // W0: |########
+            // W1: |    ########
+            // W2: |        ########
+            // W3: |            ########
+            // S : |      ^
+            //
+            // In this example, at sample index S, we have to consider W1 and W2
+            // We start with the earliest possible window that could contain the sample (perhaps negative)
+            // Then we check each overlapping window to see if it contains the sample
+            // With a maximum of overlapCount windows to consider
+            // All invalid windows are filtered out (set to index -1 first)
+            val allIndicesGlobal = (0 until overlapCount).map { overlapIndex ->
+                val firstPossibleWindow = (index - FFT_SAMPLES + STEP_SIZE) / STEP_SIZE
+                val thisWindowIndex = firstPossibleWindow + overlapIndex
+                if (thisWindowIndex * STEP_SIZE <= index && index < thisWindowIndex * STEP_SIZE + FFT_SAMPLES) {
+                    thisWindowIndex
                 } else {
-                    // overlapping windows
-                    (firstSamples[firstLocalIndex] + secondSamples[secondLocalIndex]) / 2.0
+                    -1
                 }
-            } else {
-                // last window
-                firstSamples[firstLocalIndex]
+            }.filter{ it >= 0 && it < timeDomainWindows.size}.ifEmpty {
+                listOf(timeDomainWindows.size -1)
+            }.toList().distinct()
+
+            val allIndicesLocal = allIndicesGlobal.map { idxGlobal ->
+                index - (idxGlobal * STEP_SIZE)
             }
+
+            allIndicesGlobal.mapIndexed { i, idxGlobal ->
+                val idxLocal = allIndicesLocal[i]
+                timeDomainWindows[idxGlobal].samples.elementAt(idxLocal)
+            }.average()
         }
     }
 
